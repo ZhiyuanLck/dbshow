@@ -11,7 +11,7 @@
 \DTMsetdatestyle{iso}
 
 \msg_new:nnn { review } { non-existent-group } {
-  Group~'#1'~does~not~exist.
+  Group~'#1'~does~not~exist~\msg_line_context:.
 }
 
 % #1 group
@@ -21,7 +21,7 @@
 }
 
 \msg_new:nnn { review } { non-existent-attr } {
-  Attribute~'#2'~of~group~'#1'~does~not~exist.
+  Attribute~'#2'~of~group~'#1'~does~not~exist~\msg_line_context:.
 }
 
 % #1 group #2 attr
@@ -31,7 +31,7 @@
 }
 
 \msg_new:nnn { review } { non-existent-cond } {
-  Conditional~'#2'~of~group~'#1'~does~not~exist.
+  Conditional~'#2'~of~group~'#1'~does~not~exist~\msg_line_context:.
 }
 
 % #1 group #2 cond
@@ -41,18 +41,22 @@
 }
 
 \msg_new:nnn { review } { non-existent-filter } {
-  Filter~'#2'~of~group~'#1'~does~not~exist and is ignored.
+  Filter~'#2'~of~group~'#1'~does~not~exist~and~is~ignored~\msg_line_context:.
 }
 
+\cs_generate_variant:Nn \msg_warning:nnnn { nnnx }
 % #1 group #2 filter
 \cs_new:Nn \review_check_filter:nn {
-  \seq_if_exist:cF { g__review_filter_run_seq_#1_#2 }
-    { \msg_warning:nnnn { review } { non-existent-filter } { #1 } { #2 } }
+  \seq_if_exist:cF { g__review_filter_run_seq_#1_#2 } {
+    \str_if_eq:eeF { #2 } { -none- } {
+      \msg_warning:nnnx { review } { non-existent-filter } { #1 } { #2 }
+    }
+  }
 }
 
 \msg_new:nnn { review } { non-existent-type } {
   Type~'#1'~does~not~exist,~the~type~of~attribute~should~be~one~of~
-  \{date,~str,~tl,~clist,~int,~fp\}.
+  \{date,~str,~tl,~clist,~int,~fp\}~\msg_line_context:.
 }
 
 % #1 type
@@ -263,7 +267,8 @@
 % no star: match part
 \cs_new:Nn \review_if_str: {
   \bool_if:NT \l_star_bool {
-    \tl_set:No \l_review_rela { \exp_not:N\A\l_review_rela\exp_not:N\Z }
+    \tl_put_left:Nn \l_review_rela { \A }
+    \tl_put_right:Nn \l_review_rela { \Z }
   }
   \regex_match:VVTF \l_review_rela \rval
     { \review_set_true: }
@@ -458,6 +463,8 @@
 % #1 opts #2 group #3 content
 \NewDocumentEnvironment { rvshow } { O{} m +b } {
   \keys_set:nn { review/show } { #1 }
+  \review_check_group:n { #2 }
+  \review_check_filter:nn  { #2 } { \l_review_filter }
   \review_init_iterator:nnn { #2 } { \l_review_filter } { #3 }
 } {}
 
