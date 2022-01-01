@@ -1,0 +1,440 @@
+\def\myfileversion{0.1}
+\def\myfiledate{2021/10/14}
+\RequirePackage{expl3, xparse}
+\RequirePackage[calc]{datetime2}
+\ProvidesExplPackage
+  {review}
+  {\myfiledate}
+  {\myfileversion}
+  {Review what you want}
+
+\DTMsetdatestyle{iso}
+
+\msg_new:nnn { review } { non-existent-group } {
+  Group~'#1'~does~not~exist.
+}
+
+% #1 group
+\cs_new:Nn \review_check_group:n {
+  \prop_if_exist:cF { g__review_type_map_#1 }
+    { \msg_fatal:nnn { review } { non-existent-group } { #1 } }
+}
+
+\msg_new:nnn { review } { non-existent-attr } {
+  Attribute~'#2'~of~group~'#1'~does~not~exist.
+}
+
+% #1 group #2 attr
+\cs_new:Nn \review_check_attr:nn {
+  \prop_if_in:cnF { g__review_type_map_#1 } { #2 }
+    { \msg_fatal:nnnn { review } { non-existent-attr } { #1 } { #2 } }
+}
+
+\msg_new:nnn { review } { non-existent-cond } {
+  Conditional~'#3'~of~attribute~'#2'~of~group~'#1'~does~not~exist.
+}
+
+% #1 group #2 attr #3 cond
+\cs_new:Nn \review_check_cond:nnn {
+  \tl_if_exist:cF { g__review_filter_attr_#1_#2_#3 }
+    { \msg_fatal:nnnnn { review } { non-existent-cond } { #1 } { #2 } { #3 } }
+}
+
+\msg_new:nnn { review } { non-existent-filter } {
+  Filter~'#2'~of~group~'#1'~does~not~exist and is ignored.
+}
+
+% #1 group #2 filter
+\cs_new:Nn \review_check_filter:nn {
+  \seq_if_exist:cF { g__review_filter_run_seq_#1_#2 }
+    { \msg_warning:nnnn { review } { non-existent-filter } { #1 } { #2 } }
+}
+
+\msg_new:nnn { review } { non-existent-type } {
+  Type~'#1'~does~not~exist,~the~type~of~attribute~should~be~one~of~
+  \{date,~str,~tl,~clist,~int,~fp\}.
+}
+
+% #1 type
+\cs_new:Nn \review_check_type:n {
+  \clist_if_in:NnF \review_type_clist { #1 }
+    { \msg_fatal:nnn { review } { non-existent-type } { #1 } }
+}
+
+\clist_const:Nn \review_type_clist { date, str, tl, clist, int, fp }
+
+\prop_const_from_keyval:Nn \review_new_cs_map {
+  date = str_clear_new:c,
+  str = str_clear_new:c,
+  tl = tl_gclear_new:c,
+  clist = clist_gclear_new:c,
+  int = int_gzero_new:c,
+  fp = fp_gzero_new:c
+}
+
+\prop_const_from_keyval:Nn \review_set_cs_map {
+  date = str_gset:cn,
+  str = str_gset:cn,
+  tl = tl_gset:cn,
+  clist = clist_gset:cn,
+  int = int_gset:cn,
+  fp = fp_gset:cn
+}
+
+\prop_const_from_keyval:Nn \review_use_cs_map {
+  date = str_use:c,
+  str = str_use:c,
+  tl = tl_use:c,
+  clist = clist_use:c,
+  int = int_use:c,
+  fp = fp_use:c
+}
+
+\prop_const_from_keyval:Nn \review_default_value {
+  date = \Today,
+  str = ,
+  tl = ,
+  clist = ,
+  int = 0,
+  fp = 0
+}
+
+\newcount\l_review_date_diff
+
+% #1 group #2 attr #3 type #4 default value
+\cs_new:Npn \review_process_default_value:w #1|#2=#3|#4\scan_stop {
+  \review_check_type:n { #3 }
+  \prop_gput:cxx { g__review_type_map_#1 } { #2 } { #3 }
+  \prop_gput:cxx { g__review_default_map_#1 } { #2 } { #4 }
+}
+
+\cs_new_protected:Nn \review_process_type_map:n {
+  \prop_gclear_new:c { g__review_default_map_#1 }
+  \prop_map_inline:cn { g__review_type_map_#1 } {
+    \str_if_in:nnTF { ##2 } { | }
+      { \review_process_default_value:w #1|##1=##2\scan_stop }
+      {
+        \prop_get:NnN \review_default_value { ##2 } \l_tmp_default
+        \review_process_default_value:w #1|##1=##2|\l_tmp_default\scan_stop
+      }
+  }
+}
+
+% #1 group_name, #2 clist, attr=type
+\cs_new_protected:Nn \review_group_new:nn {
+  \int_gzero_new:c { g__review_counter_#1 }
+  \prop_gset_from_keyval:cn { g__review_type_map_#1 } { #2 }
+}
+
+% #1 group_name, #2 clist
+\cs_new_protected:Nn \review_group_new_append:nn {
+  \int_gzero_new:c { g__review_counter_#1 }
+  \prop_if_exist:cF { g__review_type_map_#1 }
+    { \prop_new:c { g__review_type_map_#1 } }
+  \prop_gset_from_keyval:Nn \l_tmpa_prop { #2 }
+  \prop_concat:ccc { g__review_type_map_#1 } { g__review_type_map_#1 } { l_tmpa_prop }
+}
+
+% #1 group_name, #2 group inherit from #3 clist
+\cs_new_protected:Nn \review_group_new_inherit:nnn {
+  \review_check_group:n { #2 }
+  \str_if_eq:nnTF { #1 } { #2 } {
+    \review_group_new_append:nn { #1 } { #3 }
+  } {
+    \int_gzero_new:c { g__review_counter_#1 }
+    \prop_gset_from_keyval:cn { g__review_type_map_#1 } { #3 }
+    \prop_concat:ccc { g__review_type_map_#1 } { g__review_type_map_#2 } { g__review_type_map_#1 }
+  }
+}
+
+% #1 group_name, #2 attr
+\cs_new:Nn \review_get_type:nn {
+  \prop_item:cn { g__review_type_map_#1 } { #2 }
+}
+
+% #1 group_name
+\cs_new:Nn \review_get_counter:n {
+  \int_use:c { g__review_counter_#1 }
+}
+
+% #1 group_name
+\cs_new:Nn \review_step_counter:n {
+  \int_gincr:c { g__review_counter_#1 }
+}
+
+% #1 group #2 attr #3 content
+\cs_new:Nn \review_save_data:nnn {
+  \review_check_attr:nn { #1 } { #2 }
+  \str_set:Nx \l_tmp_type { \review_get_type:nn { #1 } { #2 } }
+  \prop_get:NVN \review_new_cs_map \l_tmp_type \l_tmp_cs_new
+  \prop_get:NVN \review_set_cs_map \l_tmp_type \l_tmp_cs_set
+  \use:c { \l_tmp_cs_new }
+    { g__review_data_#1_#2_\review_get_counter:n { #1 } }
+  \use:c { \l_tmp_cs_set }
+    { g__review_data_#1_#2_\review_get_counter:n { #1 } } { #3 }
+}
+\cs_generate_variant:Nn \review_save_data:nnn { nnx }
+
+% #1 group #2 attr #3 index
+\cs_new:Nn \review_use_data:nnn {
+  \review_check_attr:nn { #1 } { #2 }
+  \str_set:Nx \l_tmp_type { \review_get_type:nn { #1 } { #2 } }
+  \prop_get:NVN \review_use_cs_map \l_tmp_type \l_tmp_cs
+  \use:c { \l_tmp_cs } { g__review_data_#1_#2_#3 }
+}
+
+% #1 group
+\cs_new_protected:Nn \review_set_group_keys:n {
+  \prop_map_inline:cn { g__review_type_map_#1 } {
+    \keys_define:nn { review/group/#1 } {
+      ##1 .code:n = \review_save_data:nnn { #1 } { ##1 } { ####1 },
+    }
+  }
+}
+
+% #1 append or not #2 inherit #3 group #4 attrs
+\NewDocumentCommand { \rvNewGroup } { s o m m } {
+  \IfNoValueTF { #2 } {
+    \IfBooleanTF { #1 }
+      { \review_group_new_append:nn { #3 } { #4 } }
+      { \review_group_new:nn { #3 } { #4 } }
+  } { \review_group_new_inherit:nnn { #3 } { #2 } { #4 } }
+  \review_group_new_append:nn { #3 } { id=int }
+  \review_process_type_map:n { #3 }
+  \review_set_group_keys:n { #3 }
+}
+
+% #1 group #2 attr-content map
+\NewDocumentEnvironment { rvitem } { m O{} +b } {
+  \review_check_group:n { #1 }
+  \review_step_counter:n { #1 }
+  \cs_set:Nn \review_set_default:nn {
+    \review_save_data:nnx { #1 } { ##1 } {
+      \prop_item:cn { g__review_default_map_#1 } { ##1 }
+    }
+  }
+  \prop_map_function:cN { g__review_type_map_#1 } \review_set_default:nn
+  \review_save_data:nnx { #1 } { id } { \review_get_counter:n { #1 } }
+  \keys_set:nn { review/group/#1 } { #2 }
+  % #2 attr #3 content
+  \NewDocumentCommand { \rvsave } { m m } {
+    \review_save_data:nnn { #1 } { ##1 } { ##2 }
+  }
+} { #3 }
+
+\cs_new:Nn \review_if_int: {
+  \int_compare:nTF { \l_review_rela }
+    { \review_set_true: }
+    { \review_set_false: }
+}
+
+\cs_new:Nn \review_if_fp: {
+  \fp_compare:nTF { \l_review_rela }
+    { \review_set_true: }
+    { \review_set_false: }
+}
+
+% star: all in
+% no star: one in
+\cs_new:Nn \review_if_clist: {
+  \bool_if:NTF \l_star_bool { % and
+    \review_set_true:
+    \exp_args:Nx
+    \clist_map_inline:nn { \l_review_rela } {
+      \clist_if_in:NnF \rval { ##1 } {
+        \review_set_false:
+        \clist_map_break:
+      }
+    }
+  }
+  { % or
+    \review_set_false:
+    \exp_args:Nx
+    \clist_map_inline:nn { \l_review_rela } {
+      \clist_if_in:NnT \rval { ##1 } {
+        \review_set_true:
+        \clist_map_break:
+      }
+    }
+  }
+}
+
+% star: match full
+% no star: match part
+\cs_new:Nn \review_if_str: {
+  \bool_if:NT \l_star_bool {
+    \tl_set:No \l_review_rela { \exp_not:N\A\l_review_rela\exp_not:N\Z }
+  }
+  \regex_match:VVTF \l_review_rela \rval
+    { \review_set_true: }
+    { \review_set_false: }
+}
+\cs_set_eq:NN \review_if_tl: \review_if_str:
+
+\cs_new:Npn \review_parse_date:w #1|#2\review_stop {
+  \clist_set_eq:Nc \l_point_clist { g__review_points_#1 }
+  \tl_set:Nn \l_date_tl { #2 }
+}
+
+\cs_new:Nn \review_if_date: {
+  \bool_if:NTF \l_star_bool {
+    \regex_extract_once:nVNF { \A(.*)([!<>=]+)(.*)\Z }
+      \l_review_rela \l_tmpa_seq { }
+    \exp_args:Nnx \DTMsavedate{day1}{ \seq_item:Nn \l_tmpa_seq { 2 } }
+    \tl_set:Nx \l_rela { \seq_item:Nn \l_tmpa_seq { 3 } }
+    \exp_args:Nnx \DTMsavedate{day2}{ \seq_item:Nn \l_tmpa_seq { 4 } }
+    \DTMsaveddatediff{day1}{day2}{\l_review_date_diff}% specious blank
+    \exp_args:NnV \int_compare:nNnTF
+      { \the\l_review_date_diff } \l_rela { 0 }
+      { \review_set_true: }
+      { \review_set_false: }
+  }
+  {
+    \exp_args:NV\review_parse_date:w \l_review_rela\review_stop
+    \exp_args:Nnx \DTMsavedate{day1}{ \l_date_tl }
+    \exp_args:Nnx \DTMsavedate{day2}{ \rval }
+    \DTMsaveddatediff{day1}{day2}{\l_review_date_diff}% specious blank
+    \clist_if_in:NoTF \l_point_clist { \the\l_review_date_diff }
+      { \review_set_true: }
+      { \review_set_false: }
+  }
+}
+
+\cs_generate_variant:Nn \prop_get:NnN { cVN }
+\prg_generate_conditional_variant:Nnn \regex_extract_once:nnN { nVN } { T, F, TF, p }
+\prg_generate_conditional_variant:Nnn \regex_match:nn { VV } { T, F, TF, p }
+% #1 group name #2 filter name #3 cond name #4 index
+\cs_set:Nn \review_if:nnnn {
+  \tl_set_eq:Nc \l_review_attr { g__review_filter_attr_#1_#2_#3 }
+  \tl_set_eq:Nc \l_review_rela { g__review_filter_rela_#1_#2_#3 }
+  \cs_set_eq:Nc \rval { g__review_data_#1_\l_review_attr _#4 }
+  \cs_set:Nn \review_set_true:
+    { \bool_gset_true:c { g__review_filter_bool_#1_#2_#3 } }
+  \cs_set:Nn \review_set_false:
+    { \bool_gset_false:c { g__review_filter_bool_#1_#2_#3 } }
+  \prop_get:cVN { g__review_type_map_#1 } \l_review_attr \l_tmp_type
+  \bool_set_eq:Nc \l_star_bool { g__review_cond_star_#1_#2_#3 }
+  \use:c { review_if_\l_tmp_type : }
+}
+
+% #1 group #2 filter name
+\cs_new_protected:Nn \review_filter_init:nn {
+  \tl_gset_eq:cN { g__review_filter_bool_tl_#1_#2 } \c_true_bool
+  \seq_clear_new:c { g__review_filter_run_seq_#1_#2 }
+}
+
+% 将cond->attr, cond->rela, cond->bool关联起来
+% #1 group name #2 filter name #3 cond name #4 attr #5 rela #6 star
+\cs_new_protected:Nn \review_new_conditional:nnnnnn {
+  \tl_gset:cn { g__review_filter_attr_#1_#2_#3 } { #4 }
+  \tl_gset:cn { g__review_filter_rela_#1_#2_#3 } { #5 }
+  \bool_if_exist:cF { g__review_filter_bool_#1_#2_#3 }
+    { \bool_new:c { g__review_filter_bool_#1_#2_#3 } }
+  \bool_if_exist:cF { g__review_cond_star_#1_#2_#3 }
+    { \bool_new:c { g__review_cond_star_#1_#2_#3 } }
+  \IfBooleanTF { #6 }
+    { \bool_gset_true:c { g__review_cond_star_#1_#2_#3 } }
+    { \bool_gset_false:c { g__review_cond_star_#1_#2_#3 } }
+  \cs_gset:cn { g__review_filter_cs_#1_#2_#3:n } {
+    \review_if:nnnn { #1 } { #2 } { #3 } { ##1 }
+  }
+  \seq_gput_right:cn { g__review_filter_run_seq_#1_#2 }
+    { g__review_filter_cs_#1_#2_#3:n }
+}
+
+% 将组合条件cond1, cond2, ..., 替换成cond1->bool, cond2->bool, ...
+% #1 group name #2 filter name #3 filters
+\cs_new_protected:Nn \review_combine_conditional:nnn {
+  \tl_set:Nn \l_tmpa_tl { #3 }
+  \regex_replace_all:nnN
+    { \w+ } { \c{ g__review_filter_bool_#1_#2_\0 } }
+    \l_tmpa_tl
+  \tl_gset_eq:cN { g__review_filter_bool_tl_#1_#2 } \l_tmpa_tl
+}
+
+\cs_generate_variant:Nn \regex_replace_all:nnN { nnc }
+% #1 group #2 filter name #3 content
+\NewDocumentEnvironment { rvGroupFilters } { m m +b } {
+  \review_filter_init:nn { #1 } { #2 }
+  % #1 cond name #2 attr #3 rela
+  \DeclareDocumentCommand { \rvNewConditional } { s m m m } {
+    \review_new_conditional:nnnnnn
+      { #1 } { #2 } { ##2 } { ##3 } { ##4 } { ##1 }
+  }
+  % ##1 filters
+  \DeclareDocumentCommand { \rvCombineFilters } { m } {
+    \review_combine_conditional:nnn { #1 } { #2 } { ##1 }
+  }
+  #3
+} {  }
+
+% #1 name #2 points
+\NewDocumentCommand { \rvNewReviewPoints } { m m } {
+  \clist_set:cn { g__review_points_#1 } { #2 }
+}
+
+% #1 style #2 begin code #3 end code
+\cs_new_protected:Nn \review_group_style_new:nnn {
+  \tl_gset:cn { g__review_group_style_begin_#1 } { #2 }
+  \tl_gset:cn { g__review_group_style_end_#1 } { #3 }
+}
+
+% #1 style #2 begin code #3 end code
+\NewDocumentCommand { \rvNewGroupStyle } { m +m +m } {
+  \review_group_style_new:nnn { #1 } { #2 } { #3 }
+}
+
+\rvNewGroupStyle{default}{}{}
+
+\keys_define:nn { review/show } {
+  group~style .tl_set:N = \l_group_style,
+  group~style .initial:n = default,
+  filter .tl_set:N = \l_review_filter,
+  filter .initial:n = -none-,
+}
+
+% #1 group #2 filter #3 content
+\cs_new_protected:Nn \review_init_iterator:nnn {
+  \clist_clear_new:N \l_index
+  % ##1 index
+  \cs_set:Nn \review_filter:n {
+    \seq_if_exist:cTF { g__review_filter_run_seq_#1_#2 } {
+      \seq_map_inline:cn { g__review_filter_run_seq_#1_#2 } {
+        \use:c { ####1 } { ##1 }
+      }
+      \exp_args:Nv
+      \bool_if:nT { g__review_filter_bool_tl_#1_#2 }
+        { \clist_put_right:Nn \l_index { ##1 } }
+    } { \clist_put_right:Nn \l_index { ##1 } }
+  }
+  % ##1 index
+  \cs_set:Nn \review_iter:n {
+    % ####1 attr
+    \cs_set:Npn \rvuse ####1 {
+      \review_use_data:nnn { #1 } { ####1 } { ##1 }
+    }
+    #3
+  }
+  \int_step_function:nN { \review_get_counter:n { #1 } } \review_filter:n
+  \prg_set_conditional:Nnn \review_if_empty: { T, F, TF } {
+    \clist_if_empty:NTF \l_index
+      { \prg_return_true: }
+      { \prg_return_false: }
+  }
+  \cs_set_eq:NN \rvIfEmptyT\review_if_empty:T
+  \cs_set_eq:NN \rvIfEmptyF\review_if_empty:F
+  \cs_set_eq:NN \rvIfEmptyTF\review_if_empty:TF
+
+  \tl_use:c { g__review_group_style_begin_\l_group_style }
+  \clist_map_function:NN \l_index \review_iter:n
+  \tl_use:c { g__review_group_style_end_\l_group_style }
+}
+
+\cs_generate_variant:Nn \bool_set:Nn { Nx, Ne, Nf, No }
+% #1 opts #2 group #3 content
+\NewDocumentEnvironment { rvshow } { O{} m +b } {
+  \keys_set:nn { review/show } { #1 }
+  \review_init_iterator:nnn { #2 } { \l_review_filter } { #3 }
+} {}
+
+\endinput
