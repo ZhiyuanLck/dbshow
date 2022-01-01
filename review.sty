@@ -305,16 +305,33 @@
 \prg_generate_conditional_variant:Nnn \regex_match:nn { VV } { T, F, TF, p }
 % #1 group name #2 cond name #3 index
 \cs_set:Nn \review_if:nnn {
-  \tl_set_eq:Nc \l_review_attr { g__review_filter_attr_#1_#2 }
-  \tl_set_eq:Nc \l_review_rela { g__review_filter_rela_#1_#2 }
-  \cs_set_eq:Nc \rval { g__review_data_#1_\l_review_attr _#3 }
-  \cs_set:Nn \review_set_true:
-    { \bool_gset_true:c { g__review_filter_bool_#1_#2 } }
-  \cs_set:Nn \review_set_false:
-    { \bool_gset_false:c { g__review_filter_bool_#1_#2 } }
-  \prop_get:cVN { g__review_type_map_#1 } \l_review_attr \l_tmp_type
-  \bool_set_eq:Nc \l_star_bool { g__review_cond_star_#1_#2 }
-  \use:c { review_if_\l_tmp_type : }
+  \bool_if_exist:cF { g__review_cond_run_#1_#2_#3 }
+    { \bool_new:c { g__review_cond_run_#1_#2_#3 } }
+  \bool_if:cTF { g__review_cond_run_#1_#2_#3 } {
+    \bool_gset_true:c { g__review_cond_run_#1_#2_#3 }
+  }
+  {
+    \tl_set_eq:Nc \l_review_attr { g__review_filter_attr_#1_#2 }
+    \tl_set_eq:Nc \l_review_rela { g__review_filter_rela_#1_#2 }
+    \cs_set_eq:Nc \rval { g__review_data_#1_\l_review_attr _#3 }
+    \cs_set:Nn \review_set_true:
+      { \bool_gset_true:c { g__review_filter_bool_#1_#2 } }
+    \cs_set:Nn \review_set_false:
+      { \bool_gset_false:c { g__review_filter_bool_#1_#2 } }
+    \prop_get:cVN { g__review_type_map_#1 } \l_review_attr \l_tmp_type
+    \bool_set_eq:Nc \l_star_bool { g__review_cond_star_#1_#2 }
+    \use:c { review_if_\l_tmp_type : }
+  }
+  % \tl_set_eq:Nc \l_review_attr { g__review_filter_attr_#1_#2 }
+  % \tl_set_eq:Nc \l_review_rela { g__review_filter_rela_#1_#2 }
+  % \cs_set_eq:Nc \rval { g__review_data_#1_\l_review_attr _#3 }
+  % \cs_set:Nn \review_set_true:
+    % { \bool_gset_true:c { g__review_filter_bool_#1_#2 } }
+  % \cs_set:Nn \review_set_false:
+    % { \bool_gset_false:c { g__review_filter_bool_#1_#2 } }
+  % \prop_get:cVN { g__review_type_map_#1 } \l_review_attr \l_tmp_type
+  % \bool_set_eq:Nc \l_star_bool { g__review_cond_star_#1_#2 }
+  % \use:c { review_if_\l_tmp_type : }
 }
 
 % 将cond->attr, cond->rela, cond->bool关联起来
@@ -326,15 +343,11 @@
     { \bool_new:c { g__review_filter_bool_#1_#2 } }
   \bool_if_exist:cF { g__review_cond_star_#1_#2 }
     { \bool_new:c { g__review_cond_star_#1_#2 } }
-  \bool_if_exist:cF { g__review_cond_run_#1_#2 }
-    { \bool_new:c { g__review_cond_run_#1_#2 } }
   \IfBooleanTF { #5 }
     { \bool_gset_true:c { g__review_cond_star_#1_#2 } }
     { \bool_gset_false:c { g__review_cond_star_#1_#2 } }
   \cs_gset:cn { g__review_filter_cs_#1_#2:n } {
-    \bool_if:cTF { g__review_cond_run_#1_#2 }
-      { \bool_gset_true:c { g__review_cond_run_#1_#2 } }
-      { \review_if:nnn { #1 } { #2 } { ##1 } }
+    \review_if:nnn { #1 } { #2 } { ##1 }
   }
   \seq_gput_right:cn { g__review_cond_list_#1 } { #2 }
 }
@@ -348,7 +361,7 @@
   \seq_map_inline:Nn \l_tmpa_seq {
     % ##1 cond name
     \seq_if_in:cnT { g__review_cond_list_#1 } { ##1 } {
-      \seq_gput_right:cn { g__review_filter_run_seq_#1_##1 }
+      \seq_gput_right:cn { g__review_filter_run_seq_#1_#2 }
         { g__review_filter_cs_#1_##1:n }
     }
   }
@@ -368,8 +381,9 @@
     \review_new_conditional:nnnnn
       { #1 } { ##2 } { ##3 } { ##4 } { ##1 }
   }
-  % ##1 filter name ##2 filters
-  \DeclareDocumentCommand { \rvCombineFilters } { m m } {
+  % ##1 filter name ##2 filters ##3 info
+  \DeclareDocumentCommand { \rvCombineFilters } { m m O{} } {
+    \tl_gset:cn { g__review_filter_info_#1_##1 } { ##3 }
     \review_combine_conditional:nnn { #1 } { ##1 } { ##2 }
   }
   #2
@@ -431,6 +445,9 @@
   \cs_set_eq:NN \rvIfEmptyT\review_if_empty:T
   \cs_set_eq:NN \rvIfEmptyF\review_if_empty:F
   \cs_set_eq:NN \rvIfEmptyTF\review_if_empty:TF
+  \tl_set:Nn \rvGroup { #1 }
+  \tl_set:Nn \rvFilterName { #2 }
+  \tl_set_eq:Nc \rvFilterInfo { g__review_filter_info_#1_#2 }
 
   \tl_use:c { g__review_group_style_begin_\l_group_style }
   \clist_map_function:NN \l_index \review_iter:n
