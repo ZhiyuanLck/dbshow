@@ -31,13 +31,13 @@
 }
 
 \msg_new:nnn { review } { non-existent-cond } {
-  Conditional~'#3'~of~attribute~'#2'~of~group~'#1'~does~not~exist.
+  Conditional~'#2'~of~group~'#1'~does~not~exist.
 }
 
-% #1 group #2 attr #3 cond
+% #1 group #2 cond
 \cs_new:Nn \review_check_cond:nnn {
-  \tl_if_exist:cF { g__review_filter_attr_#1_#2_#3 }
-    { \msg_fatal:nnnnn { review } { non-existent-cond } { #1 } { #2 } { #3 } }
+  \tl_if_exist:cF { g__review_filter_attr_#1_#2 }
+    { \msg_fatal:nnnn { review } { non-existent-cond } { #1 } { #2 } }
 }
 
 \msg_new:nnn { review } { non-existent-filter } {
@@ -303,69 +303,76 @@
 \cs_generate_variant:Nn \prop_get:NnN { cVN }
 \prg_generate_conditional_variant:Nnn \regex_extract_once:nnN { nVN } { T, F, TF, p }
 \prg_generate_conditional_variant:Nnn \regex_match:nn { VV } { T, F, TF, p }
-% #1 group name #2 filter name #3 cond name #4 index
-\cs_set:Nn \review_if:nnnn {
-  \tl_set_eq:Nc \l_review_attr { g__review_filter_attr_#1_#2_#3 }
-  \tl_set_eq:Nc \l_review_rela { g__review_filter_rela_#1_#2_#3 }
-  \cs_set_eq:Nc \rval { g__review_data_#1_\l_review_attr _#4 }
+% #1 group name #2 cond name #3 index
+\cs_set:Nn \review_if:nnn {
+  \tl_set_eq:Nc \l_review_attr { g__review_filter_attr_#1_#2 }
+  \tl_set_eq:Nc \l_review_rela { g__review_filter_rela_#1_#2 }
+  \cs_set_eq:Nc \rval { g__review_data_#1_\l_review_attr _#3 }
   \cs_set:Nn \review_set_true:
-    { \bool_gset_true:c { g__review_filter_bool_#1_#2_#3 } }
+    { \bool_gset_true:c { g__review_filter_bool_#1_#2 } }
   \cs_set:Nn \review_set_false:
-    { \bool_gset_false:c { g__review_filter_bool_#1_#2_#3 } }
+    { \bool_gset_false:c { g__review_filter_bool_#1_#2 } }
   \prop_get:cVN { g__review_type_map_#1 } \l_review_attr \l_tmp_type
-  \bool_set_eq:Nc \l_star_bool { g__review_cond_star_#1_#2_#3 }
+  \bool_set_eq:Nc \l_star_bool { g__review_cond_star_#1_#2 }
   \use:c { review_if_\l_tmp_type : }
 }
 
-% #1 group #2 filter name
-\cs_new_protected:Nn \review_filter_init:nn {
-  \tl_gset_eq:cN { g__review_filter_bool_tl_#1_#2 } \c_true_bool
-  \seq_clear_new:c { g__review_filter_run_seq_#1_#2 }
-}
-
 % 将cond->attr, cond->rela, cond->bool关联起来
-% #1 group name #2 filter name #3 cond name #4 attr #5 rela #6 star
-\cs_new_protected:Nn \review_new_conditional:nnnnnn {
-  \tl_gset:cn { g__review_filter_attr_#1_#2_#3 } { #4 }
-  \tl_gset:cn { g__review_filter_rela_#1_#2_#3 } { #5 }
-  \bool_if_exist:cF { g__review_filter_bool_#1_#2_#3 }
-    { \bool_new:c { g__review_filter_bool_#1_#2_#3 } }
-  \bool_if_exist:cF { g__review_cond_star_#1_#2_#3 }
-    { \bool_new:c { g__review_cond_star_#1_#2_#3 } }
-  \IfBooleanTF { #6 }
-    { \bool_gset_true:c { g__review_cond_star_#1_#2_#3 } }
-    { \bool_gset_false:c { g__review_cond_star_#1_#2_#3 } }
-  \cs_gset:cn { g__review_filter_cs_#1_#2_#3:n } {
-    \review_if:nnnn { #1 } { #2 } { #3 } { ##1 }
+% #1 group name #2 cond name #3 attr #4 rela #5 star
+\cs_new_protected:Nn \review_new_conditional:nnnnn {
+  \tl_gset:cn { g__review_filter_attr_#1_#2 } { #3 }
+  \tl_gset:cn { g__review_filter_rela_#1_#2 } { #4 }
+  \bool_if_exist:cF { g__review_filter_bool_#1_#2 }
+    { \bool_new:c { g__review_filter_bool_#1_#2 } }
+  \bool_if_exist:cF { g__review_cond_star_#1_#2 }
+    { \bool_new:c { g__review_cond_star_#1_#2 } }
+  \bool_if_exist:cF { g__review_cond_run_#1_#2 }
+    { \bool_new:c { g__review_cond_run_#1_#2 } }
+  \IfBooleanTF { #5 }
+    { \bool_gset_true:c { g__review_cond_star_#1_#2 } }
+    { \bool_gset_false:c { g__review_cond_star_#1_#2 } }
+  \cs_gset:cn { g__review_filter_cs_#1_#2:n } {
+    \bool_if:cTF { g__review_cond_run_#1_#2 }
+      { \bool_gset_true:c { g__review_cond_run_#1_#2 } }
+      { \review_if:nnn { #1 } { #2 } { ##1 } }
   }
-  \seq_gput_right:cn { g__review_filter_run_seq_#1_#2 }
-    { g__review_filter_cs_#1_#2_#3:n }
+  \seq_gput_right:cn { g__review_cond_list_#1 } { #2 }
 }
 
 % 将组合条件cond1, cond2, ..., 替换成cond1->bool, cond2->bool, ...
 % #1 group name #2 filter name #3 filters
 \cs_new_protected:Nn \review_combine_conditional:nnn {
+  \tl_gset_eq:cN { g__review_filter_bool_tl_#1_#2 } \c_true_bool
+  \seq_gclear_new:c { g__review_filter_run_seq_#1_#2 }
+  \regex_extract_all:nnN { \w+ } { #3 } \l_tmpa_seq
+  \seq_map_inline:Nn \l_tmpa_seq {
+    % ##1 cond name
+    \seq_if_in:cnT { g__review_cond_list_#1 } { ##1 } {
+      \seq_gput_right:cn { g__review_filter_run_seq_#1_##1 }
+        { g__review_filter_cs_#1_##1:n }
+    }
+  }
   \tl_set:Nn \l_tmpa_tl { #3 }
   \regex_replace_all:nnN
-    { \w+ } { \c{ g__review_filter_bool_#1_#2_\0 } }
+    { \w+ } { \c{ g__review_filter_bool_#1_\0 } }
     \l_tmpa_tl
   \tl_gset_eq:cN { g__review_filter_bool_tl_#1_#2 } \l_tmpa_tl
 }
 
 \cs_generate_variant:Nn \regex_replace_all:nnN { nnc }
-% #1 group #2 filter name #3 content
-\NewDocumentEnvironment { rvGroupFilters } { m m +b } {
-  \review_filter_init:nn { #1 } { #2 }
-  % #1 cond name #2 attr #3 rela
+% #1 group #2 content
+\NewDocumentEnvironment { rvGroupFilters } { m +b } {
+  \seq_gclear_new:c { g__review_cond_list_#1 }
+  % #1 star #2 cond name #3 attr #4 rela
   \DeclareDocumentCommand { \rvNewConditional } { s m m m } {
-    \review_new_conditional:nnnnnn
-      { #1 } { #2 } { ##2 } { ##3 } { ##4 } { ##1 }
+    \review_new_conditional:nnnnn
+      { #1 } { ##2 } { ##3 } { ##4 } { ##1 }
   }
-  % ##1 filters
-  \DeclareDocumentCommand { \rvCombineFilters } { m } {
-    \review_combine_conditional:nnn { #1 } { #2 } { ##1 }
+  % ##1 filter name ##2 filters
+  \DeclareDocumentCommand { \rvCombineFilters } { m m } {
+    \review_combine_conditional:nnn { #1 } { ##1 } { ##2 }
   }
-  #3
+  #2
 } {  }
 
 % #1 name #2 points
