@@ -186,7 +186,6 @@
 
 % #1 group #2 attr #3 index
 \cs_new:Nn \review_use_data:nnn {
-  \review_check_attr:nn { #1 } { #2 }
   \str_set:Nx \l_tmp_type { \review_get_type:nn { #1 } { #2 } }
   \prop_get:NVN \review_use_cs_map \l_tmp_type \l_tmp_cs
   \use:c { \l_tmp_cs } { g__review_data_#1_#2_#3 }
@@ -452,6 +451,7 @@
   \tl_set_eq:Nc \rvFilterInfo { g__review_filter_info_#1_#2 }
 
   \clist_clear_new:N \l_index
+  %% run filters
   % ##1 index
   \cs_set:Nn \review_filter:n {
     \seq_if_exist:cTF { g__review_filter_run_seq_#1_#2 } {
@@ -467,8 +467,23 @@
   \cs_set:Nn \review_iter:n {
     % ####1 attr
     \cs_set:Npn \rvuse ####1 {
+      \review_check_attr:nn { #1 } { ####1 }
       \tl_set_eq:Nc \l_style_sep_code
         { g__review_style_sep_\l_group_style _#1_####1 }
+
+      \prop_get:cnN { g__review_type_map_#1 } { ####1 } \l_tmp_type
+      \str_if_eq:eeT { \l_tmp_type } { date }
+        { \tl_set:Nn \l_tmp_type { str } }
+      \prg_set_conditional:Nnn \review_item_if_empty: { T, F, TF } {
+        \use:c { \l_tmp_type _if_empty:cTF }
+          { g__review_data_#1_####1_##1 }
+          { \prg_return_true: }
+          { \prg_return_false: }
+      }
+      \cs_set_eq:NN \rvItemIfEmptyT\review_item_if_empty:T
+      \cs_set_eq:NN \rvItemIfEmptyF\review_item_if_empty:F
+      \cs_set_eq:NN \rvItemIfEmptyTF\review_item_if_empty:TF
+
       \tl_use:c { g__review_style_before_\l_group_style _#1_####1 }
       \review_use_data:nnn { #1 } { ####1 } { ##1 }
       \tl_use:c { g__review_style_after_\l_group_style _#1_####1 }
