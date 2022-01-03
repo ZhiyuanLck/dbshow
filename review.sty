@@ -78,7 +78,12 @@
 % #1 count #2 content
 \msg_new:nnn { review } { wrong-seperator } {
   option~sep~should~contain~1~or~3~items~but~only~#1~items~was~given,~
-  sep~=~\{#2\}.
+  sep~=~\{#2\}~\msg_line_context:.
+}
+
+\msg_new:nnn { review } { unsupported-sort-type } {
+  unsupported~sort~type:~'#1'~\msg_line_context:.~The~type~should~be~one~of~
+  \{str,~date,~int,~fp\}.
 }
 
 \cs_new:Nn \review_sep_error:nn {
@@ -532,6 +537,9 @@
       \cs_set_eq:Nc \l_tmpb_tl { g__review_data_#1_\l_tmpa_str _##2 }
 
       \prop_get:cVN { g__review_type_map_#1 } \l_tmpa_str \l_tmp_type
+      \clist_if_in:nVF { str, int, date, fp  } \l_tmp_type {
+        \msg_error:nnx { review } { unsupported-sort-type } { \l_tmp_type }
+      }
       \str_if_eq:eeT { \l_tmp_type } { date }
         { \str_set:Nn \l_tmp_type { str } }
       \cs_set_eq:Nc \review_compare { \l_tmp_type _compare:nNnTF }
