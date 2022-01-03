@@ -1,5 +1,5 @@
-\def\myfileversion{0.1}
-\def\myfiledate{2021/10/14}
+\def\myfileversion{1.0}
+\def\myfiledate{2022/01/02}
 \RequirePackage{expl3, xparse}
 \RequirePackage[calc]{datetime2}
 \ProvidesExplPackage
@@ -74,6 +74,17 @@
   \clist_if_in:NnF \review_type_clist { #1 }
     { \msg_fatal:nnn { review } { non-existent-type } { #1 } }
 }
+
+% #1 count #2 content
+\msg_new:nnn { review } { wrong-seperator } {
+  option~sep~should~contain~1~or~3~items~but~only~#1~items~was~given,~
+  sep~=~\{#2\}.
+}
+
+\cs_new:Nn \review_sep_error:nn {
+  \msg_error:nnnn { review } { wrong-seperator } { #1 } { #2 }
+}
+\cs_generate_variant:Nn \review_sep_error:nn { xx }
 
 \clist_const:Nn \review_type_clist { date, str, tl, clist, int, fp }
 
@@ -209,7 +220,25 @@
     }
   }
 
-  \exp_after:wN \clist_use:Nnnn \exp_after:wN \l_tmpa_clist \l_style_sep_code
+  \tl_clear:N \l_tmpa_tl
+  \clist_map_inline:Nn \l_style_sep_clist {
+    \tl_put_right:Nn \l_tmpa_tl { { ##1 } }
+  }
+
+  \int_set:Nn \l_tmpa_int { \clist_count:N \l_style_sep_clist }
+  \int_case:nnF { \l_tmpa_int } {
+    { 1 } {
+      \exp_after:wN \clist_use:Nn \exp_after:wN \l_tmpa_clist \l_tmpa_tl
+    }
+    { 3 } {
+      \exp_after:wN \clist_use:Nnnn \exp_after:wN \l_tmpa_clist \l_tmpa_tl
+    }
+  }
+  {
+    \review_sep_error:xx
+      { \int_use:N \l_tmpa_int }
+      { \clist_use:Nn \l_style_sep_clist { , } }
+  }
 }
 \cs_generate_variant:Nn \review_clist_use:N { c }
 
@@ -416,18 +445,6 @@
   \clist_set:cn { g__review_points_#1 } { #2 }
 }
 
-\cs_new_protected:Nn \review_set_sep:Nn {
-  \clist_set:Nn \l_tmpa_clist { #1 }
-  \tl_gclear_new:N #1
-  \int_zero:N \l_tmpa_int
-  \clist_map_inline:nn { #2 } {
-    \int_incr:N \l_tmpa_int
-    \tl_gput_right:Nn #1 { { ##1 } }
-    \int_compare:nT { \l_tmpa_int = 3 } { \clist_map_break: }
-  }
-}
-\cs_generate_variant:Nn \review_set_sep:Nn { cn }
-
 % #1 style name #2 group name #3 attr
 \cs_new_protected:Nn \review_new_attr_style:nnn {
   \review_check_attr:nn { #2 } { #3 }
@@ -440,8 +457,8 @@
   \prop_get:cnN { g__review_type_map_#2 } { #3 } \l_tmp_type
   \str_if_eq:eeT { \l_tmp_type } { clist } {
     \keys_define:nn { review/style/#1/#3 } {
-      sep .code:n = \review_set_sep:cn { g__review_style_sep_#1_#2_#3 } { ##1 },
-      sep .initial:n = { {,~}, {,~}, {} },
+      sep .clist_gset:c = { g__review_style_sep_#1_#2_#3 },
+      sep .initial:n = { { ,~ } },
       item-before-code .tl_gset:c = { g__review_style_item_before_#1_#2_#3 },
       item-before-code .initial:n = ,
       item-after-code .tl_gset:c = { g__review_style_item_after_#1_#2_#3 },
@@ -454,6 +471,9 @@
 \cs_new_protected:Nn \review_new_group_style:nn {
   \review_check_group:n { #2 }
   \keys_define:nn { review/style/#1 } {
+    filter .tl_gset:c = { g__review_filter_#1_#2 },
+    filter .initial:n = -none-,
+    sort .clist_gset:c = { g__review_sort_#1_#2 },
     before-code .tl_gset:c = { g__review_style_before_#1_#2 },
     before-code .initial:n = ,
     after-code .tl_gset:c = { g__review_style_after_#1_#2 },
@@ -484,50 +504,97 @@
   \keys_set:nn { review/style/#2 } { g__review_style_opts_#2_#3 }
 }
 
-\keys_define:nn { review/show } {
-  group-style .tl_set:N = \l_group_style,
-  group-style .initial:n = default,
-  filter .tl_set:N = \l_review_filter,
-  filter .initial:n = -none-,
+\cs_new:Npn \review_sort_parse_star:w #1* {
+  \tl_set:Nx \l_op_same { > }
+  \tl_set:Nx \l_op_swap { < }
+  \str_set:Nn \l_tmpa_str { #1 }
 }
 
-% #1 group #2 filter #3 content
-\cs_new_protected:Nn \review_init_iterator:nnn {
-  \tl_set:Nn \rvGroup { #1 }
-  \tl_set:Nn \rvFilterName { #2 }
-  \tl_set_eq:Nc \rvFilterInfo { g__review_filter_info_#1_#2 }
+% #1 group #2 index #3 style
+\cs_new:Nn \review_sort:nNn {
+  \int_set:Nn \l_tmpb_int { \clist_count:c { g__review_sort_#3_#1 } }
+  \clist_sort:Nn #2 {
+    \int_zero:N \l_tmpa_int
+    \cs_set:Nn \review_sort_single: {
+      \int_incr:N \l_tmpa_int
+      \str_set:Nx \l_tmpa_str
+        { \clist_item:cn { g__review_sort_#3_#1 } { \l_tmpa_int } }
+      \str_if_in:NnTF \l_tmpa_str { * } {
+        \exp_after:wN \review_sort_parse_star:w \l_tmpa_str
+      }
+      {
+        \tl_set:Nx \l_op_same { < }
+        \tl_set:Nx \l_op_swap { > }
+      }
+      \exp_args:NnV \review_check_attr:nn { #1 } \l_tmpa_str
+
+      \cs_set_eq:Nc \l_tmpa_tl { g__review_data_#1_\l_tmpa_str _##1 }
+      \cs_set_eq:Nc \l_tmpb_tl { g__review_data_#1_\l_tmpa_str _##2 }
+
+      \prop_get:cVN { g__review_type_map_#1 } \l_tmpa_str \l_tmp_type
+      \str_if_eq:eeT { \l_tmp_type } { date }
+        { \str_set:Nn \l_tmp_type { str } }
+      \cs_set_eq:Nc \review_compare { \l_tmp_type _compare:nNnTF }
+
+      \exp_args:NnV
+      \review_compare { \l_tmpa_tl } \l_op_same { \l_tmpb_tl }
+        { \sort_return_same: }
+      {
+        \exp_args:NnV
+        \review_compare { \l_tmpa_tl } \l_op_swap { \l_tmpb_tl }
+          { \sort_return_swapped: }
+        {
+          \int_compare:nTF { \l_tmpa_int = \l_tmpb_int }
+            { \sort_return_same: }
+            { \review_sort_single: }
+        }
+      }
+    }
+    \review_sort_single:
+  }
+}
+
+% #1 style #2 group #3 filter #4 content
+\cs_new_protected:Nn \review_init_iterator:nnnn {
+  \tl_set:Nn \rvGroup { #2 }
+  \tl_set:Nx \rvFilterName { #3 }
+  \tl_set_eq:Nc \rvFilterInfo { g__review_filter_info_#2_#3 }
 
   \clist_clear_new:N \l_index
   %% run filters
   % ##1 index
   \cs_set:Nn \review_filter:n {
-    \seq_if_exist:cTF { g__review_filter_run_seq_#1_#2 } {
-      \seq_map_inline:cn { g__review_filter_run_seq_#1_#2 } {
+    \seq_if_exist:cTF { g__review_filter_run_seq_#2_#3 } {
+      \seq_map_inline:cn { g__review_filter_run_seq_#2_#3 } {
         \use:c { ####1 } { ##1 }
       }
       \exp_args:Nv
-      \bool_if:nT { g__review_filter_bool_tl_#1_#2 }
+      \bool_if:nT { g__review_filter_bool_tl_#2_#3 }
         { \clist_put_right:Nn \l_index { ##1 } }
     } { \clist_put_right:Nn \l_index { ##1 } }
   }
+  \int_step_function:nN { \review_get_counter:n { #2 } } \review_filter:n
+  \clist_if_empty:cF { g__review_sort_#1_#2 }
+    { \review_sort:nNn { #2 } \l_index { #1 } }
+
   % ##1 index
   \cs_set:Nn \review_iter:n {
     % ####1 attr
     \cs_set:Npn \rvuse ####1 {
-      \review_check_attr:nn { #1 } { ####1 }
-      \tl_set_eq:Nc \l_style_sep_code
-        { g__review_style_sep_\l_group_style _#1_####1 }
+      \review_check_attr:nn { #2 } { ####1 }
+      \clist_set_eq:Nc \l_style_sep_clist
+        { g__review_style_sep_#1_#2_####1 }
       \tl_set_eq:Nc \l_style_item_before_code
-        { g__review_style_item_before_\l_group_style _#1_####1 }
+        { g__review_style_item_before_#1_#2_####1 }
       \tl_set_eq:Nc \l_style_item_after_code
-        { g__review_style_item_after_\l_group_style _#1_####1 }
+        { g__review_style_item_after_#1_#2_####1 }
 
-      \prop_get:cnN { g__review_type_map_#1 } { ####1 } \l_tmp_type
+      \prop_get:cnN { g__review_type_map_#2 } { ####1 } \l_tmp_type
       \str_if_eq:eeT { \l_tmp_type } { date }
         { \tl_set:Nn \l_tmp_type { str } }
       \prg_set_conditional:Nnn \review_item_if_empty: { T, F, TF } {
         \use:c { \l_tmp_type _if_empty:cTF }
-          { g__review_data_#1_####1_##1 }
+          { g__review_data_#2_####1_##1 }
           { \prg_return_true: }
           { \prg_return_false: }
       }
@@ -535,13 +602,12 @@
       \cs_set_eq:NN \rvItemIfEmptyF\review_item_if_empty:F
       \cs_set_eq:NN \rvItemIfEmptyTF\review_item_if_empty:TF
 
-      \tl_use:c { g__review_style_before_\l_group_style _#1_####1 }
-      \review_use_data:nnn { #1 } { ####1 } { ##1 }
-      \tl_use:c { g__review_style_after_\l_group_style _#1_####1 }
+      \tl_use:c { g__review_style_before_#1_#2_####1 }
+      \review_use_data:nnn { #2 } { ####1 } { ##1 }
+      \tl_use:c { g__review_style_after_#1_#2_####1 }
     }
-    #3
+    #4
   }
-  \int_step_function:nN { \review_get_counter:n { #1 } } \review_filter:n
   \prg_set_conditional:Nnn \review_if_empty: { T, F, TF } {
     \clist_if_empty:NTF \l_index
       { \prg_return_true: }
@@ -551,18 +617,18 @@
   \cs_set_eq:NN \rvIfEmptyF\review_if_empty:F
   \cs_set_eq:NN \rvIfEmptyTF\review_if_empty:TF
 
-  \tl_use:c { g__review_style_before_\l_group_style _#1 }
+  \tl_use:c { g__review_style_before_#1_#2 }
   \clist_map_function:NN \l_index \review_iter:n
-  \tl_use:c { g__review_style_after_\l_group_style _#1 }
+  \tl_use:c { g__review_style_after_#1_#2 }
 }
 
 \cs_generate_variant:Nn \bool_set:Nn { Nx, Ne, Nf, No }
-% #1 opts #2 group #3 content
-\NewDocumentEnvironment { rvshow } { O{} m +b } {
-  \keys_set:nn { review/show } { #1 }
+% #1 style #2 group #3 content
+\NewDocumentEnvironment { rvshow } { O{default} m +b } {
   \review_check_group:n { #2 }
+  \tl_set_eq:Nc \l_review_filter { g__review_filter_#1_#2 }
   \review_check_filter:nn  { #2 } { \l_review_filter }
-  \review_init_iterator:nnn { #2 } { \l_review_filter } { #3 }
+  \review_init_iterator:nnnn { #1 } { #2 } { \l_review_filter } { #3 }
 } {}
 
 \endinput
