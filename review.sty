@@ -481,6 +481,8 @@
     sort .clist_gset:c = { g__review_sort_#1_#2 },
     before-code .tl_gset:c = { g__review_style_before_#1_#2 },
     before-code .initial:n = ,
+    item-code .tl_gset:c = { g__review_style_group_item_#1_#2 },
+    item-code .initial:n = ,
     after-code .tl_gset:c = { g__review_style_after_#1_#2 },
     after-code .initial:n = ,
   }
@@ -562,8 +564,8 @@
   }
 }
 
-% #1 style #2 group #3 filter #4 content
-\cs_new_protected:Nn \review_init_iterator:nnnn {
+% #1 style #2 group #3 filter
+\cs_new_protected:Nn \review_init_iterator:nnn {
   \tl_set:Nn \rvGroup { #2 }
   \tl_set:Nx \rvFilterName { #3 }
   \tl_set_eq:Nc \rvFilterInfo { g__review_filter_info_#2_#3 }
@@ -614,7 +616,7 @@
       \review_use_data:nnn { #2 } { ####1 } { ##1 }
       \tl_use:c { g__review_style_after_#1_#2_####1 }
     }
-    #4
+    \tl_use:c { g__review_style_group_item_#1_#2 }
   }
   \prg_set_conditional:Nnn \review_if_empty: { T, F, TF } {
     \clist_if_empty:NTF \l_index
@@ -630,13 +632,12 @@
   \tl_use:c { g__review_style_after_#1_#2 }
 }
 
-\cs_generate_variant:Nn \bool_set:Nn { Nx, Ne, Nf, No }
-% #1 style #2 group #3 content
-\NewDocumentEnvironment { rvshow } { O{default} m +b } {
+% #1 style #2 group
+\NewDocumentCommand { \rvshow } { m m } {
   \review_check_group:n { #2 }
   \tl_set_eq:Nc \l_review_filter { g__review_filter_#1_#2 }
   \review_check_filter:nn  { #2 } { \l_review_filter }
-  \review_init_iterator:nnnn { #1 } { #2 } { \l_review_filter } { #3 }
-} {}
+  \review_init_iterator:nnn { #1 } { #2 } { \l_review_filter }
+}
 
 \endinput
