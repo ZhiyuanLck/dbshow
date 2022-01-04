@@ -5,12 +5,12 @@
 
 The package provides four core functions:
 
-- data storage and display
-- data filtering
-- data sorting
-- data display
+1. data storage and display
+2. data filtering
+3. data sorting
+4. data display
 
-All data is saved once and then you can display these data with custom filters, orders and styles. The package adapts to make it convenient to review something, maybe the question you always answered incorrectly or some forgettable knowledge. But obviously, the package is much more powerful and extensible for more interesting tasks depending on the individual.
+All data is saved once and then you can display these data with custom filters, orders and styles. The package can be used, for example, to record and display something you'd like to review, maybe the question you always answered incorrectly or some forgettable knowledge. But obviously, the package is much more powerful and extensible for more interesting tasks depending on the individual.
 
 ## LICENSE
 
