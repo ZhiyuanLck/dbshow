@@ -8,6 +8,19 @@
 \usepackage{tabularray}
 \usepackage{xcolor}
 
+\IndexPrologue
+  {
+    \section*{Index}
+    \markboth{Index}{Index}
+    \addcontentsline{toc}{section}{Index}
+    The~italic~numbers~denote~the~pages~where~the~
+    corresponding~entry~is~described,~
+    numbers~underlined~point~to~the~definition,~
+    all~others~indicate~the~places~where~it~is~used.
+  }
+
+\newcommand\tikzmark[1]{\tikz \coordinate[overlay, remember picture] (#1);}
+
 \geometry{
   left=4.5cm,
   right=2cm,
@@ -106,11 +119,22 @@
 
 
 \begin{document}
-\title{\pkg{review}宏包\protect\footnote{\url{https://github.com/ZhiyuanLck/review}}}
+\title{
+  \pkg{review} 宏包
+  \protect\footnote{\url{https://github.com/ZhiyuanLck/review}}
+  \rlap{\makebox[4cm][r]{
+    \normalsize $\Longrightarrow$ \color{red}
+    \protect\hyperlink{en}{English Version}
+    \protect\hypertarget{zh}{}
+  }}
+}
 \author{\textit{李昌锴} \texttt{<lichangkai225\@qq.com>}}
 \date{2022年1月3日}
 \maketitle
+
+{\small
 \tableofcontents
+}
 \newpage
 
 \begin{documentation}
@@ -142,11 +166,11 @@
     逗号分隔的列表类型。默认值为空列表。
 \end{Description}
 
-\section{文档接口}
+\section{接口文档}
 \subsection{\cs{rvNewGroup}}
 \begin{function}{\rvNewGroup, \rvNewGroup*}
   \begin{syntax}
-    \cs{rvNewGroup} \oarg{base group} \{ \\
+    \cs{rvNewGroup} \oarg{base group} \marg{group} \{ \\
     ~~\meta{attr1} = \meta{type spec1}, \\
     ~~\meta{attr2} = \meta{type spec2}, \\
     ~~\ldots{} \\
@@ -183,14 +207,14 @@
   \end{note}
 
   下面是定义一个错题组的示例，|question| 和 |answer| 属性用来存储问题和答案，
-  |date| 属性存储日期，|info| 属性存储额外信息，|label| 存储题目标签。
+  |date| 属性存储日期，|info| 属性存储额外信息，|labels| 存储题目标签。
 \begin{verbatim}
   \rvNewGroup{ques}{
     question = tl,
     answer = tl,
     date = date,
     info = tl,
-    label = clist
+    labels = clist
   }
 \end{verbatim}
 
@@ -251,7 +275,7 @@
   opt = item-code,
   desc = {= \meta{item code}}
 }
-  该选项用来设置展示组中每个元素的代码。
+  该选项用来设置展示组中每个元素的代码。你可以使用 \cs{rvuse} 来展示属性的值。
 \end{option}
 
 \begin{option}{
@@ -276,15 +300,19 @@
   init = {,~\~}
 }
 \begin{Syntax}
-  \meta{attr}/sep = \meta{sep} \\
-  \meta{attr}/sep = \{\meta{sep between two}, \meta{sep between more than two}, \meta{sep between last two}\}
+  \meta{attr}/sep = \meta{separator} \\
+  \meta{attr}/sep = \{ \\
+  ~~\meta{separator between two}, \\
+  ~~\meta{separator between more than two}, \\
+  ~~\meta{separator between final two} \\
+  \}
 \end{Syntax}
 
   该选项只适用于类型为 |clist| 的属性，用来设置列表间元素的间隔。第一个版本接
-  受一个参数，将所有的元素间隔设置为 \meta{sep}。第二个版本接受逗号分隔的三个
-  参数，分别用来设置只有两个元素时的分隔符 \meta{sep between two}，超过两个元
-  素时的分隔符 \meta{sep between more than two}，和最后两个元素之间的分隔符
-  \meta{sep between last two}。
+  受一个参数，将所有的元素间隔设置为 \meta{separator}。第二个版本接受逗号分隔
+  的三个参数，分别用来设置只有两个元素时的分隔符 \meta{separator between two}，
+  超过两个元素时的分隔符 \meta{separator between more than two}，和最后两个元
+  素之间的分隔符 \meta{separator between final two}。
 
 \end{option}
 
@@ -341,21 +369,21 @@
   \begin{syntax}
     \cs{rvNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
     \cs{rvNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
-    \cs{rvNewConditional}  \marg{name} \marg{int/fp attr} \marg{rela} \\
-    \cs{rvNewConditional}* \marg{name} \marg{int/fp attr} \marg{rela} \\
-    \cs{rvNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex} \\
-    \cs{rvNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex} \\
+    \cs{rvNewConditional}  \marg{name} \marg{int/fp attr} \marg{relation} \\
+    \cs{rvNewConditional}* \marg{name} \marg{int/fp attr} \marg{relation} \\
+    \cs{rvNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \\
+    \cs{rvNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \\
     \cs{rvNewConditional}  \marg{name}  \marg{clist attr} \marg{val list} \\
     \cs{rvNewConditional}* \marg{name}  \marg{clist attr} \marg{val list} \\
-    \cs{rvNewConditional}  \marg{name}   \marg{date attr} \{ \meta{review points}\textbar\meta{date} \} \\
-    \cs{rvNewConditional}* \marg{name}   \marg{date attr} \marg{rela}
+    \cs{rvNewConditional}  \marg{name}   \marg{date attr} \{\meta{review points}\textbar\meta{date}\} \\
+    \cs{rvNewConditional}* \marg{name}   \marg{date attr} \marg{relation}
   \end{syntax}
 
   \cs{rvNewConditional} 用来定义名为 \meta{name} 的条件，\meta{attr} 指定条件
   所绑定的属性，在 \meta{cond spec} 中可以用 \cs{rval} 指代属性的值。
 \end{function}
 
-  对于类型为 |int| 和 |fp| 的属性，两个版本的定义是一致的，\meta{rela} 可
+  对于类型为 |int| 和 |fp| 的属性，两个版本的定义是一致的，\meta{relation} 可
   以是单个关系式，比如 |\rval > 3|，也可以是组合关系式，比如
   |\rval > 3 && \rval < 10.2|。支持的操作符有 |<, >, =, ==, !=, >=, <=, !|。
 
@@ -491,6 +519,7 @@
 \end{function}
 
 \begin{verbatim}
+  \rvNewGroup{group-test}{labels=clist}
   \rvNewGroupStyle{style-cond3}{group-test}{
     labels/item-before-code = {\rvClistItemIfEmptyF{*}},
     labels/item-after-code = {\rvClistItemIfEmptyF{*}},
@@ -499,16 +528,536 @@
 
 \subsection{常量}
 
-\begin{function}{\rvGroup, \rvFilterName, \rvFilterInfo}
+\begin{function}{\rvGroup, \rvFilterName, \rvFilterInfo, \rvIndex}
   \cs{rvGroup} 指代组名，\cs{rvFilterName} 指代过滤器名称，\cs{rvFilterInfo}
-  指代过滤器额外信息。
+  指代过滤器额外信息，\cs{rvIndex} 指代当前索引。
 \end{function}
+
+\section{错题本示例}
+见第 \ref{sec:example} 节。
+
+\title{
+  Package \pkg{review}
+  \protect\footnote{\url{https://github.com/ZhiyuanLck/review}}
+  \rlap{\makebox[4cm][r]{
+    \normalsize $\Longrightarrow$ \color{red}
+    \protect\hyperlink{zh}{中文版本}
+    \protect\hypertarget{en}{}
+  }}
+}
+\author{Li Changkai \texttt{<lichangkai225\@qq.com>}}
+\date{2022/01/03}
+\maketitle
+
+\section{Introduction}
+
+The initial motivation to write this package is that I want to write a
+template, which can collect questions you gave the wrong answer and can
+display those questions you would like to review by some conditionals, such as
+questions with certain label, questions you have answered uncorrectly for
+certain times or questions having not been reviewed for certain days. Well,
+maybe I also want to sort the questions with certain order. I used to put much
+effort into this specific goal and get a complicate template that is not easy
+to use and extend.
+
+Now the underlying logic is taken out from the old idea and is generized to
+adapt to more situations. The current package is more than reviewing something,
+but I still keep the "review" for its name.
+
+The package provides four core functions: data storage and use, data filtering,
+data sorting and data display. All data is saved once and then you can display
+these data with custom filters, orders and styles.
+
+The package constructs 6 types based on the internal typed of \pkg{expl3}:
+\begin{Description}[\texttt{clist}]
+  \item[\texttt{date}]
+    date based on \pkg{datetime2} in iso format, supports comparison,
+    sorting (converting to |str|), default \cs{Today}.
+  \item[\texttt{str}]
+    string，supports regex match and sorting, default empty.
+  \item[\texttt{tl}]
+    token list, supports regex match, default empty.
+  \item[\texttt{int}]
+    integer, supports comparison and sorting, default 0.
+  \item[\texttt{fp}]
+    floating point, supports comparison and sorting, default 0.
+  \item[\texttt{clist}]
+    comma list, default empty.
+\end{Description}
+
+\section{Interfaces}
+
+\subsection{\cs{rvNewGroup}}
+
+\begin{function}{\rvNewGroup, \rvNewGroup*}
+  \begin{syntax}
+    \cs{rvNewGroup} \oarg{base group} \marg{group} \{ \\
+    ~~\meta{attr1} = \meta{type spec1}, \\
+    ~~\meta{attr2} = \meta{type spec2}, \\
+    ~~\ldots{} \\
+    \} \\
+    \cs{rvNewGroup}* \marg{group} \{ \\
+    ~~\meta{attr1} = \meta{type spec1}, \\
+    ~~\meta{attr2} = \meta{type spec2}, \\
+    ~~\ldots{} \\
+    \} \\
+  \end{syntax}
+
+\end{function}
+
+Create a new group named \meta{group}, unstarred form provides the optional
+\meta{base group} from which current group inherit the attributes settings.
+The unstarred form always replace the old definition, while starred form
+appends the new options.
+
+\begin{Syntax}
+  \meta{attr} = \meta{type} \\
+  \meta{attr} = \meta{type}\textbar\meta{default}
+\end{Syntax}
+
+The first form defines the \meta{attr} as \meta{type}, and the second also
+sets the default value.
+
+\begin{note}
+  Every group has a default attribute |id| to store the index of the item.
+\end{note}
+
+The example below define a group named |ques|.
+\begin{verbatim}
+  \rvNewGroup{ques}{
+    question = tl, % store question
+    answer = tl,   % store corresponding answer
+    date = date,   % store the date when you were wrong
+    info = tl,     % store extra info
+    labels = clist % store question labels
+  }
+\end{verbatim}
+
+\subsection{\cs{rvNewGroupStyle} and Style Options}
+
+\begin{function}{\rvNewGroupStyle}
+  \begin{syntax}
+    \cs{rvNewGroupStyle} \oarg{base styles} \marg{style} \marg{group} \marg{opts}
+  \end{syntax}
+
+Define a new \meta{style} of \meta{group}. The style can inherit from a list
+of \meta{base styles} such as
+|\rvNewGroupStyle[base1, base2]{new-style}{ques}{}|.
+\end{function}
+
+\bigskip
+
+\begin{option}{opt=filter, desc={= \meta{filter}}, init=-none-}
+  Set the \meta{filter} defined by \cs{rvCombineFilters}.
+\end{option}
+
+\begin{option}{
+  opt = sort,
+  desc = {= \{ \meta{attr spec1}, \meta{attr spec2}, \ldots{} \}},
+}
+  Set sorting rules. Attributes of type |str, date, int, fp| is supported to
+  sort.  Multi-level sort is allowed. \meta{attr} represents for ascending
+  order, and \meta{attr}* represents for descending order. The example below
+  use four fields to determine the order of the records. It sorts on |level|
+  in descending order first and if two |levels| are same then sorts on |birth|
+  in ascending order and so on.
+\end{option}
+
+\begin{verbatim}
+  \rvNewGroup{sort-example}{
+    name = str,
+    birth = date,
+    level = int,
+    weight = fp,
+  }
+  \rvNewGroupStyle{sort-style}{sort-example}{
+    sort = { level*, birth, name, weight }
+  }
+\end{verbatim}
+
+\begin{option}{
+  opt = before-code,
+  desc = {= \meta{before code}}
+}
+  Set the \meta{before code} that is executed before displaying the group.
+\end{option}
+
+\begin{option}{
+  opt = after-code,
+  desc = {= \meta{after code}}
+}
+  Set the \meta{after code} that is executed after displaying the group.
+\end{option}
+
+\begin{option}{
+  opt = item-code,
+  desc = {= \meta{item code}}
+}
+  Set the code that show a single record. You can use \cs{rvuse} to display
+  certian attribute.
+\end{option}
+
+\begin{option}{
+  opt = {\meta{attr}/before-code},
+  desc = {= \meta{before code}}
+}
+  Set the \meta{before code} that is executed by \cs{rvuse} before displaying
+  certain attribute.
+\end{option}
+
+\begin{option}{
+  opt = {\meta{attr}/after-code},
+  desc = {= \meta{after code}}
+}
+  Set the \meta{after code} that is executed by \cs{rvuse} after displaying
+  certain attribute.
+\end{option}
+
+\begin{option}{
+  opt = {\meta{attr}/sep},
+  desc = {= \meta{sep spec}},
+  init = {,~\~}
+}
+\begin{Syntax}
+  \meta{attr}/separator = \meta{separator} \\
+  \meta{attr}/separator = \{ \\
+  ~~\meta{separator between two}, \\
+  ~~\meta{separator between more than two}, \\
+  ~~\meta{separator between final two} \\
+  \}
+\end{Syntax}
+
+  Only for attributes of type |clist|. Set the separator between clist items.
+  The first form accept one arguments and set the seperator as \meta{sep}. The
+  second form is more complicated, the following documentation is quoted from
+  \pkg{interface3}:
+  \begin{quote}
+    If the comma list has more than two items, the \meta{separator between
+    more than two} is placed between each pair of items except the last, for
+    which the \meta{separator between final two} is used. If the comma list
+    has exactly two items, then they are placed in the input stream separated
+    by the \meta{separator between two}. If the comma list has a single item,
+    it is placed in the input stream, and a comma list with no items produces
+    no output.
+  \end{quote}
+
+\end{option}
+
+\begin{option}{
+  opt = item-before-code,
+  desc = {= \meta{before code}}
+}
+  Only for attributes of type |clist|. Set the \meta{after code} that is
+  excuted before displaying the item of the comma list.
+\end{option}
+
+\begin{option}{
+  opt = item-after-code,
+  desc = {= \meta{after code}}
+}
+  Only for attributes of type |clist|. Set the \meta{after code} that is
+  excuted after displaying the item of the comma list.
+\end{option}
+
+\subsection{Use \cs{rvNewReviewPoints} to Define Review Points}
+
+\begin{function}{\rvNewReviewPoints}
+  \begin{syntax}
+    \cs{rvNewReviewPoints} \marg{name} \marg{points}
+  \end{syntax}
+
+  Define the new \meta{points} that is specially designed for reviewing
+  something. \meta{points} is a list of integers. Suppose you record the date
+  when you did not answer correctly and you plan to review every 2, 5 and 15
+  days. The following code give what you want.
+\begin{verbatim}
+  \rvNewReviewPoints{review-point}{2, 5, 15}            % define points
+  \begin{rvGroupFilters}
+    \rvNewConditional{cond1}{date}{review-point|\Today} % define conditional
+    \rvCombineConditionals{filter1}{cond1}              % define filter
+  \end{rvGroupFilters}
+  \rvNewGroupStyle{review-style}{ques}{filter=filter1}  % define style
+\end{verbatim}
+\end{function}
+
+\subsection{Define Filters inside \env{rvGroupFilters} Environment}
+
+\noindent\DescribeEnv{rvGroupFilters}
+\begin{Syntax}*
+  |\begin{rvGroupFilters}|\marg{group} \\
+  ~~\meta{code}
+  |\end{rvGroupFilters}| \\
+\end{Syntax}
+
+Filters are defined inside \env{rvGroupFilters} environment, inside which,
+\cs{rvNewConditional} is defined to declare conditionals and
+\cs{rvCombineConditionals} is defined to combine conditionals. Filters are
+independent in different groups, which means the same name of filters is
+allowed in different groups.
+
+\begin{function}{\rvNewConditional, \rvNewConditional*}
+  \begin{syntax}
+    \cs{rvNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
+    \cs{rvNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
+    \cs{rvNewConditional}  \marg{name} \marg{int/fp attr} \marg{relation} \\
+    \cs{rvNewConditional}* \marg{name} \marg{int/fp attr} \marg{relation} \\
+    \cs{rvNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \\
+    \cs{rvNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \\
+    \cs{rvNewConditional}  \marg{name}  \marg{clist attr} \marg{val list} \\
+    \cs{rvNewConditional}* \marg{name}  \marg{clist attr} \marg{val list} \\
+    \cs{rvNewConditional}  \marg{name}   \marg{date attr} \{\meta{review points}\textbar\meta{date}\} \\
+    \cs{rvNewConditional}* \marg{name}   \marg{date attr} \marg{relation}
+  \end{syntax}
+
+  Define the conditional named \meta{name} that binds to \meta{attr}. \cs{rval}
+  is replaced with the real value of the attribute inside the \meta{cond spec}.
+\end{function}
+
+For attributes of type |int| and |fp|, two forms have the same definition.
+\meta{relation} can be a single relation formula, such as |\rval > 3|, or the
+combination of several relation formulas, such as |\rval > 3 && \rval < 10.2|.
+Supported operators are |<, >, =, ==, !=, >=, <=, !|.
+
+For attribute of type |str| and |tl|, unstarred form matches any part while
+starred form matches the whole part with the \meta{regex expr}.
+\begin{verbatim}
+  \rvNewConditional{cond1}{str-attr}{abc}  % match abc, abcd, 1abc, =abc=, etc
+  \rvNewConditional*{cond2}{str-attr}{abc} % only match abc
+\end{verbatim}
+
+For attributes of type |clist|, the conditional defined by unstarred form is
+true if any item of \meta{val list} is in the comma list. While the
+conditional defined by starred form is true only if every item of \meta{val
+list} is in the comma list. As is showed below, for |cond1|, |a| is in
+|{a, b, d}| so |cond1| is true. While |c| is not in |{a, b, d}| so |cond2| is
+false.
+
+\begin{verbatim}
+  \rvNewConditional{cond1}{clist-attr}{a, b, c}  % {a, b, d} -> true
+  \rvNewConditional*{cond2}{clist-attr}{a, b, c} % {a, b, d} -> false
+\end{verbatim}
+
+For attributes of type |date|, unstarred form uses \meta{review points} to
+define the conditional and \meta{date} is the date to be compared. The starred
+form define the conditional with \textbf{single} relation formula. Supported
+operators are |<, >, =, ==, !=, >=, <=|.
+
+\begin{function}{\rvCombineConditionals}
+  \begin{syntax}
+    \cs{rvCombineConditionals} \marg{name} \marg{cond combination} \oarg{info}
+  \end{syntax}
+
+  Define the filter \meta{name}, which combine the conditionals and store the
+  extra \meta{info} into \cs{rvFilterInfo}. So you can write something as\\
+  \verb=\rvCombineConditionals{filter}{(cond1 && cond2) || !cond3}=.\\
+  Supported operators are \verb=&&, ||, !=. You can set the option \opt{filter}
+  to \meta{name} to apply the filter when you display the group.
+\end{function}
+
+\subsection{Store Data with \env{rvitem} Environment}
+
+\noindent\DescribeEnv{rvitem}
+\begin{Syntax}*
+  |\begin{rvitem}|\marg{group}[ \\
+  ~~\meta{attr1} = \meta{val1}, \\
+  ~~\meta{attr2} = \meta{val2}, \\
+  ~~\ldots{} \\
+  ] \\
+  ~~\meta{code} \\
+  |\end{rvitem}|
+\end{Syntax}
+
+The data are stored with \env{rvitem} environment in two ways. Smaller data
+can be stored in the option list and the bigger data can be stored by
+\cs{rvsave}, which will suppress the value set by the option list. An example
+code is showned below.
+
+\begin{verbatim}
+  \begin{rvitem}[date=2022-01-01, info=test]
+    \rvsave{question}{This is a test question.}
+    \rvsave{answer}{This is the correct answer of the question.}
+  \end{rvitem}
+\end{verbatim}
+
+\subsection{\cs{rvsave} and \cs{rvuse}}
+
+\begin{function}{\rvsave, \rvuse}
+  \begin{syntax}
+    \cs{rvsave} \marg{attr} \marg{data} \\
+    \cs{rvuse}  \marg{attr} \\
+  \end{syntax}
+
+  Date is stored with \cs{rvsave} and is displayed with \cs{rvuse}.  \cs{rvsave}
+  can be used only inside the \env{rvitem} environment and \cs{rvuse} can be
+  only used inside the option \opt{item-code}.
+\end{function}
+
+\subsection{Use \cs{rvshow} to Display the Group}
+
+\begin{function}{\rvshow}
+  \begin{syntax}
+    \cs{rvshow} \marg{style} \marg{group}
+  \end{syntax}
+
+  Show the \meta{group} with \meta{style}.
+\end{function}
+
+\subsection{Conditionals}
+
+\begin{function}{\rvIfEmptyT, \rvIfEmptyF, \rvIfEmptyTF}
+  \begin{syntax}
+    \cs{rvIfEmptyTF} \marg{true code} \marg{false code} \\
+    \cs{rvIfEmptyT} \marg{true code} \\
+    \cs{rvIfEmptyF} \marg{false code}
+  \end{syntax}
+
+  Test if the group is empty. The example below shows how to avoid an empty
+  list environment.
+\end{function}
+
+\begin{verbatim}
+  \rvNewGroupStyle{style-cond1}{group-test}{
+    before-code = {\rvIfEmptyF{\begin{enumerate}}},
+    after-code = {\rvIfEmptyF{\end{enumerate}}},
+    item-code = {\item \rvuse{attr-test}}
+  }
+\end{verbatim}
+
+\begin{function}{\rvItemIfEmptyT, \rvItemIfEmptyF, \rvItemIfEmptyTF}
+  \begin{syntax}
+    \cs{rvItemIfEmptyTF} \marg{true code} \marg{false code} \\
+    \cs{rvItemIfEmptyT} \marg{true code} \\
+    \cs{rvItemIfEmptyF} \marg{false code}
+  \end{syntax}
+
+  Test if the value of the attribute is empty. The example belows shows how to
+  surround the non-empty |text| attribute with the symbol *.
+\end{function}
+
+\begin{verbatim}
+  \rvNewGroupStyle{style-cond2}{group-test}{
+    text/before-code = {\rvItemIfEmptyF{*}},
+    text/after-code = {\rvItemIfEmptyF{*}},
+  }
+\end{verbatim}
+
+\begin{function}{\rvClistItemIfEmptyT, \rvClistItemIfEmptyF, \rvClistItemIfEmptyTF}
+  \begin{syntax}
+    \cs{rvClistItemIfEmptyTF} \marg{true code} \marg{false code} \\
+    \cs{rvClistItemIfEmptyT} \marg{true code} \\
+    \cs{rvClistItemIfEmptyF} \marg{false code}
+  \end{syntax}
+
+  Test if the item of comma list is empty. The example belows shows how to
+  surround the non-empty label with the symbol *.
+\end{function}
+
+\begin{verbatim}
+  \rvNewGroup{group-test}{labels=clist}
+  \rvNewGroupStyle{style-cond3}{group-test}{
+    labels/item-before-code = {\rvClistItemIfEmptyF{*}},
+    labels/item-after-code = {\rvClistItemIfEmptyF{*}},
+  }
+\end{verbatim}
+
+\subsection{Constants}
+
+\begin{function}{\rvGroup, \rvFilterName, \rvFilterInfo, \rvIndex}
+  \cs{rvGroup} represents for the group name, \cs{rvFilterName} represents for
+  the filter name, \cs{rvFilterInfo} represents for the extra info of the
+  filter and \cs{rvIndex} represents for the item index.
+\end{function}
+
+\section{Example of Flaw Sweeper Template}
+\label{sec:example}
+
+\begin{verbatim}
+  \documentclass{article}
+  \usepackage{review}
+  \usepackage{hyperref}
+
+  \NewDocumentCommand { \hyperlinktarget } { m m m } {%
+    \hyperlink{#1}{#3}\hypertarget{#2}{}
+  }
+
+  \rvNewGroup{ques}{
+    question=tl,
+    answer=tl,
+    date=date,
+    count=int,
+    labels=clist
+  }
+  \rvNewReviewPoints{review}{1, 3, 7, 15, 30, 60}
+
+  \begin{rvGroupFilters}{ques}
+    % which need reviewed today?
+    \rvNewConditional{date}{date}{review|2021-12-25}
+    \rvNewConditional{easy}{labels}{easy}
+    \rvNewConditional{not-easy}{labels}{mid, hard}
+    % questions you haven't answered correctly for more than 3 times!
+    \rvNewConditional{bad}{count}{\rval > 3}
+    \rvCombineConditionals{date}{date}[to be review today]
+    \rvCombineConditionals{easy}{easy}[easy questions]
+    \rvCombineConditionals{not-easy}{not-easy}[hard questions]
+    \rvCombineConditionals{bad}{bad}[bad questions]
+    \rvCombineConditionals{bad-easy}{bad && easy}[bad but easy questions]
+  \end{rvGroupFilters}
+
+  \newcounter{ques}
+
+  \rvNewGroupStyle{test}{ques} {
+    before-code = {\setcounter{ques}{0}\section{Test}},
+    item-code = {
+      \refstepcounter{ques}
+      \par\noindent\arabic{ques}. \rvuse{labels} \rvuse{date}\hfill \rvuse{count}
+      \par\noindent ques: \rvuse{question}
+      \par\noindent\hyperlinktarget
+        {answer_\rvIndex}{ques_\rvIndex}{go to answer}
+    },
+  }
+  \rvNewGroupStyle{check}{ques} {
+    before-code = {\setcounter{ques}{0}\section{Answer}},
+    item-code = {
+      \refstepcounter{ques}
+      \par\noindent\arabic{ques}. \rvuse{labels} \rvuse{date}\hfill \rvuse{count}
+      \par\noindent ques: \rvuse{question}
+      \par\noindent\hyperlinktarget
+        {ques_\rvIndex}{answer_\rvIndex}{back to question}
+      \par\noindent answer: \rvuse{answer}
+    },
+  }
+  \rvNewGroupStyle[test]{test-bad}{ques}{
+    filter=bad,
+    before-code = {\setcounter{ques}{0}\section{Bad Question}}
+  }
+
+  \AtEndDocument{
+    \rvshow{test}{ques}
+    \rvshow{test-bad}{ques}
+    \rvshow{check}{ques}
+  }
+
+  \begin{document}
+
+  \begin{rvitem}{ques}[date=2021-12-21, count=1, labels=easy]
+    \rvsave{question}{This is test question 1.}
+    \rvsave{answer}{This is test question 1.}
+  \end{rvitem}
+
+  \begin{rvitem}{ques}[date=2021-12-22, count=4, labels=easy]
+    \rvsave{question}{This is test question 2.}
+    \rvsave{answer}{This is test question 2.}
+  \end{rvitem}
+
+  \begin{rvitem}{ques}[date=2021-12-23, count=3, labels=hard]
+    \rvsave{question}{This is test question 3.}
+    \rvsave{answer}{This is test question 3.}
+  \end{rvitem}
+
+  \end{document}
+\end{verbatim}
 
 \end{documentation}
 
-% \title{Package \texttt{review}}
-% \author{Li Changkai \texttt{<lichangkai225\@qq.com>}}
-% \date{2022-01-03}
-% \maketitle
-% \section{测试}
+
 \end{document}
