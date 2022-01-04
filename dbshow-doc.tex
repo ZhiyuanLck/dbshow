@@ -33,7 +33,7 @@
   bookmarksopenlevel=3,
   pdfstartview=FitH,
   pdfinfo = {
-   Title = The package 'review' ,
+   Title = The package 'dbshow' ,
    Subject = A LaTeX package ,
    Author = Li Changkai
  }
@@ -120,7 +120,7 @@
 
 \begin{document}
 \title{
-  \pkg{review} 宏包
+  \pkg{dbshow} 宏包
   \protect\footnote{\url{https://github.com/ZhiyuanLck/review}}
   \rlap{\makebox[4cm][r]{
     \normalsize $\Longrightarrow$ \color{red}
@@ -141,12 +141,12 @@
 
 \section{引言}
 编写本宏包的动机来源于当前没有一个很好的错题本宏包，可以方便的根据各种条件对错
-题进行筛选、排序，然后以自定义的样式展示出来。\pkg{review} 宏包实现了四个核心
+题进行筛选、排序，然后以自定义的样式展示出来。\pkg{dbshow} 宏包实现了四个核心
 功能：数据存储和使用、数据筛选、数据排序、数据展示。
 
 数据只需要存储一次，就可以通过预定义的筛选、排序条件和样式展示部分或全部的数据。
 如上所述，本宏包其实实现了一个非常简单的数据库，复习错题的功能只是其中一个应用，
-和其他数据库宏包比如 \pkg{datatool} 相比，\pkg{review} 更专注于非图表类型的数
+和其他数据库宏包比如 \pkg{datatool} 相比，\pkg{dbshow} 更专注于非图表类型的数
 据展示。
 
 宏包基于 \pkg{expl3} 的基础类型构建了6种类型：
@@ -167,15 +167,15 @@
 \end{Description}
 
 \section{接口文档}
-\subsection{\cs{rvNewGroup}}
-\begin{function}{\rvNewGroup, \rvNewGroup*}
+\subsection{\cs{dbNewGroup}}
+\begin{function}{\dbNewGroup, \dbNewGroup*}
   \begin{syntax}
-    \cs{rvNewGroup} \oarg{base group} \marg{group} \{ \\
+    \cs{dbNewGroup} \oarg{base group} \marg{group} \{ \\
     ~~\meta{attr1} = \meta{type spec1}, \\
     ~~\meta{attr2} = \meta{type spec2}, \\
     ~~\ldots{} \\
     \} \\
-    \cs{rvNewGroup}* \marg{group} \{ \\
+    \cs{dbNewGroup}* \marg{group} \{ \\
     ~~\meta{attr1} = \meta{type spec1}, \\
     ~~\meta{attr2} = \meta{type spec2}, \\
     ~~\ldots{} \\
@@ -209,7 +209,7 @@
   下面是定义一个错题组的示例，|question| 和 |answer| 属性用来存储问题和答案，
   |date| 属性存储日期，|info| 属性存储额外信息，|labels| 存储题目标签。
 \begin{verbatim}
-  \rvNewGroup{ques}{
+  \dbNewGroup{ques}{
     question = tl,
     answer = tl,
     date = date,
@@ -218,21 +218,21 @@
   }
 \end{verbatim}
 
-\subsection{\cs{rvNewGroupStyle} 和样式选项}
+\subsection{\cs{dbNewGroupStyle} 和样式选项}
 
-\begin{function}{\rvNewGroupStyle}
+\begin{function}{\dbNewGroupStyle}
   \begin{syntax}
-    \cs{rvNewGroupStyle} \oarg{base styles} \marg{style} \marg{group} \marg{opts}
+    \cs{dbNewGroupStyle} \oarg{base styles} \marg{style} \marg{group} \marg{opts}
   \end{syntax}
 
   为 \meta{group} 定义一个新的样式 \meta{style}，该样式可以基于已有的样式
-  \meta{base styles}，比如 |\rvNewGroupStyle[base1, base2]{new-style}{ques}{}|。
+  \meta{base styles}，比如 |\dbNewGroupStyle[base1, base2]{new-style}{ques}{}|。
 \end{function}
 
 \bigskip
 
 \begin{option}{opt=filter, desc={= \meta{filter}}, init=-none-}
-  为当前样式设置由 \cs{rvCombineFilters} 所定义的过滤器
+  为当前样式设置由 \cs{dbCombineFilters} 所定义的过滤器
 \end{option}
 
 \begin{option}{
@@ -246,13 +246,13 @@
 \end{option}
 
 \begin{verbatim}
-  \rvNewGroup{sort-example}{
+  \dbNewGroup{sort-example}{
     name = str,
     birth = date,
     level = int,
     weight = fp,
   }
-  \rvNewGroupStyle{sort-style}{sort-example}{
+  \dbNewGroupStyle{sort-style}{sort-example}{
     sort = { level*, birth, name, weight }
   }
 \end{verbatim}
@@ -275,14 +275,14 @@
   opt = item-code,
   desc = {= \meta{item code}}
 }
-  该选项用来设置展示组中每个元素的代码。你可以使用 \cs{rvuse} 来展示属性的值。
+  该选项用来设置展示组中每个元素的代码。你可以使用 \cs{dbuse} 来展示属性的值。
 \end{option}
 
 \begin{option}{
   opt = {\meta{attr}/before-code},
   desc = {= \meta{before code}}
 }
-  该选项用来设置展示组中属性 \meta{attr} 对应数据之前需要执行的代码。\cs{rvuse}
+  该选项用来设置展示组中属性 \meta{attr} 对应数据之前需要执行的代码。\cs{dbuse}
   会在展示属性数据前执行此代码。
 \end{option}
 
@@ -290,7 +290,7 @@
   opt = {\meta{attr}/after-code},
   desc = {= \meta{after code}}
 }
-  该选项用来设置展示组中属性 \meta{attr} 对应数据之后需要执行的代码。\cs{rvuse}
+  该选项用来设置展示组中属性 \meta{attr} 对应数据之后需要执行的代码。\cs{dbuse}
   会在展示属性数据后执行此代码。
 \end{option}
 
@@ -332,138 +332,138 @@
   码。
 \end{option}
 
-\subsection{使用 \cs{rvNewReviewPoints} 定义复习点}
+\subsection{使用 \cs{dbNewReviewPoints} 定义复习点}
 
-\begin{function}{\rvNewReviewPoints}
+\begin{function}{\dbNewReviewPoints}
   \begin{syntax}
-    \cs{rvNewReviewPoints} \marg{name} \marg{points}
+    \cs{dbNewReviewPoints} \marg{name} \marg{points}
   \end{syntax}
 
   定义名为 \meta{name} 的复习点。这是专门为错题本或复习所定制的功能，
   \meta{points}是一系列整数，现在假设每道错题你都将写错时的日期记录在了 |date|
   属性中，并且你希望每隔2，5，15天复习一次。下面的代码给出了一个实现示例。
 \begin{verbatim}
-  \rvNewReviewPoints{review-point}{2, 5, 15}            % 定义复习点
-  \begin{rvGroupFilters}
-    \rvNewConditional{cond1}{date}{review-point|\Today} % 定义复习条件
-    \rvCombineConditionals{filter1}{cond1}              % 定义过滤器
-  \end{rvGroupFilters}
-  \rvNewGroupStyle{review-style}{ques}{filter=filter1}  % 定义展示样式
+  \dbNewReviewPoints{review-point}{2, 5, 15}            % 定义复习点
+  \begin{dbGroupFilters}
+    \dbNewConditional{cond1}{date}{review-point|\Today} % 定义复习条件
+    \dbCombineConditionals{filter1}{cond1}              % 定义过滤器
+  \end{dbGroupFilters}
+  \dbNewGroupStyle{review-style}{ques}{filter=filter1}  % 定义展示样式
 \end{verbatim}
 \end{function}
 
-\subsection{在 \env{rvGroupFilters} 环境中定义过滤器}
+\subsection{在 \env{dbGroupFilters} 环境中定义过滤器}
 
-\noindent\DescribeEnv{rvGroupFilters}
+\noindent\DescribeEnv{dbGroupFilters}
 \begin{Syntax}*
-  |\begin{rvGroupFilters}|\marg{group} \\
+  |\begin{dbGroupFilters}|\marg{group} \\
   ~~\meta{code}
-  |\end{rvGroupFilters}| \\
+  |\end{dbGroupFilters}| \\
 \end{Syntax}
 
-\env{rvGroupFilters}用来定义过滤器，此环境中定义了 \cs{rvNewConditional} 命令
-用来定义条件和 \cs{rvCombineConditionals} 命令用来组合条件定义过滤器。过滤器独
+\env{dbGroupFilters}用来定义过滤器，此环境中定义了 \cs{dbNewConditional} 命令
+用来定义条件和 \cs{dbCombineConditionals} 命令用来组合条件定义过滤器。过滤器独
 立于每个 \meta{group}，这意味着你可以在不同组中定义名称相同的过滤条件和过滤器。
 
-\begin{function}{\rvNewConditional, \rvNewConditional*}
+\begin{function}{\dbNewConditional, \dbNewConditional*}
   \begin{syntax}
-    \cs{rvNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
-    \cs{rvNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
-    \cs{rvNewConditional}  \marg{name} \marg{int/fp attr} \marg{relation} \\
-    \cs{rvNewConditional}* \marg{name} \marg{int/fp attr} \marg{relation} \\
-    \cs{rvNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \\
-    \cs{rvNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \\
-    \cs{rvNewConditional}  \marg{name}  \marg{clist attr} \marg{val list} \\
-    \cs{rvNewConditional}* \marg{name}  \marg{clist attr} \marg{val list} \\
-    \cs{rvNewConditional}  \marg{name}   \marg{date attr} \{\meta{review points}\textbar\meta{date}\} \\
-    \cs{rvNewConditional}* \marg{name}   \marg{date attr} \marg{relation}
+    \cs{dbNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
+    \cs{dbNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
+    \cs{dbNewConditional}  \marg{name} \marg{int/fp attr} \marg{relation} \\
+    \cs{dbNewConditional}* \marg{name} \marg{int/fp attr} \marg{relation} \\
+    \cs{dbNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \\
+    \cs{dbNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \\
+    \cs{dbNewConditional}  \marg{name}  \marg{clist attr} \marg{val list} \\
+    \cs{dbNewConditional}* \marg{name}  \marg{clist attr} \marg{val list} \\
+    \cs{dbNewConditional}  \marg{name}   \marg{date attr} \{\meta{review points}\textbar\meta{date}\} \\
+    \cs{dbNewConditional}* \marg{name}   \marg{date attr} \marg{relation}
   \end{syntax}
 
-  \cs{rvNewConditional} 用来定义名为 \meta{name} 的条件，\meta{attr} 指定条件
-  所绑定的属性，在 \meta{cond spec} 中可以用 \cs{rval} 指代属性的值。
+  \cs{dbNewConditional} 用来定义名为 \meta{name} 的条件，\meta{attr} 指定条件
+  所绑定的属性，在 \meta{cond spec} 中可以用 \cs{dbal} 指代属性的值。
 \end{function}
 
   对于类型为 |int| 和 |fp| 的属性，两个版本的定义是一致的，\meta{relation} 可
-  以是单个关系式，比如 |\rval > 3|，也可以是组合关系式，比如
-  |\rval > 3 && \rval < 10.2|。支持的操作符有 |<, >, =, ==, !=, >=, <=, !|。
+  以是单个关系式，比如 |\dbal > 3|，也可以是组合关系式，比如
+  |\dbal > 3 && \dbal < 10.2|。支持的操作符有 |<, >, =, ==, !=, >=, <=, !|。
 
   对于类型为 |str| 和 |tl| 的属性，\meta{regex} 为正则表达式，
-  \cs{rvNewConditional} 表示部分匹配，\cs{rvNewConditional*} 表示整体匹配。
+  \cs{dbNewConditional} 表示部分匹配，\cs{dbNewConditional*} 表示整体匹配。
 \begin{verbatim}
-  \rvNewConditional{cond1}{str-attr}{abc}  % 匹配 abc, abcd, 1abc, =abc= 等
-  \rvNewConditional*{cond2}{str-attr}{abc} % 只匹配 abc
+  \dbNewConditional{cond1}{str-attr}{abc}  % 匹配 abc, abcd, 1abc, =abc= 等
+  \dbNewConditional*{cond2}{str-attr}{abc} % 只匹配 abc
 \end{verbatim}
 
-  对于类型为 |clist| 的属性，使用 \cs{rvNewConditional} 定义的条件只要
+  对于类型为 |clist| 的属性，使用 \cs{dbNewConditional} 定义的条件只要
   \meta{val list} 中的任意一个元素在属性值（列表）中则条件成立；使用
-  \cs{rvNewConditional*} 定义的条件只有 \meta{val list} 中每一个值都在属性值
+  \cs{dbNewConditional*} 定义的条件只有 \meta{val list} 中每一个值都在属性值
   （列表）中条件才成立。
 
 \begin{verbatim}
-  \rvNewConditional{cond1}{clist-attr}{a, b, c}  % a, b, d 满足条件
-  \rvNewConditional*{cond2}{clist-attr}{a, b, c} % a, b, d 不满足条件
+  \dbNewConditional{cond1}{clist-attr}{a, b, c}  % a, b, d 满足条件
+  \dbNewConditional*{cond2}{clist-attr}{a, b, c} % a, b, d 不满足条件
 \end{verbatim}
 
-  对于类型为 |date| 的属性，\cs{rvNewConditional} 使用复习点来定义过滤条件，
-  \meta{review points} 是 \cs{rvNewReviewPoints} 定义的复习点，\meta{date} 是
-  用来比较的日期；\cs{rvNewConditional*} 使用\textbf{单个}关系式来定义过滤条件。
+  对于类型为 |date| 的属性，\cs{dbNewConditional} 使用复习点来定义过滤条件，
+  \meta{review points} 是 \cs{dbNewReviewPoints} 定义的复习点，\meta{date} 是
+  用来比较的日期；\cs{dbNewConditional*} 使用\textbf{单个}关系式来定义过滤条件。
   支持的操作符有 |<, >, =, ==, !=, >=, <=|。
 
-\begin{function}{\rvCombineConditionals}
+\begin{function}{\dbCombineConditionals}
   \begin{syntax}
-    \cs{rvCombineConditionals} \marg{name} \marg{cond combination} \oarg{info}
+    \cs{dbCombineConditionals} \marg{name} \marg{cond combination} \oarg{info}
   \end{syntax}
 
-  \cs{rvCombineConditionals} 定义名为 \marg{name} 的过滤器，并将
-  \cs{rvNewConditional} 定义的条件组合起来，比如
-  \verb=\rvCombineConditionals{filter}{(cond1 && cond2) || !cond3}=。
+  \cs{dbCombineConditionals} 定义名为 \marg{name} 的过滤器，并将
+  \cs{dbNewConditional} 定义的条件组合起来，比如
+  \verb=\dbCombineConditionals{filter}{(cond1 && cond2) || !cond3}=。
   \meta{cond combination} 中可以使用的关系操作符为 \verb=&&, ||, !=。
   可以将 \opt{filter} 选项设置为 \meta{name} 来应用过滤器。\meta{info} 为过滤
-  器的相关信息，在展示组的时候可以用 \cs{rvFilterInfo} 指代。
+  器的相关信息，在展示组的时候可以用 \cs{dbFilterInfo} 指代。
 \end{function}
 
-\subsection{使用 \env{rvitem} 环境存储数据}
+\subsection{使用 \env{dbitem} 环境存储数据}
 
-\noindent\DescribeEnv{rvitem}
+\noindent\DescribeEnv{dbitem}
 \begin{Syntax}*
-  |\begin{rvitem}|\marg{group}[ \\
+  |\begin{dbitem}|\marg{group}[ \\
   ~~\meta{attr1} = \meta{val1}, \\
   ~~\meta{attr2} = \meta{val2}, \\
   ~~\ldots{} \\
   ] \\
   ~~\meta{code} \\
-  |\end{rvitem}|
+  |\end{dbitem}|
 \end{Syntax}
 
-  \env{rvitem} 环境用来存储数据。有两种存储数据的方法，较短的数据可以在选项列
-  表中通过键值对设置值，较长的数据可以在 \meta{code} 中使用 \cs{rvsave} 存储。
-  \cs{rvsave}会覆盖选项中设置的值。没有设置的值将会被设置为全局默认值，下面给
+  \env{dbitem} 环境用来存储数据。有两种存储数据的方法，较短的数据可以在选项列
+  表中通过键值对设置值，较长的数据可以在 \meta{code} 中使用 \cs{dbsave} 存储。
+  \cs{dbsave}会覆盖选项中设置的值。没有设置的值将会被设置为全局默认值，下面给
   出一个存储示例。
 
 \begin{verbatim}
-  \begin{rvitem}[date=2022-01-01, info=测试]
-    \rvsave{question}{这是一个测试问题}
-    \rvsave{answer}{这是一个测试答案}
-  \end{rvitem}
+  \begin{dbitem}[date=2022-01-01, info=测试]
+    \dbsave{question}{这是一个测试问题}
+    \dbsave{answer}{这是一个测试答案}
+  \end{dbitem}
 \end{verbatim}
 
-\subsection{\cs{rvsave} 和 \cs{rvuse}}
+\subsection{\cs{dbsave} 和 \cs{dbuse}}
 
-\begin{function}{\rvsave, \rvuse}
+\begin{function}{\dbsave, \dbuse}
   \begin{syntax}
-    \cs{rvsave} \marg{attr} \marg{data} \\
-    \cs{rvuse}  \marg{attr} \\
+    \cs{dbsave} \marg{attr} \marg{data} \\
+    \cs{dbuse}  \marg{attr} \\
   \end{syntax}
 
-  \cs{rvsave} 用来存储数据，只能在 \env{item} 环境中使用。\cs{rvuse} 用来使用
+  \cs{dbsave} 用来存储数据，只能在 \env{item} 环境中使用。\cs{dbuse} 用来使用
   数据，只能在 \opt{item-code} 选项中使用。
 \end{function}
 
-\subsection{使用 \cs{rvshow} 展示组}
+\subsection{使用 \cs{dbshow} 展示组}
 
-\begin{function}{\rvshow}
+\begin{function}{\dbshow}
   \begin{syntax}
-    \cs{rvshow} \marg{style} \marg{group}
+    \cs{dbshow} \marg{style} \marg{group}
   \end{syntax}
 
   使用 \meta{style} 样式来展示 \meta{group}。
@@ -471,29 +471,29 @@
 
 \subsection{条件判别式}
 
-\begin{function}{\rvIfEmptyT, \rvIfEmptyF, \rvIfEmptyTF}
+\begin{function}{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
   \begin{syntax}
-    \cs{rvIfEmptyTF} \marg{true code} \marg{false code} \\
-    \cs{rvIfEmptyT} \marg{true code} \\
-    \cs{rvIfEmptyF} \marg{false code}
+    \cs{dbIfEmptyTF} \marg{true code} \marg{false code} \\
+    \cs{dbIfEmptyT} \marg{true code} \\
+    \cs{dbIfEmptyF} \marg{false code}
   \end{syntax}
 
   该判别式用来判断当前组是否为空。下面的示例展示了如何预防空的列表环境。
 \end{function}
 
 \begin{verbatim}
-  \rvNewGroupStyle{style-cond1}{group-test}{
-    before-code = {\rvIfEmptyF{\begin{enumerate}}},
-    after-code = {\rvIfEmptyF{\end{enumerate}}},
-    item-code = {\item \rvuse{attr-test}}
+  \dbNewGroupStyle{style-cond1}{group-test}{
+    before-code = {\dbIfEmptyF{\begin{enumerate}}},
+    after-code = {\dbIfEmptyF{\end{enumerate}}},
+    item-code = {\item \dbuse{attr-test}}
   }
 \end{verbatim}
 
-\begin{function}{\rvItemIfEmptyT, \rvItemIfEmptyF, \rvItemIfEmptyTF}
+\begin{function}{\dbItemIfEmptyT, \dbItemIfEmptyF, \dbItemIfEmptyTF}
   \begin{syntax}
-    \cs{rvItemIfEmptyTF} \marg{true code} \marg{false code} \\
-    \cs{rvItemIfEmptyT} \marg{true code} \\
-    \cs{rvItemIfEmptyF} \marg{false code}
+    \cs{dbItemIfEmptyTF} \marg{true code} \marg{false code} \\
+    \cs{dbItemIfEmptyT} \marg{true code} \\
+    \cs{dbItemIfEmptyF} \marg{false code}
   \end{syntax}
 
   该判别式用来判断当前元素是否为空。下面的示例展示了如何在展示 |group-test| 组
@@ -501,17 +501,17 @@
 \end{function}
 
 \begin{verbatim}
-  \rvNewGroupStyle{style-cond2}{group-test}{
-    text/before-code = {\rvItemIfEmptyF{*}},
-    text/after-code = {\rvItemIfEmptyF{*}},
+  \dbNewGroupStyle{style-cond2}{group-test}{
+    text/before-code = {\dbItemIfEmptyF{*}},
+    text/after-code = {\dbItemIfEmptyF{*}},
   }
 \end{verbatim}
 
-\begin{function}{\rvClistItemIfEmptyT, \rvClistItemIfEmptyF, \rvClistItemIfEmptyTF}
+\begin{function}{\dbClistItemIfEmptyT, \dbClistItemIfEmptyF, \dbClistItemIfEmptyTF}
   \begin{syntax}
-    \cs{rvClistItemIfEmptyTF} \marg{true code} \marg{false code} \\
-    \cs{rvClistItemIfEmptyT} \marg{true code} \\
-    \cs{rvClistItemIfEmptyF} \marg{false code}
+    \cs{dbClistItemIfEmptyTF} \marg{true code} \marg{false code} \\
+    \cs{dbClistItemIfEmptyT} \marg{true code} \\
+    \cs{dbClistItemIfEmptyF} \marg{false code}
   \end{syntax}
 
   该判别式用来判断列表属性中的元素是否为空。下面的示例展示了如何在展示 |group-test| 组
@@ -519,18 +519,18 @@
 \end{function}
 
 \begin{verbatim}
-  \rvNewGroup{group-test}{labels=clist}
-  \rvNewGroupStyle{style-cond3}{group-test}{
-    labels/item-before-code = {\rvClistItemIfEmptyF{*}},
-    labels/item-after-code = {\rvClistItemIfEmptyF{*}},
+  \dbNewGroup{group-test}{labels=clist}
+  \dbNewGroupStyle{style-cond3}{group-test}{
+    labels/item-before-code = {\dbClistItemIfEmptyF{*}},
+    labels/item-after-code = {\dbClistItemIfEmptyF{*}},
   }
 \end{verbatim}
 
 \subsection{常量}
 
-\begin{function}{\rvGroup, \rvFilterName, \rvFilterInfo, \rvIndex}
-  \cs{rvGroup} 指代组名，\cs{rvFilterName} 指代过滤器名称，\cs{rvFilterInfo}
-  指代过滤器额外信息，\cs{rvIndex} 指代当前索引。
+\begin{function}{\dbGroup, \dbFilterName, \dbFilterInfo, \dbIndex}
+  \cs{dbGroup} 指代组名，\cs{dbFilterName} 指代过滤器名称，\cs{dbFilterInfo}
+  指代过滤器额外信息，\cs{dbIndex} 指代当前索引。
 \end{function}
 
 \section{错题本示例}
@@ -587,16 +587,16 @@ The package constructs 6 types based on the internal typed of \pkg{expl3}:
 
 \section{Interfaces}
 
-\subsection{\cs{rvNewGroup}}
+\subsection{\cs{dbNewGroup}}
 
-\begin{function}{\rvNewGroup, \rvNewGroup*}
+\begin{function}{\dbNewGroup, \dbNewGroup*}
   \begin{syntax}
-    \cs{rvNewGroup} \oarg{base group} \marg{group} \{ \\
+    \cs{dbNewGroup} \oarg{base group} \marg{group} \{ \\
     ~~\meta{attr1} = \meta{type spec1}, \\
     ~~\meta{attr2} = \meta{type spec2}, \\
     ~~\ldots{} \\
     \} \\
-    \cs{rvNewGroup}* \marg{group} \{ \\
+    \cs{dbNewGroup}* \marg{group} \{ \\
     ~~\meta{attr1} = \meta{type spec1}, \\
     ~~\meta{attr2} = \meta{type spec2}, \\
     ~~\ldots{} \\
@@ -624,7 +624,7 @@ sets the default value.
 
 The example below define a group named |ques|.
 \begin{verbatim}
-  \rvNewGroup{ques}{
+  \dbNewGroup{ques}{
     question = tl, % store question
     answer = tl,   % store corresponding answer
     date = date,   % store the date when you were wrong
@@ -633,22 +633,22 @@ The example below define a group named |ques|.
   }
 \end{verbatim}
 
-\subsection{\cs{rvNewGroupStyle} and Style Options}
+\subsection{\cs{dbNewGroupStyle} and Style Options}
 
-\begin{function}{\rvNewGroupStyle}
+\begin{function}{\dbNewGroupStyle}
   \begin{syntax}
-    \cs{rvNewGroupStyle} \oarg{base styles} \marg{style} \marg{group} \marg{opts}
+    \cs{dbNewGroupStyle} \oarg{base styles} \marg{style} \marg{group} \marg{opts}
   \end{syntax}
 
 Define a new \meta{style} of \meta{group}. The style can inherit from a list
 of \meta{base styles} such as
-|\rvNewGroupStyle[base1, base2]{new-style}{ques}{}|.
+|\dbNewGroupStyle[base1, base2]{new-style}{ques}{}|.
 \end{function}
 
 \bigskip
 
 \begin{option}{opt=filter, desc={= \meta{filter}}, init=-none-}
-  Set the \meta{filter} defined by \cs{rvCombineFilters}.
+  Set the \meta{filter} defined by \cs{dbCombineFilters}.
 \end{option}
 
 \begin{option}{
@@ -664,13 +664,13 @@ of \meta{base styles} such as
 \end{option}
 
 \begin{verbatim}
-  \rvNewGroup{sort-example}{
+  \dbNewGroup{sort-example}{
     name = str,
     birth = date,
     level = int,
     weight = fp,
   }
-  \rvNewGroupStyle{sort-style}{sort-example}{
+  \dbNewGroupStyle{sort-style}{sort-example}{
     sort = { level*, birth, name, weight }
   }
 \end{verbatim}
@@ -693,7 +693,7 @@ of \meta{base styles} such as
   opt = item-code,
   desc = {= \meta{item code}}
 }
-  Set the code that show a single record. You can use \cs{rvuse} to display
+  Set the code that show a single record. You can use \cs{dbuse} to display
   certian attribute.
 \end{option}
 
@@ -701,7 +701,7 @@ of \meta{base styles} such as
   opt = {\meta{attr}/before-code},
   desc = {= \meta{before code}}
 }
-  Set the \meta{before code} that is executed by \cs{rvuse} before displaying
+  Set the \meta{before code} that is executed by \cs{dbuse} before displaying
   certain attribute.
 \end{option}
 
@@ -709,7 +709,7 @@ of \meta{base styles} such as
   opt = {\meta{attr}/after-code},
   desc = {= \meta{after code}}
 }
-  Set the \meta{after code} that is executed by \cs{rvuse} after displaying
+  Set the \meta{after code} that is executed by \cs{dbuse} after displaying
   certain attribute.
 \end{option}
 
@@ -759,11 +759,11 @@ of \meta{base styles} such as
   excuted after displaying the item of the comma list.
 \end{option}
 
-\subsection{Use \cs{rvNewReviewPoints} to Define Review Points}
+\subsection{Use \cs{dbNewReviewPoints} to Define Review Points}
 
-\begin{function}{\rvNewReviewPoints}
+\begin{function}{\dbNewReviewPoints}
   \begin{syntax}
-    \cs{rvNewReviewPoints} \marg{name} \marg{points}
+    \cs{dbNewReviewPoints} \marg{name} \marg{points}
   \end{syntax}
 
   Define the new \meta{points} that is specially designed for reviewing
@@ -771,58 +771,58 @@ of \meta{base styles} such as
   when you did not answer correctly and you plan to review every 2, 5 and 15
   days. The following code give what you want.
 \begin{verbatim}
-  \rvNewReviewPoints{review-point}{2, 5, 15}            % define points
-  \begin{rvGroupFilters}
-    \rvNewConditional{cond1}{date}{review-point|\Today} % define conditional
-    \rvCombineConditionals{filter1}{cond1}              % define filter
-  \end{rvGroupFilters}
-  \rvNewGroupStyle{review-style}{ques}{filter=filter1}  % define style
+  \dbNewReviewPoints{review-point}{2, 5, 15}            % define points
+  \begin{dbGroupFilters}
+    \dbNewConditional{cond1}{date}{review-point|\Today} % define conditional
+    \dbCombineConditionals{filter1}{cond1}              % define filter
+  \end{dbGroupFilters}
+  \dbNewGroupStyle{review-style}{ques}{filter=filter1}  % define style
 \end{verbatim}
 \end{function}
 
-\subsection{Define Filters inside \env{rvGroupFilters} Environment}
+\subsection{Define Filters inside \env{dbGroupFilters} Environment}
 
-\noindent\DescribeEnv{rvGroupFilters}
+\noindent\DescribeEnv{dbGroupFilters}
 \begin{Syntax}*
-  |\begin{rvGroupFilters}|\marg{group} \\
+  |\begin{dbGroupFilters}|\marg{group} \\
   ~~\meta{code}
-  |\end{rvGroupFilters}| \\
+  |\end{dbGroupFilters}| \\
 \end{Syntax}
 
-Filters are defined inside \env{rvGroupFilters} environment, inside which,
-\cs{rvNewConditional} is defined to declare conditionals and
-\cs{rvCombineConditionals} is defined to combine conditionals. Filters are
+Filters are defined inside \env{dbGroupFilters} environment, inside which,
+\cs{dbNewConditional} is defined to declare conditionals and
+\cs{dbCombineConditionals} is defined to combine conditionals. Filters are
 independent in different groups, which means the same name of filters is
 allowed in different groups.
 
-\begin{function}{\rvNewConditional, \rvNewConditional*}
+\begin{function}{\dbNewConditional, \dbNewConditional*}
   \begin{syntax}
-    \cs{rvNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
-    \cs{rvNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
-    \cs{rvNewConditional}  \marg{name} \marg{int/fp attr} \marg{relation} \\
-    \cs{rvNewConditional}* \marg{name} \marg{int/fp attr} \marg{relation} \\
-    \cs{rvNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \\
-    \cs{rvNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \\
-    \cs{rvNewConditional}  \marg{name}  \marg{clist attr} \marg{val list} \\
-    \cs{rvNewConditional}* \marg{name}  \marg{clist attr} \marg{val list} \\
-    \cs{rvNewConditional}  \marg{name}   \marg{date attr} \{\meta{review points}\textbar\meta{date}\} \\
-    \cs{rvNewConditional}* \marg{name}   \marg{date attr} \marg{relation}
+    \cs{dbNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
+    \cs{dbNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
+    \cs{dbNewConditional}  \marg{name} \marg{int/fp attr} \marg{relation} \\
+    \cs{dbNewConditional}* \marg{name} \marg{int/fp attr} \marg{relation} \\
+    \cs{dbNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \\
+    \cs{dbNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \\
+    \cs{dbNewConditional}  \marg{name}  \marg{clist attr} \marg{val list} \\
+    \cs{dbNewConditional}* \marg{name}  \marg{clist attr} \marg{val list} \\
+    \cs{dbNewConditional}  \marg{name}   \marg{date attr} \{\meta{review points}\textbar\meta{date}\} \\
+    \cs{dbNewConditional}* \marg{name}   \marg{date attr} \marg{relation}
   \end{syntax}
 
-  Define the conditional named \meta{name} that binds to \meta{attr}. \cs{rval}
+  Define the conditional named \meta{name} that binds to \meta{attr}. \cs{dbal}
   is replaced with the real value of the attribute inside the \meta{cond spec}.
 \end{function}
 
 For attributes of type |int| and |fp|, two forms have the same definition.
-\meta{relation} can be a single relation formula, such as |\rval > 3|, or the
-combination of several relation formulas, such as |\rval > 3 && \rval < 10.2|.
+\meta{relation} can be a single relation formula, such as |\dbal > 3|, or the
+combination of several relation formulas, such as |\dbal > 3 && \dbal < 10.2|.
 Supported operators are |<, >, =, ==, !=, >=, <=, !|.
 
 For attribute of type |str| and |tl|, unstarred form matches any part while
 starred form matches the whole part with the \meta{regex expr}.
 \begin{verbatim}
-  \rvNewConditional{cond1}{str-attr}{abc}  % match abc, abcd, 1abc, =abc=, etc
-  \rvNewConditional*{cond2}{str-attr}{abc} % only match abc
+  \dbNewConditional{cond1}{str-attr}{abc}  % match abc, abcd, 1abc, =abc=, etc
+  \dbNewConditional*{cond2}{str-attr}{abc} % only match abc
 \end{verbatim}
 
 For attributes of type |clist|, the conditional defined by unstarred form is
@@ -833,8 +833,8 @@ list} is in the comma list. As is showed below, for |cond1|, |a| is in
 false.
 
 \begin{verbatim}
-  \rvNewConditional{cond1}{clist-attr}{a, b, c}  % {a, b, d} -> true
-  \rvNewConditional*{cond2}{clist-attr}{a, b, c} % {a, b, d} -> false
+  \dbNewConditional{cond1}{clist-attr}{a, b, c}  % {a, b, d} -> true
+  \dbNewConditional*{cond2}{clist-attr}{a, b, c} % {a, b, d} -> false
 \end{verbatim}
 
 For attributes of type |date|, unstarred form uses \meta{review points} to
@@ -842,61 +842,61 @@ define the conditional and \meta{date} is the date to be compared. The starred
 form define the conditional with \textbf{single} relation formula. Supported
 operators are |<, >, =, ==, !=, >=, <=|.
 
-\begin{function}{\rvCombineConditionals}
+\begin{function}{\dbCombineConditionals}
   \begin{syntax}
-    \cs{rvCombineConditionals} \marg{name} \marg{cond combination} \oarg{info}
+    \cs{dbCombineConditionals} \marg{name} \marg{cond combination} \oarg{info}
   \end{syntax}
 
   Define the filter \meta{name}, which combine the conditionals and store the
-  extra \meta{info} into \cs{rvFilterInfo}. So you can write something as\\
-  \verb=\rvCombineConditionals{filter}{(cond1 && cond2) || !cond3}=.\\
+  extra \meta{info} into \cs{dbFilterInfo}. So you can write something as\\
+  \verb=\dbCombineConditionals{filter}{(cond1 && cond2) || !cond3}=.\\
   Supported operators are \verb=&&, ||, !=. You can set the option \opt{filter}
   to \meta{name} to apply the filter when you display the group.
 \end{function}
 
-\subsection{Store Data with \env{rvitem} Environment}
+\subsection{Store Data with \env{dbitem} Environment}
 
-\noindent\DescribeEnv{rvitem}
+\noindent\DescribeEnv{dbitem}
 \begin{Syntax}*
-  |\begin{rvitem}|\marg{group}[ \\
+  |\begin{dbitem}|\marg{group}[ \\
   ~~\meta{attr1} = \meta{val1}, \\
   ~~\meta{attr2} = \meta{val2}, \\
   ~~\ldots{} \\
   ] \\
   ~~\meta{code} \\
-  |\end{rvitem}|
+  |\end{dbitem}|
 \end{Syntax}
 
-The data are stored with \env{rvitem} environment in two ways. Smaller data
+The data are stored with \env{dbitem} environment in two ways. Smaller data
 can be stored in the option list and the bigger data can be stored by
-\cs{rvsave}, which will suppress the value set by the option list. An example
+\cs{dbsave}, which will suppress the value set by the option list. An example
 code is showned below.
 
 \begin{verbatim}
-  \begin{rvitem}[date=2022-01-01, info=test]
-    \rvsave{question}{This is a test question.}
-    \rvsave{answer}{This is the correct answer of the question.}
-  \end{rvitem}
+  \begin{dbitem}[date=2022-01-01, info=test]
+    \dbsave{question}{This is a test question.}
+    \dbsave{answer}{This is the correct answer of the question.}
+  \end{dbitem}
 \end{verbatim}
 
-\subsection{\cs{rvsave} and \cs{rvuse}}
+\subsection{\cs{dbsave} and \cs{dbuse}}
 
-\begin{function}{\rvsave, \rvuse}
+\begin{function}{\dbsave, \dbuse}
   \begin{syntax}
-    \cs{rvsave} \marg{attr} \marg{data} \\
-    \cs{rvuse}  \marg{attr} \\
+    \cs{dbsave} \marg{attr} \marg{data} \\
+    \cs{dbuse}  \marg{attr} \\
   \end{syntax}
 
-  Date is stored with \cs{rvsave} and is displayed with \cs{rvuse}.  \cs{rvsave}
-  can be used only inside the \env{rvitem} environment and \cs{rvuse} can be
+  Date is stored with \cs{dbsave} and is displayed with \cs{dbuse}.  \cs{dbsave}
+  can be used only inside the \env{dbitem} environment and \cs{dbuse} can be
   only used inside the option \opt{item-code}.
 \end{function}
 
-\subsection{Use \cs{rvshow} to Display the Group}
+\subsection{Use \cs{dbshow} to Display the Group}
 
-\begin{function}{\rvshow}
+\begin{function}{\dbshow}
   \begin{syntax}
-    \cs{rvshow} \marg{style} \marg{group}
+    \cs{dbshow} \marg{style} \marg{group}
   \end{syntax}
 
   Show the \meta{group} with \meta{style}.
@@ -904,11 +904,11 @@ code is showned below.
 
 \subsection{Conditionals}
 
-\begin{function}{\rvIfEmptyT, \rvIfEmptyF, \rvIfEmptyTF}
+\begin{function}{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
   \begin{syntax}
-    \cs{rvIfEmptyTF} \marg{true code} \marg{false code} \\
-    \cs{rvIfEmptyT} \marg{true code} \\
-    \cs{rvIfEmptyF} \marg{false code}
+    \cs{dbIfEmptyTF} \marg{true code} \marg{false code} \\
+    \cs{dbIfEmptyT} \marg{true code} \\
+    \cs{dbIfEmptyF} \marg{false code}
   \end{syntax}
 
   Test if the group is empty. The example below shows how to avoid an empty
@@ -916,18 +916,18 @@ code is showned below.
 \end{function}
 
 \begin{verbatim}
-  \rvNewGroupStyle{style-cond1}{group-test}{
-    before-code = {\rvIfEmptyF{\begin{enumerate}}},
-    after-code = {\rvIfEmptyF{\end{enumerate}}},
-    item-code = {\item \rvuse{attr-test}}
+  \dbNewGroupStyle{style-cond1}{group-test}{
+    before-code = {\dbIfEmptyF{\begin{enumerate}}},
+    after-code = {\dbIfEmptyF{\end{enumerate}}},
+    item-code = {\item \dbuse{attr-test}}
   }
 \end{verbatim}
 
-\begin{function}{\rvItemIfEmptyT, \rvItemIfEmptyF, \rvItemIfEmptyTF}
+\begin{function}{\dbItemIfEmptyT, \dbItemIfEmptyF, \dbItemIfEmptyTF}
   \begin{syntax}
-    \cs{rvItemIfEmptyTF} \marg{true code} \marg{false code} \\
-    \cs{rvItemIfEmptyT} \marg{true code} \\
-    \cs{rvItemIfEmptyF} \marg{false code}
+    \cs{dbItemIfEmptyTF} \marg{true code} \marg{false code} \\
+    \cs{dbItemIfEmptyT} \marg{true code} \\
+    \cs{dbItemIfEmptyF} \marg{false code}
   \end{syntax}
 
   Test if the value of the attribute is empty. The example belows shows how to
@@ -935,17 +935,17 @@ code is showned below.
 \end{function}
 
 \begin{verbatim}
-  \rvNewGroupStyle{style-cond2}{group-test}{
-    text/before-code = {\rvItemIfEmptyF{*}},
-    text/after-code = {\rvItemIfEmptyF{*}},
+  \dbNewGroupStyle{style-cond2}{group-test}{
+    text/before-code = {\dbItemIfEmptyF{*}},
+    text/after-code = {\dbItemIfEmptyF{*}},
   }
 \end{verbatim}
 
-\begin{function}{\rvClistItemIfEmptyT, \rvClistItemIfEmptyF, \rvClistItemIfEmptyTF}
+\begin{function}{\dbClistItemIfEmptyT, \dbClistItemIfEmptyF, \dbClistItemIfEmptyTF}
   \begin{syntax}
-    \cs{rvClistItemIfEmptyTF} \marg{true code} \marg{false code} \\
-    \cs{rvClistItemIfEmptyT} \marg{true code} \\
-    \cs{rvClistItemIfEmptyF} \marg{false code}
+    \cs{dbClistItemIfEmptyTF} \marg{true code} \marg{false code} \\
+    \cs{dbClistItemIfEmptyT} \marg{true code} \\
+    \cs{dbClistItemIfEmptyF} \marg{false code}
   \end{syntax}
 
   Test if the item of comma list is empty. The example belows shows how to
@@ -953,19 +953,19 @@ code is showned below.
 \end{function}
 
 \begin{verbatim}
-  \rvNewGroup{group-test}{labels=clist}
-  \rvNewGroupStyle{style-cond3}{group-test}{
-    labels/item-before-code = {\rvClistItemIfEmptyF{*}},
-    labels/item-after-code = {\rvClistItemIfEmptyF{*}},
+  \dbNewGroup{group-test}{labels=clist}
+  \dbNewGroupStyle{style-cond3}{group-test}{
+    labels/item-before-code = {\dbClistItemIfEmptyF{*}},
+    labels/item-after-code = {\dbClistItemIfEmptyF{*}},
   }
 \end{verbatim}
 
 \subsection{Constants}
 
-\begin{function}{\rvGroup, \rvFilterName, \rvFilterInfo, \rvIndex}
-  \cs{rvGroup} represents for the group name, \cs{rvFilterName} represents for
-  the filter name, \cs{rvFilterInfo} represents for the extra info of the
-  filter and \cs{rvIndex} represents for the item index.
+\begin{function}{\dbGroup, \dbFilterName, \dbFilterInfo, \dbIndex}
+  \cs{dbGroup} represents for the group name, \cs{dbFilterName} represents for
+  the filter name, \cs{dbFilterInfo} represents for the extra info of the
+  filter and \cs{dbIndex} represents for the item index.
 \end{function}
 
 \section{Example of Flaw Sweeper Template}
@@ -973,86 +973,86 @@ code is showned below.
 
 \begin{verbatim}
   \documentclass{article}
-  \usepackage{review}
+  \usepackage{dbshow}
   \usepackage{hyperref}
 
   \NewDocumentCommand { \hyperlinktarget } { m m m } {%
     \hyperlink{#1}{#3}\hypertarget{#2}{}
   }
 
-  \rvNewGroup{ques}{
+  \dbNewGroup{ques}{
     question=tl,
     answer=tl,
     date=date,
     count=int,
     labels=clist
   }
-  \rvNewReviewPoints{review}{1, 3, 7, 15, 30, 60}
+  \dbNewReviewPoints{review}{1, 3, 7, 15, 30, 60}
 
-  \begin{rvGroupFilters}{ques}
+  \begin{dbGroupFilters}{ques}
     % which need reviewed today?
-    \rvNewConditional{date}{date}{review|2021-12-25}
-    \rvNewConditional{easy}{labels}{easy}
-    \rvNewConditional{not-easy}{labels}{mid, hard}
+    \dbNewConditional{date}{date}{review|2021-12-25}
+    \dbNewConditional{easy}{labels}{easy}
+    \dbNewConditional{not-easy}{labels}{mid, hard}
     % questions you haven't answered correctly for more than 3 times!
-    \rvNewConditional{bad}{count}{\rval > 3}
-    \rvCombineConditionals{date}{date}[to be review today]
-    \rvCombineConditionals{easy}{easy}[easy questions]
-    \rvCombineConditionals{not-easy}{not-easy}[hard questions]
-    \rvCombineConditionals{bad}{bad}[bad questions]
-    \rvCombineConditionals{bad-easy}{bad && easy}[bad but easy questions]
-  \end{rvGroupFilters}
+    \dbNewConditional{bad}{count}{\dbal > 3}
+    \dbCombineConditionals{date}{date}[to be review today]
+    \dbCombineConditionals{easy}{easy}[easy questions]
+    \dbCombineConditionals{not-easy}{not-easy}[hard questions]
+    \dbCombineConditionals{bad}{bad}[bad questions]
+    \dbCombineConditionals{bad-easy}{bad && easy}[bad but easy questions]
+  \end{dbGroupFilters}
 
   \newcounter{ques}
 
-  \rvNewGroupStyle{test}{ques} {
+  \dbNewGroupStyle{test}{ques} {
     before-code = {\setcounter{ques}{0}\section{Test}},
     item-code = {
       \refstepcounter{ques}
-      \par\noindent\arabic{ques}. \rvuse{labels} \rvuse{date}\hfill \rvuse{count}
-      \par\noindent ques: \rvuse{question}
+      \par\noindent\arabic{ques}. \dbuse{labels} \dbuse{date}\hfill \dbuse{count}
+      \par\noindent ques: \dbuse{question}
       \par\noindent\hyperlinktarget
-        {answer_\rvIndex}{ques_\rvIndex}{go to answer}
+        {answer_\dbIndex}{ques_\dbIndex}{go to answer}
     },
   }
-  \rvNewGroupStyle{check}{ques} {
+  \dbNewGroupStyle{check}{ques} {
     before-code = {\setcounter{ques}{0}\section{Answer}},
     item-code = {
       \refstepcounter{ques}
-      \par\noindent\arabic{ques}. \rvuse{labels} \rvuse{date}\hfill \rvuse{count}
-      \par\noindent ques: \rvuse{question}
+      \par\noindent\arabic{ques}. \dbuse{labels} \dbuse{date}\hfill \dbuse{count}
+      \par\noindent ques: \dbuse{question}
       \par\noindent\hyperlinktarget
-        {ques_\rvIndex}{answer_\rvIndex}{back to question}
-      \par\noindent answer: \rvuse{answer}
+        {ques_\dbIndex}{answer_\dbIndex}{back to question}
+      \par\noindent answer: \dbuse{answer}
     },
   }
-  \rvNewGroupStyle[test]{test-bad}{ques}{
+  \dbNewGroupStyle[test]{test-bad}{ques}{
     filter=bad,
     before-code = {\setcounter{ques}{0}\section{Bad Question}}
   }
 
   \AtEndDocument{
-    \rvshow{test}{ques}
-    \rvshow{test-bad}{ques}
-    \rvshow{check}{ques}
+    \dbshow{test}{ques}
+    \dbshow{test-bad}{ques}
+    \dbshow{check}{ques}
   }
 
   \begin{document}
 
-  \begin{rvitem}{ques}[date=2021-12-21, count=1, labels=easy]
-    \rvsave{question}{This is test question 1.}
-    \rvsave{answer}{This is test question 1.}
-  \end{rvitem}
+  \begin{dbitem}{ques}[date=2021-12-21, count=1, labels=easy]
+    \dbsave{question}{This is test question 1.}
+    \dbsave{answer}{This is test question 1.}
+  \end{dbitem}
 
-  \begin{rvitem}{ques}[date=2021-12-22, count=4, labels=easy]
-    \rvsave{question}{This is test question 2.}
-    \rvsave{answer}{This is test question 2.}
-  \end{rvitem}
+  \begin{dbitem}{ques}[date=2021-12-22, count=4, labels=easy]
+    \dbsave{question}{This is test question 2.}
+    \dbsave{answer}{This is test question 2.}
+  \end{dbitem}
 
-  \begin{rvitem}{ques}[date=2021-12-23, count=3, labels=hard]
-    \rvsave{question}{This is test question 3.}
-    \rvsave{answer}{This is test question 3.}
-  \end{rvitem}
+  \begin{dbitem}{ques}[date=2021-12-23, count=3, labels=hard]
+    \dbsave{question}{This is test question 3.}
+    \dbsave{answer}{This is test question 3.}
+  \end{dbitem}
 
   \end{document}
 \end{verbatim}
