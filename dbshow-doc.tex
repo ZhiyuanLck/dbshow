@@ -83,7 +83,7 @@
   \end{itemize}
 } {  }
 
-\keys_define:nn { review/doc } {
+\keys_define:nn { dbshow/doc } {
   opt .tl_set:N = \l_opt_tl,
   desc .tl_set:N = \l_desc_tl,
   init .tl_set:N = \l_init_tl,
@@ -92,7 +92,7 @@
 
 \box_new:N \l__option_box
 \NewDocumentEnvironment { option } { m +b } {
-  \keys_set:nn { review/doc } { #1 }
+  \keys_set:nn { dbshow/doc } { #1 }
   \hbox_set:Nw \l__option_box
     \small \ttfamily
     \begin{minipage}[t]{\textwidth}
@@ -121,7 +121,7 @@
 \begin{document}
 \title{
   \pkg{dbshow} 宏包
-  \protect\footnote{\url{https://github.com/ZhiyuanLck/review}}
+  \protect\footnote{\url{https://github.com/ZhiyuanLck/dbshow}}
   \rlap{\makebox[4cm][r]{
     \normalsize $\Longrightarrow$ \color{red}
     \protect\hyperlink{en}{English Version}
@@ -167,15 +167,15 @@
 \end{Description}
 
 \section{接口文档}
-\subsection{\cs{dbNewGroup}}
-\begin{function}{\dbNewGroup, \dbNewGroup*}
+\subsection{\cs{dbNewDatabase}}
+\begin{function}{\dbNewDatabase, \dbNewDatabase*}
   \begin{syntax}
-    \cs{dbNewGroup} \oarg{base group} \marg{group} \{ \\
+    \cs{dbNewDatabase} \oarg{base database} \marg{database} \{ \\
     ~~\meta{attr1} = \meta{type spec1}, \\
     ~~\meta{attr2} = \meta{type spec2}, \\
     ~~\ldots{} \\
     \} \\
-    \cs{dbNewGroup}* \marg{group} \{ \\
+    \cs{dbNewDatabase}* \marg{database} \{ \\
     ~~\meta{attr1} = \meta{type spec1}, \\
     ~~\meta{attr2} = \meta{type spec2}, \\
     ~~\ldots{} \\
@@ -184,7 +184,7 @@
 
 \end{function}
 
-  新建一个组来存储数据，不带星号的版本可以指定一个组来继承属性设置，该版本总是
+  新建一个数据库，不带星号的版本可以指定一个数据库来继承其属性设置，该版本总是
   会舍弃掉之前的定义。
 
   带星号的版本不会舍弃之前已有的定义，而是将新的选项添加到后面。
@@ -203,13 +203,13 @@
   \end{tblr}
 
   \begin{note}
-    每个组都有一个默认的属性 |id| 用来存储数据的索引。
+    每个数据库都有一个默认的属性 |id| 用来存储数据的索引。
   \end{note}
 
-  下面是定义一个错题组的示例，|question| 和 |answer| 属性用来存储问题和答案，
-  |date| 属性存储日期，|info| 属性存储额外信息，|labels| 存储题目标签。
+  下面是定义一个错题数据库的示例，|question| 和 |answer| 属性用来存储问题和答
+  案，|date| 属性存储日期，|info| 属性存储额外信息，|labels| 存储题目标签。
 \begin{verbatim}
-  \dbNewGroup{ques}{
+  \dbNewDatabase{ques}{
     question = tl,
     answer = tl,
     date = date,
@@ -218,15 +218,15 @@
   }
 \end{verbatim}
 
-\subsection{\cs{dbNewGroupStyle} 和样式选项}
+\subsection{\cs{dbNewStyle} 和样式选项}
 
-\begin{function}{\dbNewGroupStyle}
+\begin{function}{\dbNewStyle}
   \begin{syntax}
-    \cs{dbNewGroupStyle} \oarg{base styles} \marg{style} \marg{group} \marg{opts}
+    \cs{dbNewStyle} \oarg{base styles} \marg{style} \marg{database} \marg{opts}
   \end{syntax}
 
-  为 \meta{group} 定义一个新的样式 \meta{style}，该样式可以基于已有的样式
-  \meta{base styles}，比如 |\dbNewGroupStyle[base1, base2]{new-style}{ques}{}|。
+  为 \meta{database} 定义一个新的样式 \meta{style}，该样式可以基于已有的样式
+  \meta{base styles}，比如 |\dbNewStyle[base1, base2]{new-style}{ques}{}|。
 \end{function}
 
 \bigskip
@@ -246,13 +246,13 @@
 \end{option}
 
 \begin{verbatim}
-  \dbNewGroup{sort-example}{
+  \dbNewDatabase{sort-example}{
     name = str,
     birth = date,
     level = int,
     weight = fp,
   }
-  \dbNewGroupStyle{sort-style}{sort-example}{
+  \dbNewStyle{sort-style}{sort-example}{
     sort = { level*, birth, name, weight }
   }
 \end{verbatim}
@@ -261,37 +261,38 @@
   opt = before-code,
   desc = {= \meta{before code}}
 }
-  该选项用来设置在展示整个组之前需要执行的代码。
+  该选项用来设置在展示整个数据库之前需要执行的代码。
 \end{option}
 
 \begin{option}{
   opt = after-code,
   desc = {= \meta{after code}}
 }
-  该选项用来设置在展示整个组之后需要执行的代码。
+  该选项用来设置在展示整个数据库之后需要执行的代码。
 \end{option}
 
 \begin{option}{
   opt = item-code,
   desc = {= \meta{item code}}
 }
-  该选项用来设置展示组中每个元素的代码。你可以使用 \cs{dbuse} 来展示属性的值。
+  该选项用来设置展示数据库中每条记录的代码。你可以使用 \cs{dbuse} 来展示属性的
+  值。
 \end{option}
 
 \begin{option}{
   opt = {\meta{attr}/before-code},
   desc = {= \meta{before code}}
 }
-  该选项用来设置展示组中属性 \meta{attr} 对应数据之前需要执行的代码。\cs{dbuse}
-  会在展示属性数据前执行此代码。
+  该选项用来设置展示数据库中属性 \meta{attr} 对应数据之前需要执行的代码。
+  \cs{dbuse} 会在展示属性数据前执行此代码。
 \end{option}
 
 \begin{option}{
   opt = {\meta{attr}/after-code},
   desc = {= \meta{after code}}
 }
-  该选项用来设置展示组中属性 \meta{attr} 对应数据之后需要执行的代码。\cs{dbuse}
-  会在展示属性数据后执行此代码。
+  该选项用来设置展示数据库中属性 \meta{attr} 对应数据之后需要执行的代码。
+  \cs{dbuse} 会在展示属性数据后执行此代码。
 \end{option}
 
 \begin{option}{
@@ -344,26 +345,26 @@
   属性中，并且你希望每隔2，5，15天复习一次。下面的代码给出了一个实现示例。
 \begin{verbatim}
   \dbNewReviewPoints{review-point}{2, 5, 15}            % 定义复习点
-  \begin{dbGroupFilters}
+  \begin{dbFilters}
     \dbNewConditional{cond1}{date}{review-point|\Today} % 定义复习条件
     \dbCombineConditionals{filter1}{cond1}              % 定义过滤器
-  \end{dbGroupFilters}
-  \dbNewGroupStyle{review-style}{ques}{filter=filter1}  % 定义展示样式
+  \end{dbFilters}
+  \dbNewStyle{review-style}{ques}{filter=filter1}       % 定义展示样式
 \end{verbatim}
 \end{function}
 
-\subsection{在 \env{dbGroupFilters} 环境中定义过滤器}
+\subsection{在 \env{dbFilters} 环境中定义过滤器}
 
-\noindent\DescribeEnv{dbGroupFilters}
+\noindent\DescribeEnv{dbFilters}
 \begin{Syntax}*
-  |\begin{dbGroupFilters}|\marg{group} \\
+  |\begin{dbFilters}|\marg{database} \\
   ~~\meta{code}
-  |\end{dbGroupFilters}| \\
+  |\end{dbFilters}| \\
 \end{Syntax}
 
-\env{dbGroupFilters}用来定义过滤器，此环境中定义了 \cs{dbNewConditional} 命令
-用来定义条件和 \cs{dbCombineConditionals} 命令用来组合条件定义过滤器。过滤器独
-立于每个 \meta{group}，这意味着你可以在不同组中定义名称相同的过滤条件和过滤器。
+\env{dbFilters}用来定义过滤器，此环境中定义了 \cs{dbNewConditional} 命令用来定
+义条件和 \cs{dbCombineConditionals} 命令用来组合条件定义过滤器。过滤器独立于每
+个 \meta{database}，这意味着你可以在不同数据库中定义名称相同的过滤条件和过滤器。
 
 \begin{function}{\dbNewConditional, \dbNewConditional*}
   \begin{syntax}
@@ -380,12 +381,12 @@
   \end{syntax}
 
   \cs{dbNewConditional} 用来定义名为 \meta{name} 的条件，\meta{attr} 指定条件
-  所绑定的属性，在 \meta{cond spec} 中可以用 \cs{dbal} 指代属性的值。
+  所绑定的属性，在 \meta{cond spec} 中可以用 \cs{dbval} 指代属性的值。
 \end{function}
 
   对于类型为 |int| 和 |fp| 的属性，两个版本的定义是一致的，\meta{relation} 可
-  以是单个关系式，比如 |\dbal > 3|，也可以是组合关系式，比如
-  |\dbal > 3 && \dbal < 10.2|。支持的操作符有 |<, >, =, ==, !=, >=, <=, !|。
+  以是单个关系式，比如 |\dbval > 3|，也可以是组合关系式，比如
+  |\dbval > 3 && \dbval < 10.2|。支持的操作符有 |<, >, =, ==, !=, >=, <=, !|。
 
   对于类型为 |str| 和 |tl| 的属性，\meta{regex} 为正则表达式，
   \cs{dbNewConditional} 表示部分匹配，\cs{dbNewConditional*} 表示整体匹配。
@@ -419,14 +420,14 @@
   \verb=\dbCombineConditionals{filter}{(cond1 && cond2) || !cond3}=。
   \meta{cond combination} 中可以使用的关系操作符为 \verb=&&, ||, !=。
   可以将 \opt{filter} 选项设置为 \meta{name} 来应用过滤器。\meta{info} 为过滤
-  器的相关信息，在展示组的时候可以用 \cs{dbFilterInfo} 指代。
+  器的相关信息，在展示数据库的时候可以用 \cs{dbFilterInfo} 指代。
 \end{function}
 
 \subsection{使用 \env{dbitem} 环境存储数据}
 
 \noindent\DescribeEnv{dbitem}
 \begin{Syntax}*
-  |\begin{dbitem}|\marg{group}[ \\
+  |\begin{dbitem}|\marg{database}[ \\
   ~~\meta{attr1} = \meta{val1}, \\
   ~~\meta{attr2} = \meta{val2}, \\
   ~~\ldots{} \\
@@ -459,14 +460,14 @@
   数据，只能在 \opt{item-code} 选项中使用。
 \end{function}
 
-\subsection{使用 \cs{dbshow} 展示组}
+\subsection{使用 \cs{dbshow} 展示数据库}
 
 \begin{function}{\dbshow}
   \begin{syntax}
-    \cs{dbshow} \marg{style} \marg{group}
+    \cs{dbshow} \marg{style} \marg{database}
   \end{syntax}
 
-  使用 \meta{style} 样式来展示 \meta{group}。
+  使用 \meta{style} 样式来展示 \meta{database}。
 \end{function}
 
 \subsection{条件判别式}
@@ -478,11 +479,11 @@
     \cs{dbIfEmptyF} \marg{false code}
   \end{syntax}
 
-  该判别式用来判断当前组是否为空。下面的示例展示了如何预防空的列表环境。
+  该判别式用来判断当前数据库是否为空。下面的示例展示了如何预防空的列表环境。
 \end{function}
 
 \begin{verbatim}
-  \dbNewGroupStyle{style-cond1}{group-test}{
+  \dbNewStyle{style-cond1}{database-test}{
     before-code = {\dbIfEmptyF{\begin{enumerate}}},
     after-code = {\dbIfEmptyF{\end{enumerate}}},
     item-code = {\item \dbuse{attr-test}}
@@ -496,12 +497,12 @@
     \cs{dbItemIfEmptyF} \marg{false code}
   \end{syntax}
 
-  该判别式用来判断当前元素是否为空。下面的示例展示了如何在展示 |group-test| 组
-  中 |text| 属性的元素时在元素非空的时候前后都加上 |*|。
+  该判别式用来判断当前元素是否为空。下面的示例展示了如何在展示 |database-test|
+  数据库中 |text| 属性的元素时在元素非空的时候前后都加上 |*|。
 \end{function}
 
 \begin{verbatim}
-  \dbNewGroupStyle{style-cond2}{group-test}{
+  \dbNewStyle{style-cond2}{database-test}{
     text/before-code = {\dbItemIfEmptyF{*}},
     text/after-code = {\dbItemIfEmptyF{*}},
   }
@@ -514,13 +515,14 @@
     \cs{dbClistItemIfEmptyF} \marg{false code}
   \end{syntax}
 
-  该判别式用来判断列表属性中的元素是否为空。下面的示例展示了如何在展示 |group-test| 组
-  中 |labels| 属性（标签列表）的元素时在标签非空的时候前后都加上 |*|。
+  该判别式用来判断列表属性中的元素是否为空。下面的示例展示了如何在展示
+  |database-test| 数据库中 |labels| 属性（标签列表）的元素时在标签非空的时候前
+  后都加上 |*|。
 \end{function}
 
 \begin{verbatim}
-  \dbNewGroup{group-test}{labels=clist}
-  \dbNewGroupStyle{style-cond3}{group-test}{
+  \dbNewDatabase{database-test}{labels=clist}
+  \dbNewStyle{style-cond3}{database-test}{
     labels/item-before-code = {\dbClistItemIfEmptyF{*}},
     labels/item-after-code = {\dbClistItemIfEmptyF{*}},
   }
@@ -528,17 +530,17 @@
 
 \subsection{常量}
 
-\begin{function}{\dbGroup, \dbFilterName, \dbFilterInfo, \dbIndex}
-  \cs{dbGroup} 指代组名，\cs{dbFilterName} 指代过滤器名称，\cs{dbFilterInfo}
-  指代过滤器额外信息，\cs{dbIndex} 指代当前索引。
+\begin{function}{\dbDatabase, \dbFilterName, \dbFilterInfo, \dbIndex}
+  \cs{dbDatabase} 指代数据库名，\cs{dbFilterName} 指代过滤器名称，
+  \cs{dbFilterInfo} 指代过滤器额外信息，\cs{dbIndex} 指代当前索引。
 \end{function}
 
 \section{错题本示例}
 见第 \ref{sec:example} 节。
 
 \title{
-  Package \pkg{review}
-  \protect\footnote{\url{https://github.com/ZhiyuanLck/review}}
+  Package \pkg{dbshow}
+  \protect\footnote{\url{https://github.com/ZhiyuanLck/dbshow}}
   \rlap{\makebox[4cm][r]{
     \normalsize $\Longrightarrow$ \color{red}
     \protect\hyperlink{zh}{中文版本}
@@ -555,14 +557,8 @@ The initial motivation to write this package is that I want to write a
 template, which can collect questions you gave the wrong answer and can
 display those questions you would like to review by some conditionals, such as
 questions with certain label, questions you have answered uncorrectly for
-certain times or questions having not been reviewed for certain days. Well,
-maybe I also want to sort the questions with certain order. I used to put much
-effort into this specific goal and get a complicate template that is not easy
-to use and extend.
-
-Now the underlying logic is taken out from the old idea and is generized to
-adapt to more situations. The current package is more than reviewing something,
-but I still keep the "review" for its name.
+certain times or questions having not been reviewed for certain days. So this
+package provides a database to do such thing.
 
 The package provides four core functions: data storage and display, data
 filtering, data sorting and data display. All data is saved once and then you
@@ -587,16 +583,16 @@ The package constructs 6 types based on the internal typed of \pkg{expl3}:
 
 \section{Interfaces}
 
-\subsection{\cs{dbNewGroup}}
+\subsection{\cs{dbNewDatabase}}
 
-\begin{function}{\dbNewGroup, \dbNewGroup*}
+\begin{function}{\dbNewDatabase, \dbNewDatabase*}
   \begin{syntax}
-    \cs{dbNewGroup} \oarg{base group} \marg{group} \{ \\
+    \cs{dbNewDatabase} \oarg{base database} \marg{database} \{ \\
     ~~\meta{attr1} = \meta{type spec1}, \\
     ~~\meta{attr2} = \meta{type spec2}, \\
     ~~\ldots{} \\
     \} \\
-    \cs{dbNewGroup}* \marg{group} \{ \\
+    \cs{dbNewDatabase}* \marg{database} \{ \\
     ~~\meta{attr1} = \meta{type spec1}, \\
     ~~\meta{attr2} = \meta{type spec2}, \\
     ~~\ldots{} \\
@@ -605,8 +601,8 @@ The package constructs 6 types based on the internal typed of \pkg{expl3}:
 
 \end{function}
 
-Create a new group named \meta{group}, unstarred form provides the optional
-\meta{base group} from which current group inherit the attributes settings.
+Create a new database named \meta{database}, unstarred form provides the optional
+\meta{base database} from which current database inherit the attributes settings.
 The unstarred form always replace the old definition, while starred form
 appends the new options.
 
@@ -619,12 +615,12 @@ The first form defines the \meta{attr} as \meta{type}, and the second also
 sets the default value.
 
 \begin{note}
-  Every group has a default attribute |id| to store the index of the item.
+  Every database has a default attribute |id| to store the index of the item.
 \end{note}
 
-The example below define a group named |ques|.
+The example below define a database named |ques|.
 \begin{verbatim}
-  \dbNewGroup{ques}{
+  \dbNewDatabase{ques}{
     question = tl, % store question
     answer = tl,   % store corresponding answer
     date = date,   % store the date when you were wrong
@@ -633,16 +629,16 @@ The example below define a group named |ques|.
   }
 \end{verbatim}
 
-\subsection{\cs{dbNewGroupStyle} and Style Options}
+\subsection{\cs{dbNewStyle} and Style Options}
 
-\begin{function}{\dbNewGroupStyle}
+\begin{function}{\dbNewStyle}
   \begin{syntax}
-    \cs{dbNewGroupStyle} \oarg{base styles} \marg{style} \marg{group} \marg{opts}
+    \cs{dbNewStyle} \oarg{base styles} \marg{style} \marg{database} \marg{opts}
   \end{syntax}
 
-Define a new \meta{style} of \meta{group}. The style can inherit from a list
-of \meta{base styles} such as
-|\dbNewGroupStyle[base1, base2]{new-style}{ques}{}|.
+Define a new \meta{style} that binds to \meta{database}. The style can inherit
+from a list of \meta{base styles} such as
+|\dbNewStyle[base1, base2]{new-style}{ques}{}|.
 \end{function}
 
 \bigskip
@@ -664,13 +660,13 @@ of \meta{base styles} such as
 \end{option}
 
 \begin{verbatim}
-  \dbNewGroup{sort-example}{
+  \dbNewDatabase{sort-example}{
     name = str,
     birth = date,
     level = int,
     weight = fp,
   }
-  \dbNewGroupStyle{sort-style}{sort-example}{
+  \dbNewStyle{sort-style}{sort-example}{
     sort = { level*, birth, name, weight }
   }
 \end{verbatim}
@@ -679,14 +675,14 @@ of \meta{base styles} such as
   opt = before-code,
   desc = {= \meta{before code}}
 }
-  Set the \meta{before code} that is executed before displaying the group.
+  Set the \meta{before code} that is executed before displaying the database.
 \end{option}
 
 \begin{option}{
   opt = after-code,
   desc = {= \meta{after code}}
 }
-  Set the \meta{after code} that is executed after displaying the group.
+  Set the \meta{after code} that is executed after displaying the database.
 \end{option}
 
 \begin{option}{
@@ -772,28 +768,28 @@ of \meta{base styles} such as
   days. The following code give what you want.
 \begin{verbatim}
   \dbNewReviewPoints{review-point}{2, 5, 15}            % define points
-  \begin{dbGroupFilters}
+  \begin{dbFilters}
     \dbNewConditional{cond1}{date}{review-point|\Today} % define conditional
     \dbCombineConditionals{filter1}{cond1}              % define filter
-  \end{dbGroupFilters}
-  \dbNewGroupStyle{review-style}{ques}{filter=filter1}  % define style
+  \end{dbFilters}
+  \dbNewStyle{review-style}{ques}{filter=filter1}       % define style
 \end{verbatim}
 \end{function}
 
-\subsection{Define Filters inside \env{dbGroupFilters} Environment}
+\subsection{Define Filters inside \env{dbFilters} Environment}
 
-\noindent\DescribeEnv{dbGroupFilters}
+\noindent\DescribeEnv{dbFilters}
 \begin{Syntax}*
-  |\begin{dbGroupFilters}|\marg{group} \\
+  |\begin{dbFilters}|\marg{database} \\
   ~~\meta{code}
-  |\end{dbGroupFilters}| \\
+  |\end{dbFilters}| \\
 \end{Syntax}
 
-Filters are defined inside \env{dbGroupFilters} environment, inside which,
+Filters are defined inside \env{dbFilters} environment, inside which,
 \cs{dbNewConditional} is defined to declare conditionals and
 \cs{dbCombineConditionals} is defined to combine conditionals. Filters are
-independent in different groups, which means the same name of filters is
-allowed in different groups.
+independent in different databases, which means the same name of filters is
+allowed in different databases.
 
 \begin{function}{\dbNewConditional, \dbNewConditional*}
   \begin{syntax}
@@ -809,13 +805,13 @@ allowed in different groups.
     \cs{dbNewConditional}* \marg{name}   \marg{date attr} \marg{relation}
   \end{syntax}
 
-  Define the conditional named \meta{name} that binds to \meta{attr}. \cs{dbal}
+  Define the conditional named \meta{name} that binds to \meta{attr}. \cs{dbval}
   is replaced with the real value of the attribute inside the \meta{cond spec}.
 \end{function}
 
 For attributes of type |int| and |fp|, two forms have the same definition.
-\meta{relation} can be a single relation formula, such as |\dbal > 3|, or the
-combination of several relation formulas, such as |\dbal > 3 && \dbal < 10.2|.
+\meta{relation} can be a single relation formula, such as |\dbval > 3|, or the
+combination of several relation formulas, such as |\dbval > 3 && \dbval < 10.2|.
 Supported operators are |<, >, =, ==, !=, >=, <=, !|.
 
 For attribute of type |str| and |tl|, unstarred form matches any part while
@@ -851,14 +847,14 @@ operators are |<, >, =, ==, !=, >=, <=|.
   extra \meta{info} into \cs{dbFilterInfo}. So you can write something as\\
   \verb=\dbCombineConditionals{filter}{(cond1 && cond2) || !cond3}=.\\
   Supported operators are \verb=&&, ||, !=. You can set the option \opt{filter}
-  to \meta{name} to apply the filter when you display the group.
+  to \meta{name} to apply the filter when you display the database.
 \end{function}
 
 \subsection{Store Data with \env{dbitem} Environment}
 
 \noindent\DescribeEnv{dbitem}
 \begin{Syntax}*
-  |\begin{dbitem}|\marg{group}[ \\
+  |\begin{dbitem}|\marg{database}[ \\
   ~~\meta{attr1} = \meta{val1}, \\
   ~~\meta{attr2} = \meta{val2}, \\
   ~~\ldots{} \\
@@ -892,14 +888,14 @@ code is showned below.
   only used inside the option \opt{item-code}.
 \end{function}
 
-\subsection{Use \cs{dbshow} to Display the Group}
+\subsection{Use \cs{dbshow} to Display the Database}
 
 \begin{function}{\dbshow}
   \begin{syntax}
-    \cs{dbshow} \marg{style} \marg{group}
+    \cs{dbshow} \marg{style} \marg{database}
   \end{syntax}
 
-  Show the \meta{group} with \meta{style}.
+  Show the \meta{database} with \meta{style}.
 \end{function}
 
 \subsection{Conditionals}
@@ -911,12 +907,12 @@ code is showned below.
     \cs{dbIfEmptyF} \marg{false code}
   \end{syntax}
 
-  Test if the group is empty. The example below shows how to avoid an empty
+  Test if the database is empty. The example below shows how to avoid an empty
   list environment.
 \end{function}
 
 \begin{verbatim}
-  \dbNewGroupStyle{style-cond1}{group-test}{
+  \dbNewStyle{style-cond1}{database-test}{
     before-code = {\dbIfEmptyF{\begin{enumerate}}},
     after-code = {\dbIfEmptyF{\end{enumerate}}},
     item-code = {\item \dbuse{attr-test}}
@@ -935,7 +931,7 @@ code is showned below.
 \end{function}
 
 \begin{verbatim}
-  \dbNewGroupStyle{style-cond2}{group-test}{
+  \dbNewStyle{style-cond2}{database-test}{
     text/before-code = {\dbItemIfEmptyF{*}},
     text/after-code = {\dbItemIfEmptyF{*}},
   }
@@ -953,8 +949,8 @@ code is showned below.
 \end{function}
 
 \begin{verbatim}
-  \dbNewGroup{group-test}{labels=clist}
-  \dbNewGroupStyle{style-cond3}{group-test}{
+  \dbNewDatabase{database-test}{labels=clist}
+  \dbNewStyle{style-cond3}{database-test}{
     labels/item-before-code = {\dbClistItemIfEmptyF{*}},
     labels/item-after-code = {\dbClistItemIfEmptyF{*}},
   }
@@ -962,8 +958,8 @@ code is showned below.
 
 \subsection{Constants}
 
-\begin{function}{\dbGroup, \dbFilterName, \dbFilterInfo, \dbIndex}
-  \cs{dbGroup} represents for the group name, \cs{dbFilterName} represents for
+\begin{function}{\dbDatabase, \dbFilterName, \dbFilterInfo, \dbIndex}
+  \cs{dbDatabase} represents for the database name, \cs{dbFilterName} represents for
   the filter name, \cs{dbFilterInfo} represents for the extra info of the
   filter and \cs{dbIndex} represents for the item index.
 \end{function}
@@ -980,7 +976,7 @@ code is showned below.
     \hyperlink{#1}{#3}\hypertarget{#2}{}
   }
 
-  \dbNewGroup{ques}{
+  \dbNewDatabase{ques}{
     question=tl,
     answer=tl,
     date=date,
@@ -989,23 +985,23 @@ code is showned below.
   }
   \dbNewReviewPoints{review}{1, 3, 7, 15, 30, 60}
 
-  \begin{dbGroupFilters}{ques}
+  \begin{dbFilters}{ques}
     % which need reviewed today?
     \dbNewConditional{date}{date}{review|2021-12-25}
     \dbNewConditional{easy}{labels}{easy}
     \dbNewConditional{not-easy}{labels}{mid, hard}
     % questions you haven't answered correctly for more than 3 times!
-    \dbNewConditional{bad}{count}{\dbal > 3}
+    \dbNewConditional{bad}{count}{\dbval > 3}
     \dbCombineConditionals{date}{date}[to be review today]
     \dbCombineConditionals{easy}{easy}[easy questions]
     \dbCombineConditionals{not-easy}{not-easy}[hard questions]
     \dbCombineConditionals{bad}{bad}[bad questions]
     \dbCombineConditionals{bad-easy}{bad && easy}[bad but easy questions]
-  \end{dbGroupFilters}
+  \end{dbFilters}
 
   \newcounter{ques}
 
-  \dbNewGroupStyle{test}{ques} {
+  \dbNewStyle{test}{ques} {
     before-code = {\setcounter{ques}{0}\section{Test}},
     item-code = {
       \refstepcounter{ques}
@@ -1015,7 +1011,7 @@ code is showned below.
         {answer_\dbIndex}{ques_\dbIndex}{go to answer}
     },
   }
-  \dbNewGroupStyle{check}{ques} {
+  \dbNewStyle{check}{ques} {
     before-code = {\setcounter{ques}{0}\section{Answer}},
     item-code = {
       \refstepcounter{ques}
@@ -1026,7 +1022,7 @@ code is showned below.
       \par\noindent answer: \dbuse{answer}
     },
   }
-  \dbNewGroupStyle[test]{test-bad}{ques}{
+  \dbNewStyle[test]{test-bad}{ques}{
     filter=bad,
     before-code = {\setcounter{ques}{0}\section{Bad Question}}
   }

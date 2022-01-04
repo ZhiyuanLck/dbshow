@@ -14,7 +14,7 @@ All data is saved once and then you can display these data with custom filters, 
 
 ## LICENSE
 
- review.sty
+ dbshow.sty
  Copyright 2022 Li Changkai <lichangkai225@qq.com>
 
 This work may be distributed and/or modified under the
@@ -29,4 +29,4 @@ This work has the LPPL maintenance status 'maintained'.
 
 The Current Maintainer of this work is Li Changkai.
 
-This work consists of the files review.sty.
+This work consists of the files dbshow.sty, dbshow-doc.tex.

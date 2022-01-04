@@ -1,4 +1,4 @@
-%% review.sty
+%% dbshow.sty
 %% Copyright 2022 Li Changkai <lichangkai225@qq.com>
 %
 % This work may be distributed and/or modified under the
@@ -13,7 +13,7 @@
 % 
 % The Current Maintainer of this work is Li Changkai.
 %
-% This work consists of the files review.sty.
+% This work consists of the files dbshow.sty.
 \def\myfileversion{1.0}
 \def\myfiledate{2022/01/02}
 \RequirePackage{expl3, xparse}
@@ -26,90 +26,90 @@
 
 \DTMsetdatestyle{iso}
 
-\msg_new:nnn { review } { non-existent-group } {
-  Group~'#1'~does~not~exist~\msg_line_context:.
+\msg_new:nnn { dbshow } { non-existent-database } {
+  Database~'#1'~does~not~exist~\msg_line_context:.
 }
 
-% #1 group
-\cs_new:Nn \review_check_group:n {
-  \prop_if_exist:cF { g__review_type_map_#1 }
-    { \msg_fatal:nnn { review } { non-existent-group } { #1 } }
+% #1 database
+\cs_new:Nn \dbshow_check_database:n {
+  \prop_if_exist:cF { g__dbshow_type_map_#1 }
+    { \msg_fatal:nnn { dbshow } { non-existent-database } { #1 } }
 }
 
-\msg_new:nnn { review } { non-existent-attr } {
-  Attribute~'#2'~of~group~'#1'~does~not~exist~\msg_line_context:.
+\msg_new:nnn { dbshow } { non-existent-attr } {
+  Attribute~'#2'~of~database~'#1'~does~not~exist~\msg_line_context:.
 }
 
-% #1 group #2 attr
-\cs_new:Nn \review_check_attr:nn {
-  \prop_if_in:cnF { g__review_type_map_#1 } { #2 }
-    { \msg_fatal:nnnn { review } { non-existent-attr } { #1 } { #2 } }
+% #1 database #2 attr
+\cs_new:Nn \dbshow_check_attr:nn {
+  \prop_if_in:cnF { g__dbshow_type_map_#1 } { #2 }
+    { \msg_fatal:nnnn { dbshow } { non-existent-attr } { #1 } { #2 } }
 }
 
-\msg_new:nnn { review } { non-existent-style } {
-  Style~'#1'~of~group~'#2'~does~not~exist~\msg_line_context:.
+\msg_new:nnn { dbshow } { non-existent-style } {
+  Style~'#1'~of~database~'#2'~does~not~exist~\msg_line_context:.
 }
 
-% #1 style #2 group
-\cs_new:Nn \review_check_style:nn {
-  \tl_if_exist:cF { g__review_style_opts_#1_#2 }
-    { \msg_warning:nnnn { review } { non-existent-style } { #1 } { #2 } }
+% #1 style #2 database
+\cs_new:Nn \dbshow_check_style:nn {
+  \tl_if_exist:cF { g__dbshow_style_opts_#1_#2 }
+    { \msg_warning:nnnn { dbshow } { non-existent-style } { #1 } { #2 } }
 }
 
-\msg_new:nnn { review } { non-existent-cond } {
-  Conditional~'#2'~of~group~'#1'~does~not~exist~\msg_line_context:.
+\msg_new:nnn { dbshow } { non-existent-cond } {
+  Conditional~'#2'~of~database~'#1'~does~not~exist~\msg_line_context:.
 }
 
-% #1 group #2 cond
-\cs_new:Nn \review_check_cond:nnn {
-  \tl_if_exist:cF { g__review_filter_attr_#1_#2 }
-    { \msg_fatal:nnnn { review } { non-existent-cond } { #1 } { #2 } }
+% #1 database #2 cond
+\cs_new:Nn \dbshow_check_cond:nnn {
+  \tl_if_exist:cF { g__dbshow_filter_attr_#1_#2 }
+    { \msg_fatal:nnnn { dbshow } { non-existent-cond } { #1 } { #2 } }
 }
 
-\msg_new:nnn { review } { non-existent-filter } {
-  Filter~'#2'~of~group~'#1'~does~not~exist~and~is~ignored~\msg_line_context:.
+\msg_new:nnn { dbshow } { non-existent-filter } {
+  Filter~'#2'~of~database~'#1'~does~not~exist~and~is~ignored~\msg_line_context:.
 }
 
 \cs_generate_variant:Nn \msg_warning:nnnn { nnnx }
-% #1 group #2 filter
-\cs_new:Nn \review_check_filter:nn {
-  \seq_if_exist:cF { g__review_filter_run_seq_#1_#2 } {
+% #1 database #2 filter
+\cs_new:Nn \dbshow_check_filter:nn {
+  \seq_if_exist:cF { g__dbshow_filter_run_seq_#1_#2 } {
     \str_if_eq:eeF { #2 } { -none- } {
-      \msg_warning:nnnx { review } { non-existent-filter } { #1 } { #2 }
+      \msg_warning:nnnx { dbshow } { non-existent-filter } { #1 } { #2 }
     }
   }
 }
 
-\msg_new:nnn { review } { non-existent-type } {
+\msg_new:nnn { dbshow } { non-existent-type } {
   Type~'#1'~does~not~exist,~the~type~of~attribute~should~be~one~of~
   \{date,~str,~tl,~clist,~int,~fp\}~\msg_line_context:.
 }
 
 % #1 type
-\cs_new:Nn \review_check_type:n {
-  \clist_if_in:NnF \review_type_clist { #1 }
-    { \msg_fatal:nnn { review } { non-existent-type } { #1 } }
+\cs_new:Nn \dbshow_check_type:n {
+  \clist_if_in:NnF \dbshow_type_clist { #1 }
+    { \msg_fatal:nnn { dbshow } { non-existent-type } { #1 } }
 }
 
 % #1 count #2 content
-\msg_new:nnn { review } { wrong-seperator } {
+\msg_new:nnn { dbshow } { wrong-seperator } {
   option~sep~should~contain~1~or~3~items~but~only~#1~items~was~given,~
   sep~=~\{#2\}~\msg_line_context:.
 }
 
-\msg_new:nnn { review } { unsupported-sort-type } {
+\msg_new:nnn { dbshow } { unsupported-sort-type } {
   unsupported~sort~type:~'#1'~\msg_line_context:.~The~type~should~be~one~of~
   \{str,~date,~int,~fp\}.
 }
 
-\cs_new:Nn \review_sep_error:nn {
-  \msg_error:nnnn { review } { wrong-seperator } { #1 } { #2 }
+\cs_new:Nn \dbshow_sep_error:nn {
+  \msg_error:nnnn { dbshow } { wrong-seperator } { #1 } { #2 }
 }
-\cs_generate_variant:Nn \review_sep_error:nn { xx }
+\cs_generate_variant:Nn \dbshow_sep_error:nn { xx }
 
-\clist_const:Nn \review_type_clist { date, str, tl, clist, int, fp }
+\clist_const:Nn \dbshow_type_clist { date, str, tl, clist, int, fp }
 
-\prop_const_from_keyval:Nn \review_new_cs_map {
+\prop_const_from_keyval:Nn \dbshow_new_cs_map {
   date = str_clear_new:c,
   str = str_clear_new:c,
   tl = tl_gclear_new:c,
@@ -118,7 +118,7 @@
   fp = fp_gzero_new:c
 }
 
-\prop_const_from_keyval:Nn \review_set_cs_map {
+\prop_const_from_keyval:Nn \dbshow_set_cs_map {
   date = str_gset:cn,
   str = str_gset:cn,
   tl = tl_gset:cn,
@@ -127,16 +127,16 @@
   fp = fp_gset:cn
 }
 
-\prop_const_from_keyval:Nn \review_use_cs_map {
+\prop_const_from_keyval:Nn \dbshow_use_cs_map {
   date = str_use:c,
   str = str_use:c,
   tl = tl_use:c,
-  clist = review_clist_use:c,
+  clist = dbshow_clist_use:c,
   int = int_use:c,
   fp = fp_use:c
 }
 
-\prop_const_from_keyval:Nn \review_default_value {
+\prop_const_from_keyval:Nn \dbshow_default_value {
   date = \Today,
   str = ,
   tl = ,
@@ -145,94 +145,94 @@
   fp = 0
 }
 
-\newcount\l_review_date_diff
+\newcount\l_dbshow_date_diff
 
-% #1 group #2 attr #3 type #4 default value
-\cs_new:Npn \review_process_default_value:w #1|#2=#3|#4\scan_stop {
-  \review_check_type:n { #3 }
-  \prop_gput:cxx { g__review_type_map_#1 } { #2 } { #3 }
-  \prop_gput:cxx { g__review_default_map_#1 } { #2 } { #4 }
+% #1 database #2 attr #3 type #4 default value
+\cs_new:Npn \dbshow_process_default_value:w #1|#2=#3|#4\scan_stop {
+  \dbshow_check_type:n { #3 }
+  \prop_gput:cxx { g__dbshow_type_map_#1 } { #2 } { #3 }
+  \prop_gput:cxx { g__dbshow_default_map_#1 } { #2 } { #4 }
 }
 
-\cs_new_protected:Nn \review_process_type_map:n {
-  \prop_gclear_new:c { g__review_default_map_#1 }
-  \prop_map_inline:cn { g__review_type_map_#1 } {
+\cs_new_protected:Nn \dbshow_process_type_map:n {
+  \prop_gclear_new:c { g__dbshow_default_map_#1 }
+  \prop_map_inline:cn { g__dbshow_type_map_#1 } {
     \str_if_in:nnTF { ##2 } { | }
-      { \review_process_default_value:w #1|##1=##2\scan_stop }
+      { \dbshow_process_default_value:w #1|##1=##2\scan_stop }
       {
-        \prop_get:NnN \review_default_value { ##2 } \l_tmp_default
-        \review_process_default_value:w #1|##1=##2|\l_tmp_default\scan_stop
+        \prop_get:NnN \dbshow_default_value { ##2 } \l_tmp_default
+        \dbshow_process_default_value:w #1|##1=##2|\l_tmp_default\scan_stop
       }
   }
 }
 
-% #1 group_name, #2 clist, attr=type
-\cs_new_protected:Nn \review_group_new:nn {
-  \int_gzero_new:c { g__review_counter_#1 }
-  \prop_gset_from_keyval:cn { g__review_type_map_#1 } { #2 }
+% #1 database_name, #2 clist, attr=type
+\cs_new_protected:Nn \dbshow_database_new:nn {
+  \int_gzero_new:c { g__dbshow_counter_#1 }
+  \prop_gset_from_keyval:cn { g__dbshow_type_map_#1 } { #2 }
 }
 
-% #1 group_name, #2 clist
-\cs_new_protected:Nn \review_group_new_append:nn {
-  \int_gzero_new:c { g__review_counter_#1 }
-  \prop_if_exist:cF { g__review_type_map_#1 }
-    { \prop_new:c { g__review_type_map_#1 } }
+% #1 database_name, #2 clist
+\cs_new_protected:Nn \dbshow_database_new_append:nn {
+  \int_gzero_new:c { g__dbshow_counter_#1 }
+  \prop_if_exist:cF { g__dbshow_type_map_#1 }
+    { \prop_new:c { g__dbshow_type_map_#1 } }
   \prop_gset_from_keyval:Nn \l_tmpa_prop { #2 }
-  \prop_concat:ccc { g__review_type_map_#1 } { g__review_type_map_#1 } { l_tmpa_prop }
+  \prop_concat:ccc { g__dbshow_type_map_#1 } { g__dbshow_type_map_#1 } { l_tmpa_prop }
 }
 
-% #1 group_name, #2 group inherit from #3 clist
-\cs_new_protected:Nn \review_group_new_inherit:nnn {
-  \review_check_group:n { #2 }
+% #1 database_name, #2 database inherit from #3 clist
+\cs_new_protected:Nn \dbshow_database_new_inherit:nnn {
+  \dbshow_check_database:n { #2 }
   \str_if_eq:nnTF { #1 } { #2 } {
-    \review_group_new_append:nn { #1 } { #3 }
+    \dbshow_database_new_append:nn { #1 } { #3 }
   } {
-    \int_gzero_new:c { g__review_counter_#1 }
-    \prop_gset_from_keyval:cn { g__review_type_map_#1 } { #3 }
-    \prop_concat:ccc { g__review_type_map_#1 } { g__review_type_map_#2 } { g__review_type_map_#1 }
+    \int_gzero_new:c { g__dbshow_counter_#1 }
+    \prop_gset_from_keyval:cn { g__dbshow_type_map_#1 } { #3 }
+    \prop_concat:ccc { g__dbshow_type_map_#1 } { g__dbshow_type_map_#2 } { g__dbshow_type_map_#1 }
   }
 }
 
-% #1 group_name, #2 attr
-\cs_new:Nn \review_get_type:nn {
-  \prop_item:cn { g__review_type_map_#1 } { #2 }
+% #1 database_name, #2 attr
+\cs_new:Nn \dbshow_get_type:nn {
+  \prop_item:cn { g__dbshow_type_map_#1 } { #2 }
 }
 
-% #1 group_name
-\cs_new:Nn \review_get_counter:n {
-  \int_use:c { g__review_counter_#1 }
+% #1 database_name
+\cs_new:Nn \dbshow_get_counter:n {
+  \int_use:c { g__dbshow_counter_#1 }
 }
 
-% #1 group_name
-\cs_new:Nn \review_step_counter:n {
-  \int_gincr:c { g__review_counter_#1 }
+% #1 database_name
+\cs_new:Nn \dbshow_step_counter:n {
+  \int_gincr:c { g__dbshow_counter_#1 }
 }
 
-% #1 group #2 attr #3 content
-\cs_new:Nn \review_save_data:nnn {
-  \review_check_attr:nn { #1 } { #2 }
-  \str_set:Nx \l_tmp_type { \review_get_type:nn { #1 } { #2 } }
-  \prop_get:NVN \review_new_cs_map \l_tmp_type \l_tmp_cs_new
-  \prop_get:NVN \review_set_cs_map \l_tmp_type \l_tmp_cs_set
+% #1 database #2 attr #3 content
+\cs_new:Nn \dbshow_save_data:nnn {
+  \dbshow_check_attr:nn { #1 } { #2 }
+  \str_set:Nx \l_tmp_type { \dbshow_get_type:nn { #1 } { #2 } }
+  \prop_get:NVN \dbshow_new_cs_map \l_tmp_type \l_tmp_cs_new
+  \prop_get:NVN \dbshow_set_cs_map \l_tmp_type \l_tmp_cs_set
   \use:c { \l_tmp_cs_new }
-    { g__review_data_#1_#2_\review_get_counter:n { #1 } }
+    { g__dbshow_data_#1_#2_\dbshow_get_counter:n { #1 } }
   \use:c { \l_tmp_cs_set }
-    { g__review_data_#1_#2_\review_get_counter:n { #1 } } { #3 }
+    { g__dbshow_data_#1_#2_\dbshow_get_counter:n { #1 } } { #3 }
 }
-\cs_generate_variant:Nn \review_save_data:nnn { nnx }
+\cs_generate_variant:Nn \dbshow_save_data:nnn { nnx }
 
-\cs_new:Nn \review_clist_use:N {
+\cs_new:Nn \dbshow_clist_use:N {
   \clist_clear:N \l_tmpa_clist
 
   \clist_map_inline:Nn #1 {
-    \prg_set_conditional:Nnn \review_clist_item_if_empty: { T, F, TF } {
+    \prg_set_conditional:Nnn \dbshow_clist_item_if_empty: { T, F, TF } {
       \tl_if_empty:nTF { ##1 }
         { \prg_return_true: }
         { \prg_return_false: }
     }
-    \cs_set_eq:NN \dbClistItemIfEmptyT\review_clist_item_if_empty:T
-    \cs_set_eq:NN \dbClistItemIfEmptyF\review_clist_item_if_empty:F
-    \cs_set_eq:NN \dbClistItemIfEmptyTF\review_clist_item_if_empty:TF
+    \cs_set_eq:NN \dbClistItemIfEmptyT\dbshow_clist_item_if_empty:T
+    \cs_set_eq:NN \dbClistItemIfEmptyF\dbshow_clist_item_if_empty:F
+    \cs_set_eq:NN \dbClistItemIfEmptyTF\dbshow_clist_item_if_empty:TF
 
     \clist_put_right:Nn \l_tmpa_clist {
       \l_style_item_before_code
@@ -256,91 +256,91 @@
     }
   }
   {
-    \review_sep_error:xx
+    \dbshow_sep_error:xx
       { \int_use:N \l_tmpa_int }
       { \clist_use:Nn \l_style_sep_clist { , } }
   }
 }
-\cs_generate_variant:Nn \review_clist_use:N { c }
+\cs_generate_variant:Nn \dbshow_clist_use:N { c }
 
-% #1 group #2 attr #3 index
-\cs_new:Nn \review_use_data:nnn {
-  \str_set:Nx \l_tmp_type { \review_get_type:nn { #1 } { #2 } }
-  \prop_get:NVN \review_use_cs_map \l_tmp_type \l_tmp_cs
-  \use:c { \l_tmp_cs } { g__review_data_#1_#2_#3 }
+% #1 database #2 attr #3 index
+\cs_new:Nn \dbshow_use_data:nnn {
+  \str_set:Nx \l_tmp_type { \dbshow_get_type:nn { #1 } { #2 } }
+  \prop_get:NVN \dbshow_use_cs_map \l_tmp_type \l_tmp_cs
+  \use:c { \l_tmp_cs } { g__dbshow_data_#1_#2_#3 }
 }
 
-% #1 group
-\cs_new_protected:Nn \review_set_group_keys:n {
-  \prop_map_inline:cn { g__review_type_map_#1 } {
-    \keys_define:nn { review/group/#1 } {
-      ##1 .code:n = \review_save_data:nnn { #1 } { ##1 } { ####1 },
+% #1 database
+\cs_new_protected:Nn \dbshow_set_database_keys:n {
+  \prop_map_inline:cn { g__dbshow_type_map_#1 } {
+    \keys_define:nn { dbshow/database/#1 } {
+      ##1 .code:n = \dbshow_save_data:nnn { #1 } { ##1 } { ####1 },
     }
   }
 }
 
-% #1 append or not #2 inherit #3 group #4 attrs
-\NewDocumentCommand { \dbNewGroup } { s o m m } {
+% #1 append or not #2 inherit #3 database #4 attrs
+\NewDocumentCommand { \dbNewDatabase } { s o m m } {
   \IfNoValueTF { #2 } {
     \IfBooleanTF { #1 }
-      { \review_group_new_append:nn { #3 } { #4 } }
-      { \review_group_new:nn { #3 } { #4 } }
-  } { \review_group_new_inherit:nnn { #3 } { #2 } { #4 } }
-  \review_group_new_append:nn { #3 } { id=int }
-  \review_process_type_map:n { #3 }
-  \review_set_group_keys:n { #3 }
-  \dbNewGroupStyle{default}{#3}{}
+      { \dbshow_database_new_append:nn { #3 } { #4 } }
+      { \dbshow_database_new:nn { #3 } { #4 } }
+  } { \dbshow_database_new_inherit:nnn { #3 } { #2 } { #4 } }
+  \dbshow_database_new_append:nn { #3 } { id=int }
+  \dbshow_process_type_map:n { #3 }
+  \dbshow_set_database_keys:n { #3 }
+  \dbNewStyle{default}{#3}{}
 }
 
-% #1 group #2 attr-content map
+% #1 database #2 attr-content map
 \NewDocumentEnvironment { dbitem } { m O{} +b } {
-  \review_check_group:n { #1 }
-  \review_step_counter:n { #1 }
-  \cs_set:Nn \review_set_default:nn {
-    \review_save_data:nnx { #1 } { ##1 } {
-      \prop_item:cn { g__review_default_map_#1 } { ##1 }
+  \dbshow_check_database:n { #1 }
+  \dbshow_step_counter:n { #1 }
+  \cs_set:Nn \dbshow_set_default:nn {
+    \dbshow_save_data:nnx { #1 } { ##1 } {
+      \prop_item:cn { g__dbshow_default_map_#1 } { ##1 }
     }
   }
-  \prop_map_function:cN { g__review_type_map_#1 } \review_set_default:nn
-  \review_save_data:nnx { #1 } { id } { \review_get_counter:n { #1 } }
-  \keys_set:nn { review/group/#1 } { #2 }
+  \prop_map_function:cN { g__dbshow_type_map_#1 } \dbshow_set_default:nn
+  \dbshow_save_data:nnx { #1 } { id } { \dbshow_get_counter:n { #1 } }
+  \keys_set:nn { dbshow/database/#1 } { #2 }
   % #2 attr #3 content
   \NewDocumentCommand { \dbsave } { m m } {
-    \review_save_data:nnn { #1 } { ##1 } { ##2 }
+    \dbshow_save_data:nnn { #1 } { ##1 } { ##2 }
   }
 } { #3 }
 
-\cs_new:Nn \review_if_int: {
-  \int_compare:nTF { \l_review_rela }
-    { \review_set_true: }
-    { \review_set_false: }
+\cs_new:Nn \dbshow_if_int: {
+  \int_compare:nTF { \l_dbshow_rela }
+    { \dbshow_set_true: }
+    { \dbshow_set_false: }
 }
 
-\cs_new:Nn \review_if_fp: {
-  \fp_compare:nTF { \l_review_rela }
-    { \review_set_true: }
-    { \review_set_false: }
+\cs_new:Nn \dbshow_if_fp: {
+  \fp_compare:nTF { \l_dbshow_rela }
+    { \dbshow_set_true: }
+    { \dbshow_set_false: }
 }
 
 % star: all in
 % no star: one in
-\cs_new:Nn \review_if_clist: {
+\cs_new:Nn \dbshow_if_clist: {
   \bool_if:NTF \l_star_bool { % and
-    \review_set_true:
+    \dbshow_set_true:
     \exp_args:Nx
-    \clist_map_inline:nn { \l_review_rela } {
-      \clist_if_in:NnF \dbal { ##1 } {
-        \review_set_false:
+    \clist_map_inline:nn { \l_dbshow_rela } {
+      \clist_if_in:NnF \dbval { ##1 } {
+        \dbshow_set_false:
         \clist_map_break:
       }
     }
   }
   { % or
-    \review_set_false:
+    \dbshow_set_false:
     \exp_args:Nx
-    \clist_map_inline:nn { \l_review_rela } {
-      \clist_if_in:NnT \dbal { ##1 } {
-        \review_set_true:
+    \clist_map_inline:nn { \l_dbshow_rela } {
+      \clist_if_in:NnT \dbval { ##1 } {
+        \dbshow_set_true:
         \clist_map_break:
       }
     }
@@ -349,114 +349,114 @@
 
 % star: match full
 % no star: match part
-\cs_new:Nn \review_if_str: {
+\cs_new:Nn \dbshow_if_str: {
   \bool_if:NT \l_star_bool {
-    \tl_put_left:Nn \l_review_rela { \A }
-    \tl_put_right:Nn \l_review_rela { \Z }
+    \tl_put_left:Nn \l_dbshow_rela { \A }
+    \tl_put_right:Nn \l_dbshow_rela { \Z }
   }
-  \regex_match:VVTF \l_review_rela \dbal
-    { \review_set_true: }
-    { \review_set_false: }
+  \regex_match:VVTF \l_dbshow_rela \dbval
+    { \dbshow_set_true: }
+    { \dbshow_set_false: }
 }
-\cs_set_eq:NN \review_if_tl: \review_if_str:
+\cs_set_eq:NN \dbshow_if_tl: \dbshow_if_str:
 
-\cs_new:Npn \review_parse_date:w #1|#2\review_stop {
+\cs_new:Npn \dbshow_parse_date:w #1|#2\dbshow_stop {
   \clist_set_eq:Nc \l_point_clist { g__review_points_#1 }
   \tl_set:Nn \l_date_tl { #2 }
 }
 
-\cs_new:Nn \review_if_date: {
+\cs_new:Nn \dbshow_if_date: {
   \bool_if:NTF \l_star_bool {
     \regex_extract_once:nVNF { \A(.*)([!<>=]+)(.*)\Z }
-      \l_review_rela \l_tmpa_seq { }
+      \l_dbshow_rela \l_tmpa_seq { }
     \exp_args:Nnx \DTMsavedate{day1}{ \seq_item:Nn \l_tmpa_seq { 2 } }
     \tl_set:Nx \l_rela { \seq_item:Nn \l_tmpa_seq { 3 } }
     \exp_args:Nnx \DTMsavedate{day2}{ \seq_item:Nn \l_tmpa_seq { 4 } }
-    \DTMsaveddatediff{day1}{day2}{\l_review_date_diff}% specious blank
+    \DTMsaveddatediff{day1}{day2}{\l_dbshow_date_diff}% specious blank
     \exp_args:NnV \int_compare:nNnTF
-      { \the\l_review_date_diff } \l_rela { 0 }
-      { \review_set_true: }
-      { \review_set_false: }
+      { \the\l_dbshow_date_diff } \l_rela { 0 }
+      { \dbshow_set_true: }
+      { \dbshow_set_false: }
   }
   {
-    \exp_after:wN \review_parse_date:w \l_review_rela\review_stop
+    \exp_after:wN \dbshow_parse_date:w \l_dbshow_rela\dbshow_stop
     \exp_args:Nnx \DTMsavedate{day1}{ \l_date_tl }
-    \exp_args:Nnx \DTMsavedate{day2}{ \dbal }
-    \DTMsaveddatediff{day1}{day2}{\l_review_date_diff}% specious blank
-    \clist_if_in:NoTF \l_point_clist { \the\l_review_date_diff }
-      { \review_set_true: }
-      { \review_set_false: }
+    \exp_args:Nnx \DTMsavedate{day2}{ \dbval }
+    \DTMsaveddatediff{day1}{day2}{\l_dbshow_date_diff}% specious blank
+    \clist_if_in:NoTF \l_point_clist { \the\l_dbshow_date_diff }
+      { \dbshow_set_true: }
+      { \dbshow_set_false: }
   }
 }
 
 \cs_generate_variant:Nn \prop_get:NnN { cVN }
 \prg_generate_conditional_variant:Nnn \regex_extract_once:nnN { nVN } { T, F, TF, p }
 \prg_generate_conditional_variant:Nnn \regex_match:nn { VV } { T, F, TF, p }
-% #1 group name #2 cond name #3 index
-\cs_set:Nn \review_if:nnn {
-  \tl_set_eq:Nc \l_review_attr { g__review_filter_attr_#1_#2 }
-  \tl_set_eq:Nc \l_review_rela { g__review_filter_rela_#1_#2 }
-  \cs_set_eq:Nc \dbal { g__review_data_#1_\l_review_attr _#3 }
-  \cs_set:Nn \review_set_true:
-    { \bool_gset_true:c { g__review_filter_bool_#1_#2 } }
-  \cs_set:Nn \review_set_false:
-    { \bool_gset_false:c { g__review_filter_bool_#1_#2 } }
-  \prop_get:cVN { g__review_type_map_#1 } \l_review_attr \l_tmp_type
-  \bool_set_eq:Nc \l_star_bool { g__review_cond_star_#1_#2 }
-  \use:c { review_if_\l_tmp_type : }
+% #1 database name #2 cond name #3 index
+\cs_set:Nn \dbshow_if:nnn {
+  \tl_set_eq:Nc \l_dbshow_attr { g__dbshow_filter_attr_#1_#2 }
+  \tl_set_eq:Nc \l_dbshow_rela { g__dbshow_filter_rela_#1_#2 }
+  \cs_set_eq:Nc \dbval { g__dbshow_data_#1_\l_dbshow_attr _#3 }
+  \cs_set:Nn \dbshow_set_true:
+    { \bool_gset_true:c { g__dbshow_filter_bool_#1_#2 } }
+  \cs_set:Nn \dbshow_set_false:
+    { \bool_gset_false:c { g__dbshow_filter_bool_#1_#2 } }
+  \prop_get:cVN { g__dbshow_type_map_#1 } \l_dbshow_attr \l_tmp_type
+  \bool_set_eq:Nc \l_star_bool { g__dbshow_cond_star_#1_#2 }
+  \use:c { dbshow_if_\l_tmp_type : }
 }
 
 % 将cond->attr, cond->rela, cond->bool关联起来
-% #1 group name #2 cond name #3 attr #4 rela #5 star
-\cs_new_protected:Nn \review_new_conditional:nnnnn {
-  \tl_gset:cn { g__review_filter_attr_#1_#2 } { #3 }
-  \tl_gset:cn { g__review_filter_rela_#1_#2 } { #4 }
-  \bool_if_exist:cF { g__review_filter_bool_#1_#2 }
-    { \bool_new:c { g__review_filter_bool_#1_#2 } }
-  \bool_if_exist:cF { g__review_cond_star_#1_#2 }
-    { \bool_new:c { g__review_cond_star_#1_#2 } }
+% #1 database name #2 cond name #3 attr #4 rela #5 star
+\cs_new_protected:Nn \dbshow_new_conditional:nnnnn {
+  \tl_gset:cn { g__dbshow_filter_attr_#1_#2 } { #3 }
+  \tl_gset:cn { g__dbshow_filter_rela_#1_#2 } { #4 }
+  \bool_if_exist:cF { g__dbshow_filter_bool_#1_#2 }
+    { \bool_new:c { g__dbshow_filter_bool_#1_#2 } }
+  \bool_if_exist:cF { g__dbshow_cond_star_#1_#2 }
+    { \bool_new:c { g__dbshow_cond_star_#1_#2 } }
   \IfBooleanTF { #5 }
-    { \bool_gset_true:c { g__review_cond_star_#1_#2 } }
-    { \bool_gset_false:c { g__review_cond_star_#1_#2 } }
-  \cs_gset:cn { g__review_filter_cs_#1_#2:n } {
-    \review_if:nnn { #1 } { #2 } { ##1 }
+    { \bool_gset_true:c { g__dbshow_cond_star_#1_#2 } }
+    { \bool_gset_false:c { g__dbshow_cond_star_#1_#2 } }
+  \cs_gset:cn { g__dbshow_filter_cs_#1_#2:n } {
+    \dbshow_if:nnn { #1 } { #2 } { ##1 }
   }
-  \seq_gput_right:cn { g__review_cond_list_#1 } { #2 }
+  \seq_gput_right:cn { g__dbshow_cond_list_#1 } { #2 }
 }
 
 % 将组合条件cond1, cond2, ..., 替换成cond1->bool, cond2->bool, ...
-% #1 group name #2 filter name #3 filters
-\cs_new_protected:Nn \review_combine_conditional:nnn {
-  \tl_gset_eq:cN { g__review_filter_bool_tl_#1_#2 } \c_true_bool
-  \seq_gclear_new:c { g__review_filter_run_seq_#1_#2 }
+% #1 database name #2 filter name #3 filters
+\cs_new_protected:Nn \dbshow_combine_conditional:nnn {
+  \tl_gset_eq:cN { g__dbshow_filter_bool_tl_#1_#2 } \c_true_bool
+  \seq_gclear_new:c { g__dbshow_filter_run_seq_#1_#2 }
   \regex_extract_all:nnN { \w+ } { #3 } \l_tmpa_seq
   \seq_map_inline:Nn \l_tmpa_seq {
     % ##1 cond name
-    \seq_if_in:cnT { g__review_cond_list_#1 } { ##1 } {
-      \seq_gput_right:cn { g__review_filter_run_seq_#1_#2 }
-        { g__review_filter_cs_#1_##1:n }
+    \seq_if_in:cnT { g__dbshow_cond_list_#1 } { ##1 } {
+      \seq_gput_right:cn { g__dbshow_filter_run_seq_#1_#2 }
+        { g__dbshow_filter_cs_#1_##1:n }
     }
   }
   \tl_set:Nn \l_tmpa_tl { #3 }
   \regex_replace_all:nnN
-    { \w+ } { \c{ g__review_filter_bool_#1_\0 } }
+    { \w+ } { \c{ g__dbshow_filter_bool_#1_\0 } }
     \l_tmpa_tl
-  \tl_gset_eq:cN { g__review_filter_bool_tl_#1_#2 } \l_tmpa_tl
+  \tl_gset_eq:cN { g__dbshow_filter_bool_tl_#1_#2 } \l_tmpa_tl
 }
 
 \cs_generate_variant:Nn \regex_replace_all:nnN { nnc }
-% #1 group #2 content
-\NewDocumentEnvironment { dbGroupFilters } { m +b } {
-  \seq_gclear_new:c { g__review_cond_list_#1 }
+% #1 database #2 content
+\NewDocumentEnvironment { dbFilters } { m +b } {
+  \seq_gclear_new:c { g__dbshow_cond_list_#1 }
   % #1 star #2 cond name #3 attr #4 rela
   \DeclareDocumentCommand { \dbNewConditional } { s m m m } {
-    \review_new_conditional:nnnnn
+    \dbshow_new_conditional:nnnnn
       { #1 } { ##2 } { ##3 } { ##4 } { ##1 }
   }
   % ##1 filter name ##2 filters ##3 info
   \DeclareDocumentCommand { \dbCombineConditionals } { m m O{} } {
-    \tl_gset:cn { g__review_filter_info_#1_##1 } { ##3 }
-    \review_combine_conditional:nnn { #1 } { ##1 } { ##2 }
+    \tl_gset:cn { g__dbshow_filter_info_#1_##1 } { ##3 }
+    \dbshow_combine_conditional:nnn { #1 } { ##1 } { ##2 }
   }
   #2
 } {  }
@@ -466,196 +466,196 @@
   \clist_set:cn { g__review_points_#1 } { #2 }
 }
 
-% #1 style name #2 group name #3 attr
-\cs_new_protected:Nn \review_new_attr_style:nnn {
-  \review_check_attr:nn { #2 } { #3 }
-  \keys_define:nn { review/style/#1/#3 } {
-    before-code .tl_gset:c = { g__review_style_before_#1_#2_#3 },
+% #1 style name #2 database name #3 attr
+\cs_new_protected:Nn \dbshow_new_attr_style:nnn {
+  \dbshow_check_attr:nn { #2 } { #3 }
+  \keys_define:nn { dbshow/style/#1/#3 } {
+    before-code .tl_gset:c = { g__dbshow_style_before_#1_#2_#3 },
     before-code .initial:n = ,
-    after-code .tl_gset:c = { g__review_style_after_#1_#2_#3 },
+    after-code .tl_gset:c = { g__dbshow_style_after_#1_#2_#3 },
     after-code .initial:n = ,
   }
-  \prop_get:cnN { g__review_type_map_#2 } { #3 } \l_tmp_type
+  \prop_get:cnN { g__dbshow_type_map_#2 } { #3 } \l_tmp_type
   \str_if_eq:eeT { \l_tmp_type } { clist } {
-    \keys_define:nn { review/style/#1/#3 } {
-      sep .clist_gset:c = { g__review_style_sep_#1_#2_#3 },
+    \keys_define:nn { dbshow/style/#1/#3 } {
+      sep .clist_gset:c = { g__dbshow_style_sep_#1_#2_#3 },
       sep .initial:n = { { ,~ } },
-      item-before-code .tl_gset:c = { g__review_style_item_before_#1_#2_#3 },
+      item-before-code .tl_gset:c = { g__dbshow_style_item_before_#1_#2_#3 },
       item-before-code .initial:n = ,
-      item-after-code .tl_gset:c = { g__review_style_item_after_#1_#2_#3 },
+      item-after-code .tl_gset:c = { g__dbshow_style_item_after_#1_#2_#3 },
       item-after-code .initial:n = ,
     }
   }
 }
 
-% #1 style name #2 group name
-\cs_new_protected:Nn \review_new_group_style:nn {
-  \review_check_group:n { #2 }
-  \keys_define:nn { review/style/#1 } {
-    filter .tl_gset:c = { g__review_filter_#1_#2 },
+% #1 style name #2 database name
+\cs_new_protected:Nn \dbshow_new_database_style:nn {
+  \dbshow_check_database:n { #2 }
+  \keys_define:nn { dbshow/style/#1 } {
+    filter .tl_gset:c = { g__dbshow_filter_#1_#2 },
     filter .initial:n = -none-,
-    sort .clist_gset:c = { g__review_sort_#1_#2 },
-    before-code .tl_gset:c = { g__review_style_before_#1_#2 },
+    sort .clist_gset:c = { g__dbshow_sort_#1_#2 },
+    before-code .tl_gset:c = { g__dbshow_style_before_#1_#2 },
     before-code .initial:n = ,
-    item-code .tl_gset:c = { g__review_style_group_item_#1_#2 },
+    item-code .tl_gset:c = { g__dbshow_style_database_item_#1_#2 },
     item-code .initial:n = ,
-    after-code .tl_gset:c = { g__review_style_after_#1_#2 },
+    after-code .tl_gset:c = { g__dbshow_style_after_#1_#2 },
     after-code .initial:n = ,
   }
-  \prop_map_inline:cn { g__review_type_map_#2 } {
-    \review_new_attr_style:nnn { #1 } { #2 } { ##1 }
+  \prop_map_inline:cn { g__dbshow_type_map_#2 } {
+    \dbshow_new_attr_style:nnn { #1 } { #2 } { ##1 }
   }
 }
 
-% #1 base style #2 style #3 group #4 opt
-\NewDocumentCommand { \dbNewGroupStyle } { o m m +m } {
-  \tl_gset:cn { g__review_style_opts_#2_#3 } { #4, }
+% #1 base style #2 style #3 database #4 opt
+\NewDocumentCommand { \dbNewStyle } { o m m +m } {
+  \tl_gset:cn { g__dbshow_style_opts_#2_#3 } { #4, }
   \IfValueT { #1 } {
     \tl_gclear:N \g_tmpa_tl
     \clist_map_inline:nn { #1 } {
-      \review_check_style:nn { ##1 } { #3 }
-      \tl_if_exist:cT { g__review_style_opts_##1_#3 } {
+      \dbshow_check_style:nn { ##1 } { #3 }
+      \tl_if_exist:cT { g__dbshow_style_opts_##1_#3 } {
         \tl_gconcat:ccc { g_tmpa_tl }
-          { g_tmpa_tl } { g__review_style_opts_##1_#3 }
+          { g_tmpa_tl } { g__dbshow_style_opts_##1_#3 }
       }
     }
-    \tl_gconcat:ccc { g__review_style_opts_#2_#3 }
-      { g_tmpa_tl } { g__review_style_opts_#2_#3 }
+    \tl_gconcat:ccc { g__dbshow_style_opts_#2_#3 }
+      { g_tmpa_tl } { g__dbshow_style_opts_#2_#3 }
   }
-  \review_new_group_style:nn { #2 } { #3 }
+  \dbshow_new_database_style:nn { #2 } { #3 }
   \exp_args:Nnv
-  \keys_set:nn { review/style/#2 } { g__review_style_opts_#2_#3 }
+  \keys_set:nn { dbshow/style/#2 } { g__dbshow_style_opts_#2_#3 }
 }
 
-\cs_new:Npn \review_sort_parse_star:w #1* {
+\cs_new:Npn \dbshow_sort_parse_star:w #1* {
   \tl_set:Nx \l_op_same { > }
   \tl_set:Nx \l_op_swap { < }
   \str_set:Nn \l_tmpa_str { #1 }
 }
 
-% #1 group #2 index #3 style
-\cs_new:Nn \review_sort:nNn {
-  \int_set:Nn \l_tmpb_int { \clist_count:c { g__review_sort_#3_#1 } }
+% #1 database #2 index #3 style
+\cs_new:Nn \dbshow_sort:nNn {
+  \int_set:Nn \l_tmpb_int { \clist_count:c { g__dbshow_sort_#3_#1 } }
   \clist_sort:Nn #2 {
     \int_zero:N \l_tmpa_int
-    \cs_set:Nn \review_sort_single: {
+    \cs_set:Nn \dbshow_sort_single: {
       \int_incr:N \l_tmpa_int
       \str_set:Nx \l_tmpa_str
-        { \clist_item:cn { g__review_sort_#3_#1 } { \l_tmpa_int } }
+        { \clist_item:cn { g__dbshow_sort_#3_#1 } { \l_tmpa_int } }
       \str_if_in:NnTF \l_tmpa_str { * } {
-        \exp_after:wN \review_sort_parse_star:w \l_tmpa_str
+        \exp_after:wN \dbshow_sort_parse_star:w \l_tmpa_str
       }
       {
         \tl_set:Nx \l_op_same { < }
         \tl_set:Nx \l_op_swap { > }
       }
-      \exp_args:NnV \review_check_attr:nn { #1 } \l_tmpa_str
+      \exp_args:NnV \dbshow_check_attr:nn { #1 } \l_tmpa_str
 
-      \cs_set_eq:Nc \l_tmpa_tl { g__review_data_#1_\l_tmpa_str _##1 }
-      \cs_set_eq:Nc \l_tmpb_tl { g__review_data_#1_\l_tmpa_str _##2 }
+      \cs_set_eq:Nc \l_tmpa_tl { g__dbshow_data_#1_\l_tmpa_str _##1 }
+      \cs_set_eq:Nc \l_tmpb_tl { g__dbshow_data_#1_\l_tmpa_str _##2 }
 
-      \prop_get:cVN { g__review_type_map_#1 } \l_tmpa_str \l_tmp_type
+      \prop_get:cVN { g__dbshow_type_map_#1 } \l_tmpa_str \l_tmp_type
       \clist_if_in:nVF { str, int, date, fp  } \l_tmp_type {
-        \msg_error:nnx { review } { unsupported-sort-type } { \l_tmp_type }
+        \msg_error:nnx { dbshow } { unsupported-sort-type } { \l_tmp_type }
       }
       \str_if_eq:eeT { \l_tmp_type } { date }
         { \str_set:Nn \l_tmp_type { str } }
-      \cs_set_eq:Nc \review_compare { \l_tmp_type _compare:nNnTF }
+      \cs_set_eq:Nc \dbshow_compare { \l_tmp_type _compare:nNnTF }
 
       \exp_args:NnV
-      \review_compare { \l_tmpa_tl } \l_op_same { \l_tmpb_tl }
+      \dbshow_compare { \l_tmpa_tl } \l_op_same { \l_tmpb_tl }
         { \sort_return_same: }
       {
         \exp_args:NnV
-        \review_compare { \l_tmpa_tl } \l_op_swap { \l_tmpb_tl }
+        \dbshow_compare { \l_tmpa_tl } \l_op_swap { \l_tmpb_tl }
           { \sort_return_swapped: }
         {
           \int_compare:nTF { \l_tmpa_int = \l_tmpb_int }
             { \sort_return_same: }
-            { \review_sort_single: }
+            { \dbshow_sort_single: }
         }
       }
     }
-    \review_sort_single:
+    \dbshow_sort_single:
   }
 }
 
-% #1 style #2 group #3 filter
-\cs_new_protected:Nn \review_init_iterator:nnn {
-  \tl_set:Nn \dbGroup { #2 }
+% #1 style #2 database #3 filter
+\cs_new_protected:Nn \dbshow_init_iterator:nnn {
+  \tl_set:Nn \dbDatabase { #2 }
   \tl_set:Nx \dbFilterName { #3 }
-  \tl_set_eq:Nc \dbFilterInfo { g__review_filter_info_#2_#3 }
+  \tl_set_eq:Nc \dbFilterInfo { g__dbshow_filter_info_#2_#3 }
 
   \clist_clear_new:N \l_index
   %% run filters
   % ##1 index
-  \cs_set:Nn \review_filter:n {
-    \seq_if_exist:cTF { g__review_filter_run_seq_#2_#3 } {
-      \seq_map_inline:cn { g__review_filter_run_seq_#2_#3 } {
+  \cs_set:Nn \dbshow_filter:n {
+    \seq_if_exist:cTF { g__dbshow_filter_run_seq_#2_#3 } {
+      \seq_map_inline:cn { g__dbshow_filter_run_seq_#2_#3 } {
         \use:c { ####1 } { ##1 }
       }
       \exp_args:Nv
-      \bool_if:nT { g__review_filter_bool_tl_#2_#3 }
+      \bool_if:nT { g__dbshow_filter_bool_tl_#2_#3 }
         { \clist_put_right:Nn \l_index { ##1 } }
     } { \clist_put_right:Nn \l_index { ##1 } }
   }
-  \int_step_function:nN { \review_get_counter:n { #2 } } \review_filter:n
-  \clist_if_empty:cF { g__review_sort_#1_#2 }
-    { \review_sort:nNn { #2 } \l_index { #1 } }
+  \int_step_function:nN { \dbshow_get_counter:n { #2 } } \dbshow_filter:n
+  \clist_if_empty:cF { g__dbshow_sort_#1_#2 }
+    { \dbshow_sort:nNn { #2 } \l_index { #1 } }
 
   % ##1 index
-  \cs_set:Nn \review_iter:n {
+  \cs_set:Nn \dbshow_iter:n {
     % ####1 attr
     \cs_set:Npn \dbuse ####1 {
-      \review_check_attr:nn { #2 } { ####1 }
+      \dbshow_check_attr:nn { #2 } { ####1 }
       \clist_set_eq:Nc \l_style_sep_clist
-        { g__review_style_sep_#1_#2_####1 }
+        { g__dbshow_style_sep_#1_#2_####1 }
       \tl_set_eq:Nc \l_style_item_before_code
-        { g__review_style_item_before_#1_#2_####1 }
+        { g__dbshow_style_item_before_#1_#2_####1 }
       \tl_set_eq:Nc \l_style_item_after_code
-        { g__review_style_item_after_#1_#2_####1 }
+        { g__dbshow_style_item_after_#1_#2_####1 }
       \tl_set:Nn \dbIndex { ##1 }
 
-      \prop_get:cnN { g__review_type_map_#2 } { ####1 } \l_tmp_type
+      \prop_get:cnN { g__dbshow_type_map_#2 } { ####1 } \l_tmp_type
       % \tl_show:N \l_tmp_type
       \str_if_eq:eeT { \l_tmp_type } { date }
         { \tl_set:Nn \l_tmp_type { str } }
-      \prg_set_conditional:Nnn \review_item_if_empty: { T, F, TF } {
+      \prg_set_conditional:Nnn \dbshow_item_if_empty: { T, F, TF } {
         \use:c { \l_tmp_type _if_empty:cTF }
-          { g__review_data_#2_####1_##1 }
+          { g__dbshow_data_#2_####1_##1 }
           { \prg_return_true: }
           { \prg_return_false: }
       }
-      \cs_set_eq:NN \dbItemIfEmptyT\review_item_if_empty:T
-      \cs_set_eq:NN \dbItemIfEmptyF\review_item_if_empty:F
-      \cs_set_eq:NN \dbItemIfEmptyTF\review_item_if_empty:TF
+      \cs_set_eq:NN \dbItemIfEmptyT\dbshow_item_if_empty:T
+      \cs_set_eq:NN \dbItemIfEmptyF\dbshow_item_if_empty:F
+      \cs_set_eq:NN \dbItemIfEmptyTF\dbshow_item_if_empty:TF
 
-      \tl_use:c { g__review_style_before_#1_#2_####1 }
-      \review_use_data:nnn { #2 } { ####1 } { ##1 }
-      \tl_use:c { g__review_style_after_#1_#2_####1 }
+      \tl_use:c { g__dbshow_style_before_#1_#2_####1 }
+      \dbshow_use_data:nnn { #2 } { ####1 } { ##1 }
+      \tl_use:c { g__dbshow_style_after_#1_#2_####1 }
     }
-    \tl_use:c { g__review_style_group_item_#1_#2 }
+    \tl_use:c { g__dbshow_style_database_item_#1_#2 }
   }
-  \prg_set_conditional:Nnn \review_if_empty: { T, F, TF } {
+  \prg_set_conditional:Nnn \dbshow_if_empty: { T, F, TF } {
     \clist_if_empty:NTF \l_index
       { \prg_return_true: }
       { \prg_return_false: }
   }
-  \cs_set_eq:NN \dbIfEmptyT\review_if_empty:T
-  \cs_set_eq:NN \dbIfEmptyF\review_if_empty:F
-  \cs_set_eq:NN \dbIfEmptyTF\review_if_empty:TF
+  \cs_set_eq:NN \dbIfEmptyT\dbshow_if_empty:T
+  \cs_set_eq:NN \dbIfEmptyF\dbshow_if_empty:F
+  \cs_set_eq:NN \dbIfEmptyTF\dbshow_if_empty:TF
 
-  \tl_use:c { g__review_style_before_#1_#2 }
-  \clist_map_function:NN \l_index \review_iter:n
-  \tl_use:c { g__review_style_after_#1_#2 }
+  \tl_use:c { g__dbshow_style_before_#1_#2 }
+  \clist_map_function:NN \l_index \dbshow_iter:n
+  \tl_use:c { g__dbshow_style_after_#1_#2 }
 }
 
-% #1 style #2 group
+% #1 style #2 database
 \NewDocumentCommand { \dbshow } { m m } {
-  \review_check_group:n { #2 }
-  \tl_set_eq:Nc \l_review_filter { g__review_filter_#1_#2 }
-  \review_check_filter:nn  { #2 } { \l_review_filter }
-  \review_init_iterator:nnn { #1 } { #2 } { \l_review_filter }
+  \dbshow_check_database:n { #2 }
+  \tl_set_eq:Nc \l_dbshow_filter { g__dbshow_filter_#1_#2 }
+  \dbshow_check_filter:nn  { #2 } { \l_dbshow_filter }
+  \dbshow_init_iterator:nnn { #1 } { #2 } { \l_dbshow_filter }
 }
 
 \endinput
