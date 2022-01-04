@@ -438,7 +438,7 @@
       { #1 } { ##2 } { ##3 } { ##4 } { ##1 }
   }
   % ##1 filter name ##2 filters ##3 info
-  \DeclareDocumentCommand { \rvCombineFilters } { m m O{} } {
+  \DeclareDocumentCommand { \rvCombineConditionals } { m m O{} } {
     \tl_gset:cn { g__review_filter_info_#1_##1 } { ##3 }
     \review_combine_conditional:nnn { #1 } { ##1 } { ##2 }
   }
