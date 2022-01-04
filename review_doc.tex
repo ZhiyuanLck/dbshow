@@ -1,0 +1,514 @@
+\documentclass[full]{l3doc}
+\usepackage[scheme=plain]{ctex}
+\usepackage{zhlineskip}
+\usepackage{enumitem}
+\usepackage{indentfirst}
+\usepackage{titling}
+\usepackage{geometry}
+\usepackage{tabularray}
+\usepackage{xcolor}
+
+\geometry{
+  left=4.5cm,
+  right=2cm,
+  top=2cm,
+  bottom=2cm,
+}
+\hypersetup {
+  CJKbookmarks,
+  bookmarksopen,
+  bookmarksopenlevel=3,
+  pdfstartview=FitH,
+  pdfinfo = {
+   Title = The package 'review' ,
+   Subject = A LaTeX package ,
+   Author = Li Changkai
+ }
+}
+
+\DoNotIndex{\begin, \end}
+\setlength{\parskip}{\medskipamount}
+\DeclareDocumentEnvironment { note } { +b } {
+  \par\textbf{\textsf{NOTE:~}}#1\par
+} {}
+
+\AtEndDocument{
+  \newgeometry{
+    left=2cm,
+    right=2cm,
+    top=2cm,
+    bottom=2cm
+  }
+  \PrintIndex
+}
+
+\ExplSyntaxOn
+\dim_new:N \l__my_syntax_dim
+\box_new:N \g__my_syntax_box
+\NewDocumentEnvironment { Syntax } { s }
+  {
+    \dim_set:Nn \l__my_syntax_dim
+      { \textwidth }
+    \hbox_gset:Nw \g__my_syntax_box
+      \small \ttfamily
+      \begin{minipage}[t]{\l__my_syntax_dim}
+        \raggedright\obeyspaces\obeylines
+  }
+  {
+      \end{minipage}
+    \hbox_gset_end:
+    \IfValueF { #1 } { \smallskip }
+    \box_use_drop:N \g__my_syntax_box
+    \smallskip
+  }
+
+\DeclareDocumentEnvironment { Description } { o +b } {
+  \hbox_set:Nn \l_tmpa_box { #1 }
+  \dim_set:Nn \l_tmpa_dim { \box_wd:N \l_tmpa_box }
+  \begin{itemize}[labelwidth=\l_tmpa_dim, align=left]
+    #2
+  \end{itemize}
+} {  }
+
+\keys_define:nn { review/doc } {
+  opt .tl_set:N = \l_opt_tl,
+  desc .tl_set:N = \l_desc_tl,
+  init .tl_set:N = \l_init_tl,
+  init .initial:n = init-none,
+}
+
+\box_new:N \l__option_box
+\NewDocumentEnvironment { option } { m +b } {
+  \keys_set:nn { review/doc } { #1 }
+  \hbox_set:Nw \l__option_box
+    \small \ttfamily
+    \begin{minipage}[t]{\textwidth}
+      \obeyspaces\obeylines
+      \textcolor{red}{
+        \l_opt_tl
+        \exp_args:Nx\SpecialOptionIndex{\l_opt_tl}
+      }
+      {~}\l_desc_tl
+      \hfill(
+      \tl_if_eq:NnTF \l_init_tl { init-none } { no~value }
+        { initially~\texttt{\l_init_tl} }
+      )
+    \end{minipage}
+  \hbox_gset_end:
+  \box_use_drop:N \l__option_box
+  #2
+  \medskip
+} {  }
+
+\DeclareDocumentCommand \opt { O{} m }
+  { \__codedoc_cmd:no {#1} { #2 } }
+\ExplSyntaxOff
+
+
+\begin{document}
+\title{\pkg{review}宏包\protect\footnote{\url{https://github.com/ZhiyuanLck/review}}}
+\author{\textit{李昌锴} \texttt{<lichangkai225\@qq.com>}}
+\date{2022年1月3日}
+\maketitle
+\tableofcontents
+\newpage
+
+\begin{documentation}
+
+\section{引言}
+编写本宏包的动机来源于当前没有一个很好的错题本宏包，可以方便的根据各种条件对错
+题进行筛选、排序，然后以自定义的样式展示出来。\pkg{review} 宏包实现了四个核心
+功能：数据存储和使用、数据筛选、数据排序、数据展示。
+
+数据只需要存储一次，就可以通过预定义的筛选、排序条件和样式展示部分或全部的数据。
+如上所述，本宏包其实实现了一个非常简单的数据库，复习错题的功能只是其中一个应用，
+和其他数据库宏包比如 \pkg{datatool} 相比，\pkg{review} 更专注于非图表类型的数
+据展示。
+
+宏包基于 \pkg{expl3} 的基础类型构建了6种类型：
+\begin{Description}[\texttt{clist}]
+  \item[\texttt{date}]
+    基于宏包 \pkg{datetime2} 的日期类型，以iso标准存储，支持大小比较，排序（转
+    换成字符串）。默认值为 \cs{Today}。
+  \item[\texttt{str}]
+    字符串类型，支持正则匹配，英文排序。默认值为空。
+  \item[\texttt{tl}]
+    \meta{token list}类型，支持正则匹配。默认值为空。
+  \item[\texttt{int}]
+    整数类型，支持大小比较，排序。默认值为0。
+  \item[\texttt{fp}]
+    浮点数类型，支持大小比较，排序。默认值为0。
+  \item[\texttt{clist}]
+    逗号分隔的列表类型。默认值为空列表。
+\end{Description}
+
+\section{文档接口}
+\subsection{\cs{rvNewGroup}}
+\begin{function}{\rvNewGroup, \rvNewGroup*}
+  \begin{syntax}
+    \cs{rvNewGroup} \oarg{base group} \{ \\
+    ~~\meta{attr1} = \meta{type spec1}, \\
+    ~~\meta{attr2} = \meta{type spec2}, \\
+    ~~\ldots{} \\
+    \} \\
+    \cs{rvNewGroup}* \marg{group} \{ \\
+    ~~\meta{attr1} = \meta{type spec1}, \\
+    ~~\meta{attr2} = \meta{type spec2}, \\
+    ~~\ldots{} \\
+    \} \\
+  \end{syntax}
+
+\end{function}
+
+  新建一个组来存储数据，不带星号的版本可以指定一个组来继承属性设置，该版本总是
+  会舍弃掉之前的定义。
+
+  带星号的版本不会舍弃之前已有的定义，而是将新的选项添加到后面。
+
+  \meta{attr} 为属性名称，\meta{type spec} 负责声明属性类型和属性默认值：
+
+  \noindent\begin{tblr}{
+    colspec = {ll},
+    column{1} = {font = \ttfamily}
+  }
+    \meta{attr} = \meta{type} &
+    将 \meta{attr} 声明为 \meta{type} 类型 \\
+    \meta{attr} = \meta{type}\textbar\meta{default} &
+    将 \meta{attr} 声明为 \meta{type} 类型，并且将默认值设置为 \meta{default}。
+    \\
+  \end{tblr}
+
+  \begin{note}
+    每个组都有一个默认的属性 |id| 用来存储数据的索引。
+  \end{note}
+
+  下面是定义一个错题组的示例，|question| 和 |answer| 属性用来存储问题和答案，
+  |date| 属性存储日期，|info| 属性存储额外信息，|label| 存储题目标签。
+\begin{verbatim}
+  \rvNewGroup{ques}{
+    question = tl,
+    answer = tl,
+    date = date,
+    info = tl,
+    label = clist
+  }
+\end{verbatim}
+
+\subsection{\cs{rvNewGroupStyle} 和样式选项}
+
+\begin{function}{\rvNewGroupStyle}
+  \begin{syntax}
+    \cs{rvNewGroupStyle} \oarg{base styles} \marg{style} \marg{group} \marg{opts}
+  \end{syntax}
+
+  为 \meta{group} 定义一个新的样式 \meta{style}，该样式可以基于已有的样式
+  \meta{base styles}，比如 |\rvNewGroupStyle[base1, base2]{new-style}{ques}{}|。
+\end{function}
+
+\bigskip
+
+\begin{option}{opt=filter, desc={= \meta{filter}}, init=-none-}
+  为当前样式设置由 \cs{rvCombineFilters} 所定义的过滤器
+\end{option}
+
+\begin{option}{
+  opt = sort,
+  desc = {= \{ \meta{attr spec1}, \meta{attr spec2}, \ldots{} \}},
+}
+  为当前样式设置排序规则。支持根据 |str|，|date|，|int|，|fp| 类型的数据进行排
+  序，支持多级排序。\meta{attr} 表示增序，\meta{attr}* 表示降序。下面例子中，
+  使用 |sort-style| 展示数据时的顺序为先按 |level| 降序，|level| 相同的再按出
+  生日期 |birth| 增序，以此类推。
+\end{option}
+
+\begin{verbatim}
+  \rvNewGroup{sort-example}{
+    name = str,
+    birth = date,
+    level = int,
+    weight = fp,
+  }
+  \rvNewGroupStyle{sort-style}{sort-example}{
+    sort = { level*, birth, name, weight }
+  }
+\end{verbatim}
+
+\begin{option}{
+  opt = before-code,
+  desc = {= \meta{before code}}
+}
+  该选项用来设置在展示整个组之前需要执行的代码。
+\end{option}
+
+\begin{option}{
+  opt = after-code,
+  desc = {= \meta{after code}}
+}
+  该选项用来设置在展示整个组之后需要执行的代码。
+\end{option}
+
+\begin{option}{
+  opt = item-code,
+  desc = {= \meta{item code}}
+}
+  该选项用来设置展示组中每个元素的代码。
+\end{option}
+
+\begin{option}{
+  opt = {\meta{attr}/before-code},
+  desc = {= \meta{before code}}
+}
+  该选项用来设置展示组中属性 \meta{attr} 对应数据之前需要执行的代码。\cs{rvuse}
+  会在展示属性数据前执行此代码。
+\end{option}
+
+\begin{option}{
+  opt = {\meta{attr}/after-code},
+  desc = {= \meta{after code}}
+}
+  该选项用来设置展示组中属性 \meta{attr} 对应数据之后需要执行的代码。\cs{rvuse}
+  会在展示属性数据后执行此代码。
+\end{option}
+
+\begin{option}{
+  opt = {\meta{attr}/sep},
+  desc = {= \meta{sep spec}},
+  init = {,~\~}
+}
+\begin{Syntax}
+  \meta{attr}/sep = \meta{sep} \\
+  \meta{attr}/sep = \{\meta{sep between two}, \meta{sep between more than two}, \meta{sep between last two}\}
+\end{Syntax}
+
+  该选项只适用于类型为 |clist| 的属性，用来设置列表间元素的间隔。第一个版本接
+  受一个参数，将所有的元素间隔设置为 \meta{sep}。第二个版本接受逗号分隔的三个
+  参数，分别用来设置只有两个元素时的分隔符 \meta{sep between two}，超过两个元
+  素时的分隔符 \meta{sep between more than two}，和最后两个元素之间的分隔符
+  \meta{sep between last two}。
+
+\end{option}
+
+\begin{option}{
+  opt = item-before-code,
+  desc = {= \meta{before code}}
+}
+  该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素前需要执行的代
+  码。
+\end{option}
+
+\begin{option}{
+  opt = item-after-code,
+  desc = {= \meta{after code}}
+}
+  该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素后需要执行的代
+  码。
+\end{option}
+
+\subsection{使用 \cs{rvNewReviewPoints} 定义复习点}
+
+\begin{function}{\rvNewReviewPoints}
+  \begin{syntax}
+    \cs{rvNewReviewPoints} \marg{name} \marg{points}
+  \end{syntax}
+
+  定义名为 \meta{name} 的复习点。这是专门为错题本或复习所定制的功能，
+  \meta{points}是一系列整数，现在假设每道错题你都将写错时的日期记录在了 |date|
+  属性中，并且你希望每隔2，5，15天复习一次。下面的代码给出了一个实现示例。
+\begin{verbatim}
+  \rvNewReviewPoints{review-point}{2, 5, 15}            % 定义复习点
+  \begin{rvGroupFilters}
+    \rvNewConditional{cond1}{date}{review-point|\Today} % 定义复习条件
+    \rvCombineConditionals{filter1}{cond1}              % 定义过滤器
+  \end{rvGroupFilters}
+  \rvNewGroupStyle{review-style}{ques}{filter=filter1}  % 定义展示样式
+\end{verbatim}
+\end{function}
+
+\subsection{在 \env{rvGroupFilters} 环境中定义过滤器}
+
+\noindent\DescribeEnv{rvGroupFilters}
+\begin{Syntax}*
+  |\begin{rvGroupFilters}|\marg{group} \\
+  ~~\meta{code}
+  |\end{rvGroupFilters}| \\
+\end{Syntax}
+
+\env{rvGroupFilters}用来定义过滤器，此环境中定义了 \cs{rvNewConditional} 命令
+用来定义条件和 \cs{rvCombineConditionals} 命令用来组合条件定义过滤器。过滤器独
+立于每个 \meta{group}，这意味着你可以在不同组中定义名称相同的过滤条件和过滤器。
+
+\begin{function}{\rvNewConditional, \rvNewConditional*}
+  \begin{syntax}
+    \cs{rvNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
+    \cs{rvNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
+    \cs{rvNewConditional}  \marg{name} \marg{int/fp attr} \marg{rela} \\
+    \cs{rvNewConditional}* \marg{name} \marg{int/fp attr} \marg{rela} \\
+    \cs{rvNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex} \\
+    \cs{rvNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex} \\
+    \cs{rvNewConditional}  \marg{name}  \marg{clist attr} \marg{val list} \\
+    \cs{rvNewConditional}* \marg{name}  \marg{clist attr} \marg{val list} \\
+    \cs{rvNewConditional}  \marg{name}   \marg{date attr} \{ \meta{review points}\textbar\meta{date} \} \\
+    \cs{rvNewConditional}* \marg{name}   \marg{date attr} \marg{rela}
+  \end{syntax}
+
+  \cs{rvNewConditional} 用来定义名为 \meta{name} 的条件，\meta{attr} 指定条件
+  所绑定的属性，在 \meta{cond spec} 中可以用 \cs{rval} 指代属性的值。
+\end{function}
+
+  对于类型为 |int| 和 |fp| 的属性，两个版本的定义是一致的，\meta{rela} 可
+  以是单个关系式，比如 |\rval > 3|，也可以是组合关系式，比如
+  |\rval > 3 && \rval < 10.2|。支持的操作符有 |<, >, =, ==, !=, >=, <=, !|。
+
+  对于类型为 |str| 和 |tl| 的属性，\meta{regex} 为正则表达式，
+  \cs{rvNewConditional} 表示部分匹配，\cs{rvNewConditional*} 表示整体匹配。
+\begin{verbatim}
+  \rvNewConditional{cond1}{str-attr}{abc}  % 匹配 abc, abcd, 1abc, =abc= 等
+  \rvNewConditional*{cond2}{str-attr}{abc} % 只匹配 abc
+\end{verbatim}
+
+  对于类型为 |clist| 的属性，使用 \cs{rvNewConditional} 定义的条件只要
+  \meta{val list} 中的任意一个元素在属性值（列表）中则条件成立；使用
+  \cs{rvNewConditional*} 定义的条件只有 \meta{val list} 中每一个值都在属性值
+  （列表）中条件才成立。
+
+\begin{verbatim}
+  \rvNewConditional{cond1}{clist-attr}{a, b, c}  % a, b, d 满足条件
+  \rvNewConditional*{cond2}{clist-attr}{a, b, c} % a, b, d 不满足条件
+\end{verbatim}
+
+  对于类型为 |date| 的属性，\cs{rvNewConditional} 使用复习点来定义过滤条件，
+  \meta{review points} 是 \cs{rvNewReviewPoints} 定义的复习点，\meta{date} 是
+  用来比较的日期；\cs{rvNewConditional*} 使用\textbf{单个}关系式来定义过滤条件。
+  支持的操作符有 |<, >, =, ==, !=, >=, <=|。
+
+\begin{function}{\rvCombineConditionals}
+  \begin{syntax}
+    \cs{rvCombineConditionals} \marg{name} \marg{cond combination} \oarg{info}
+  \end{syntax}
+
+  \cs{rvCombineConditionals} 定义名为 \marg{name} 的过滤器，并将
+  \cs{rvNewConditional} 定义的条件组合起来，比如
+  \verb=\rvCombineConditionals{filter}{(cond1 && cond2) || !cond3}=。
+  \meta{cond combination} 中可以使用的关系操作符为 \verb=&&, ||, !=。
+  可以将 \opt{filter} 选项设置为 \meta{name} 来应用过滤器。\meta{info} 为过滤
+  器的相关信息，在展示组的时候可以用 \cs{rvFilterInfo} 指代。
+\end{function}
+
+\subsection{使用 \env{rvitem} 环境存储数据}
+
+\noindent\DescribeEnv{rvitem}
+\begin{Syntax}*
+  |\begin{rvitem}|\marg{group}[ \\
+  ~~\meta{attr1} = \meta{val1}, \\
+  ~~\meta{attr2} = \meta{val2}, \\
+  ~~\ldots{} \\
+  ] \\
+  ~~\meta{code} \\
+  |\end{rvitem}|
+\end{Syntax}
+
+  \env{rvitem} 环境用来存储数据。有两种存储数据的方法，较短的数据可以在选项列
+  表中通过键值对设置值，较长的数据可以在 \meta{code} 中使用 \cs{rvsave} 存储。
+  \cs{rvsave}会覆盖选项中设置的值。没有设置的值将会被设置为全局默认值，下面给
+  出一个存储示例。
+
+\begin{verbatim}
+  \begin{rvitem}[date=2022-01-01, info=测试]
+    \rvsave{question}{这是一个测试问题}
+    \rvsave{answer}{这是一个测试答案}
+  \end{rvitem}
+\end{verbatim}
+
+\subsection{\cs{rvsave} 和 \cs{rvuse}}
+
+\begin{function}{\rvsave, \rvuse}
+  \begin{syntax}
+    \cs{rvsave} \marg{attr} \marg{data} \\
+    \cs{rvuse}  \marg{attr} \\
+  \end{syntax}
+
+  \cs{rvsave} 用来存储数据，只能在 \env{item} 环境中使用。\cs{rvuse} 用来使用
+  数据，只能在 \opt{item-code} 选项中使用。
+\end{function}
+
+\subsection{使用 \cs{rvshow} 展示组}
+
+\begin{function}{\rvshow}
+  \begin{syntax}
+    \cs{rvshow} \marg{style} \marg{group}
+  \end{syntax}
+
+  使用 \meta{style} 样式来展示 \meta{group}。
+\end{function}
+
+\subsection{条件判别式}
+
+\begin{function}{\rvIfEmptyT, \rvIfEmptyF, \rvIfEmptyTF}
+  \begin{syntax}
+    \cs{rvIfEmptyTF} \marg{true code} \marg{false code} \\
+    \cs{rvIfEmptyT} \marg{true code} \\
+    \cs{rvIfEmptyF} \marg{false code}
+  \end{syntax}
+
+  该判别式用来判断当前组是否为空。下面的示例展示了如何预防空的列表环境。
+\end{function}
+
+\begin{verbatim}
+  \rvNewGroupStyle{style-cond1}{group-test}{
+    before-code = {\rvIfEmptyF{\begin{enumerate}}},
+    after-code = {\rvIfEmptyF{\end{enumerate}}},
+    item-code = {\item \rvuse{attr-test}}
+  }
+\end{verbatim}
+
+\begin{function}{\rvItemIfEmptyT, \rvItemIfEmptyF, \rvItemIfEmptyTF}
+  \begin{syntax}
+    \cs{rvItemIfEmptyTF} \marg{true code} \marg{false code} \\
+    \cs{rvItemIfEmptyT} \marg{true code} \\
+    \cs{rvItemIfEmptyF} \marg{false code}
+  \end{syntax}
+
+  该判别式用来判断当前元素是否为空。下面的示例展示了如何在展示 |group-test| 组
+  中 |text| 属性的元素时在元素非空的时候前后都加上 |*|。
+\end{function}
+
+\begin{verbatim}
+  \rvNewGroupStyle{style-cond2}{group-test}{
+    text/before-code = {\rvItemIfEmptyF{*}},
+    text/after-code = {\rvItemIfEmptyF{*}},
+  }
+\end{verbatim}
+
+\begin{function}{\rvClistItemIfEmptyT, \rvClistItemIfEmptyF, \rvClistItemIfEmptyTF}
+  \begin{syntax}
+    \cs{rvClistItemIfEmptyTF} \marg{true code} \marg{false code} \\
+    \cs{rvClistItemIfEmptyT} \marg{true code} \\
+    \cs{rvClistItemIfEmptyF} \marg{false code}
+  \end{syntax}
+
+  该判别式用来判断列表属性中的元素是否为空。下面的示例展示了如何在展示 |group-test| 组
+  中 |labels| 属性（标签列表）的元素时在标签非空的时候前后都加上 |*|。
+\end{function}
+
+\begin{verbatim}
+  \rvNewGroupStyle{style-cond3}{group-test}{
+    labels/item-before-code = {\rvClistItemIfEmptyF{*}},
+    labels/item-after-code = {\rvClistItemIfEmptyF{*}},
+  }
+\end{verbatim}
+
+\subsection{常量}
+
+\begin{function}{\rvGroup, \rvFilterName, \rvFilterInfo}
+  \cs{rvGroup} 指代组名，\cs{rvFilterName} 指代过滤器名称，\cs{rvFilterInfo}
+  指代过滤器额外信息。
+\end{function}
+
+\end{documentation}
+
+% \title{Package \texttt{review}}
+% \author{Li Changkai \texttt{<lichangkai225\@qq.com>}}
+% \date{2022-01-03}
+% \maketitle
+% \section{测试}
+\end{document}
