@@ -492,7 +492,7 @@
 }
 
 % #1 base style #2 style #3 group #4 opt
-\NewDocumentCommand { \rvNewGroupStyle } { o m m m } {
+\NewDocumentCommand { \rvNewGroupStyle } { o m m +m } {
   \tl_gset:cn { g__review_style_opts_#2_#3 } { #4, }
   \IfValueT { #1 } {
     \tl_gclear:N \g_tmpa_tl
@@ -598,8 +598,10 @@
         { g__review_style_item_before_#1_#2_####1 }
       \tl_set_eq:Nc \l_style_item_after_code
         { g__review_style_item_after_#1_#2_####1 }
+      \tl_set:Nn \rvIndex { ##1 }
 
       \prop_get:cnN { g__review_type_map_#2 } { ####1 } \l_tmp_type
+      % \tl_show:N \l_tmp_type
       \str_if_eq:eeT { \l_tmp_type } { date }
         { \tl_set:Nn \l_tmp_type { str } }
       \prg_set_conditional:Nnn \review_item_if_empty: { T, F, TF } {
