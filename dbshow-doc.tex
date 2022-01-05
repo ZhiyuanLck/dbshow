@@ -528,12 +528,29 @@
   }
 \end{verbatim}
 
-\subsection{常量}
+\subsection{特殊命令}
 
-\begin{function}{\dbDatabase, \dbFilterName, \dbFilterInfo, \dbIndex}
-  \cs{dbDatabase} 指代数据库名，\cs{dbFilterName} 指代过滤器名称，
-  \cs{dbFilterInfo} 指代过滤器额外信息，\cs{dbIndex} 指代当前索引。
-\end{function}
+\pkg{dbshow} 定义了一些特殊的命令，会根据语境展开为不同的内容。
+
+\DescribeMacro{\dbval}当前属性的值，只能在 \cs{dbNewConditional} 中使用
+
+\DescribeMacro{\dbDatabase}数据库名称
+
+\DescribeMacro{\dbFilterName}过滤器名称
+
+\DescribeMacro{\dbFilterInfo}过滤器信息
+
+\DescribeMacro{\dbIndex}原始数据索引，等同于 |\dbuse{id}| 但是 \cs{dbuse} 是不可展开的
+
+\DescribeMacro{\dbarabic}用数字表示的查询集数据计数
+
+\DescribeMacro{\dbalph}用小写字母表示的查询集数据计数
+
+\DescribeMacro{\dbAlph}用小写字母表示的查询集数据计数
+
+\DescribeMacro{\dbroman}用小写罗马数字表示的查询集数据计数
+
+\DescribeMacro{\dbRoman}用大写罗马数字表示的查询集数据计数
 
 \section{错题本示例}
 见第 \ref{sec:example} 节。
@@ -956,13 +973,30 @@ code is showned below.
   }
 \end{verbatim}
 
-\subsection{Constants}
+\subsection{Special Macros}
 
-\begin{function}{\dbDatabase, \dbFilterName, \dbFilterInfo, \dbIndex}
-  \cs{dbDatabase} represents for the database name, \cs{dbFilterName} represents for
-  the filter name, \cs{dbFilterInfo} represents for the extra info of the
-  filter and \cs{dbIndex} represents for the item index.
-\end{function}
+Some special macros are defined to expand to different contents according to context.
+
+\DescribeMacro{\dbval} Attribute value, only accessible in \cs{dbNewConditional}.
+
+\DescribeMacro{\dbDatabase} Database name.
+
+\DescribeMacro{\dbFilterName} Filter name.
+
+\DescribeMacro{\dbFilterInfo} Filter information.
+
+\DescribeMacro{\dbIndex} Index of original records, which is equal to |\rvuse{id}| but \cs{rvuse} is nonexpandable.
+
+
+\DescribeMacro{\dbarabic} Show the counter of query set as digits.
+
+\DescribeMacro{\dbalph} Show the counter of query set as lowercase letters.
+
+\DescribeMacro{\dbAlph} Show the counter of query set as uppercase letters.
+
+\DescribeMacro{\dbroman} Show the counter of query set as roman numerals.
+
+\DescribeMacro{\dbRoman} Show the counter of query set as Roman numerals.
 
 \section{Example of Flaw Sweeper Template}
 \label{sec:example}

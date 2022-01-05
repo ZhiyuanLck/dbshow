@@ -604,7 +604,15 @@
     { \dbshow_sort:nNn { #2 } \l_index { #1 } }
 
   % ##1 index
+  \int_zero_new:N \l_counter_int
   \cs_set:Nn \dbshow_iter:n {
+    \int_incr:N \l_counter_int
+    \tl_set:Nx \dbalph { \int_to_alph:n { \l_counter_int } }
+    \tl_set:Nx \dbAlph { \int_to_Alph:n { \l_counter_int } }
+    \tl_set:Nx \dbarabic { \int_to_arabic:n { \l_counter_int } }
+    \tl_set:Nx \dbRoman { \int_to_Roman:n { \l_counter_int } }
+    \tl_set:Nx \dbroman { \int_to_roman:n { \l_counter_int } }
+
     % ####1 attr
     \cs_set:Npn \dbuse ####1 {
       \dbshow_check_attr:nn { #2 } { ####1 }
