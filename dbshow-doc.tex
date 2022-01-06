@@ -235,6 +235,26 @@
   为当前样式设置由 \cs{dbCombineFilters} 所定义的过滤器
 \end{option}
 
+\begin{option}{opt=raw-filter, desc={= \meta{cond combination}}}
+  用已定义的条件为当前样式设置匿名过滤器。下面两个例子的作用是等同的。
+\end{option}
+
+\begin{verbatim}
+  % method 1
+  \begin{dbFilters}{db}
+    \dbNewConditional{cond1}{int-attr}{\rval > 1}
+    \dbNewConditional*{cond2}{str-attr}{\d+}
+  \end{dbFilters}
+  \dbNewStyle{style}{db}{raw-filter={cond1 && cond2}}
+  % method 2
+  \begin{dbFilters}{db}
+    \dbNewConditional{cond1}{int-attr}{\rval > 1}
+    \dbNewConditional*{cond2}{str-attr}{\d+}
+    \dbCombineFilters{filter}{cond1 && cond2}
+  \end{dbFilters}
+  \dbNewStyle{style}{db}{filter=filter}
+\end{verbatim}
+
 \begin{option}{
   opt = sort,
   desc = {= \{ \meta{attr spec1}, \meta{attr spec2}, \ldots{} \}},
@@ -663,6 +683,27 @@ from a list of \meta{base styles} such as
 \begin{option}{opt=filter, desc={= \meta{filter}}, init=-none-}
   Set the \meta{filter} defined by \cs{dbCombineFilters}.
 \end{option}
+
+\begin{option}{opt=raw-filter, desc={= \meta{cond combination}}}
+  Set anonymous with defined conditionals. Two examples below perform the same
+  function.
+\end{option}
+
+\begin{verbatim}
+  % method 1
+  \begin{dbFilters}{db}
+    \dbNewConditional{cond1}{int-attr}{\rval > 1}
+    \dbNewConditional*{cond2}{str-attr}{\d+}
+  \end{dbFilters}
+  \dbNewStyle{style}{db}{raw-filter={cond1 && cond2}}
+  % method 2
+  \begin{dbFilters}{db}
+    \dbNewConditional{cond1}{int-attr}{\rval > 1}
+    \dbNewConditional*{cond2}{str-attr}{\d+}
+    \dbCombineFilters{filter}{cond1 && cond2}
+  \end{dbFilters}
+  \dbNewStyle{style}{db}{filter=filter}
+\end{verbatim}
 
 \begin{option}{
   opt = sort,

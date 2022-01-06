@@ -444,7 +444,6 @@
   \tl_gset_eq:cN { g__dbshow_filter_bool_tl_#1_#2 } \l_tmpa_tl
 }
 
-\cs_generate_variant:Nn \regex_replace_all:nnN { nnc }
 % #1 database #2 content
 \NewDocumentEnvironment { dbFilters } { m +b } {
   \seq_gclear_new:c { g__dbshow_cond_list_#1 }
@@ -488,12 +487,19 @@
   }
 }
 
+\int_gzero_new:N \g__dbshow_raw_filter_int
 % #1 style name #2 database name
 \cs_new_protected:Nn \dbshow_new_database_style:nn {
   \dbshow_check_database:n { #2 }
   \keys_define:nn { dbshow/style/#1 } {
     filter .tl_gset:c = { g__dbshow_filter_#1_#2 },
     filter .initial:n = -none-,
+    raw-filter .code:n = {
+      \int_gincr:N \g__dbshow_raw_filter_int
+      \str_set:Nx \l_tmpa_str { -raw\int_use:N \g__dbshow_raw_filter_int - }
+      \exp_args:NnV \tl_gset:cn { g__dbshow_filter_#1_#2 } \l_tmpa_str
+      \exp_args:NnV \dbshow_combine_conditional:nnn { #2 } \l_tmpa_str { ##1 }
+    },
     sort .clist_gset:c = { g__dbshow_sort_#1_#2 },
     before-code .tl_gset:c = { g__dbshow_style_before_#1_#2 },
     before-code .initial:n = ,
