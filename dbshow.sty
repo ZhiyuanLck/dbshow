@@ -612,6 +612,7 @@
     \tl_set:Nx \dbarabic { \int_to_arabic:n { \l_counter_int } }
     \tl_set:Nx \dbRoman { \int_to_Roman:n { \l_counter_int } }
     \tl_set:Nx \dbroman { \int_to_roman:n { \l_counter_int } }
+    \tl_set:Nn \dbIndex { ##1 }
 
     % ####1 attr
     \cs_set:Npn \dbuse ####1 {
@@ -622,7 +623,6 @@
         { g__dbshow_style_item_before_#1_#2_####1 }
       \tl_set_eq:Nc \l_style_item_after_code
         { g__dbshow_style_item_after_#1_#2_####1 }
-      \tl_set:Nn \dbIndex { ##1 }
 
       \prop_get:cnN { g__dbshow_type_map_#2 } { ####1 } \l_tmp_type
       % \tl_show:N \l_tmp_type
