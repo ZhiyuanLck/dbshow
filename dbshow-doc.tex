@@ -7,6 +7,9 @@
 \usepackage{geometry}
 \usepackage{tabularray}
 \usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings, skins, raster, breakable}
+\usepackage{tabularray}
 
 \IndexPrologue
   {
@@ -56,6 +59,10 @@
 }
 
 \ExplSyntaxOn
+\NewDocumentCommand { \strcs } { m } {
+  \texttt{\tl_to_str:n { #1 }}
+}
+
 \dim_new:N \l__my_syntax_dim
 \box_new:N \g__my_syntax_box
 \NewDocumentEnvironment { Syntax } { s }
@@ -129,13 +136,10 @@
   }}
 }
 \author{\textit{李昌锴} \texttt{<lichangkai225@qq.com>}}
-\date{2022年1月3日}
+\date{2022年1月7日}
 \maketitle
 
-{\small
 \tableofcontents
-}
-\newpage
 
 \begin{documentation}
 
@@ -585,7 +589,7 @@
   }}
 }
 \author{Li Changkai \texttt{<lichangkai225@qq.com>}}
-\date{2022/01/03}
+\date{2022/01/07}
 \maketitle
 
 \section{Introduction}
@@ -1042,91 +1046,212 @@ Some special macros are defined to expand to different contents according to con
 \section{Example of Flaw Sweeper Template}
 \label{sec:example}
 
-\begin{verbatim}
-  \documentclass{article}
-  \usepackage{dbshow}
-  \usepackage{hyperref}
+\begin{tcblisting}{enhanced jigsaw,lower separated=false,
+leftlower=0pt,rightlower=0pt,
+colframe=red!50!black,colback=yellow!10!white,
+listing options={style=tcblatex,texcsstyle=*\color{red!70!black}},
+listing and comment,
+pdf comment,freeze pdf,
+compilable listing,
+breakable,
+run pdflatex
+}
+\documentclass{article}
+\usepackage{amsmath, physics}
+\usepackage{geometry}
+\usepackage{dbshow}
+\usepackage{tikz}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins}
+\usetikzlibrary{shadings}
+\usepackage[hidelinks]{hyperref}
 
-  \NewDocumentCommand { \hyperlinktarget } { m m m } {%
-    \hyperlink{#1}{#3}\hypertarget{#2}{}
+\geometry{
+  margin=2cm
+}
+
+% #1 link node #2 target node #3 text to show
+\NewDocumentCommand \linktarget { m m m } {%
+  \hyperlink{#1}{#3}%
+  \raisebox{1em}{\hypertarget{#2}{}}%
+}
+
+% question box
+\tcbset{
+  base/.style={
+    empty,
+    frame engine=path,
+    colframe=yellow!10,
+    coltitle=red!70,
+    fonttitle=\bfseries\sffamily,
+    sharp corners,
+    left=4pt,
+    right=4pt,
+    drop fuzzy shadow,
+    drop fuzzy shadow,
+    borderline west={3pt}{-3pt}{red!80},
   }
+}
 
-  \dbNewDatabase{ques}{
-    question=tl,
-    answer=tl,
-    date=date,
-    count=int,
-    labels=clist
+\newtcolorbox{mybox}[1]{%
+  base, title = {#1}
+}
+
+\dbNewReviewPoints{review}{1, 3, 7, 15, 30, 60}
+
+\dbNewDatabase{ques-book}{
+  ques = tl,
+  answer = tl,
+  count = int|1,
+  labels = clist,
+  date = date,
+}
+
+\begin{dbFilters}{ques-book}
+  \dbNewConditional{hard}{labels}{hard}
+  \dbNewConditional{bad}{count}{\dbval > 1}
+  \dbNewConditional{review}{date}{review|2022-01-07}
+\end{dbFilters}
+
+% show all questions with hyperlink to answers
+\dbNewStyle{ques}{ques-book}{
+  before-code = {\section{Questions}},
+  item-code = {
+    \begin{mybox}{%
+      \linktarget{answer_\dbIndex}{ques_\dbIndex}{%
+        Question \dbarabic%
+        \hspace{2em}\dbuse{date}%
+        \hspace{2em}\dbuse{labels}%
+        \hfill\dbuse{count}%
+      }%
+    }
+      \dbuse{ques}%
+    \end{mybox}
+  },
+  labels/sep = /,
+}
+
+% show all questions and answers with hyperlink to questions
+\dbNewStyle{answer}{ques-book}{
+  before-code = {\section{Questions and Answers}},
+  item-code = {
+    \begin{mybox}{%
+      \linktarget{ques_\dbIndex}{answer_\dbIndex}{%
+        Question \dbarabic%
+        \hspace{2em}\dbuse{date}%
+        \hspace{2em}\dbuse{labels}%
+        \hfill\dbuse{count}%
+      }%
+    }
+      \dbuse{ques}\tcbsubtitle{Answer}\dbuse{answer}%
+    \end{mybox}
+  },
+  labels/sep = /,
+}
+
+% show all hard questions with hyperlink to answers
+\dbNewStyle{hard}{ques-book}{
+  before-code = {\section{Hard Questions}},
+  item-code = {
+    \begin{mybox}{%
+      \hyperlink{answer_\dbIndex}{%
+        Question \dbarabic%
+        \hspace{2em}\dbuse{date}%
+        \hspace{2em}\dbuse{labels}%
+        \hfill\dbuse{count}%
+      }%
+    }
+      \dbuse{ques}%
+    \end{mybox}
+  },
+  raw-filter = hard,
+  labels/sep = /,
+}
+
+% show all hard questions that have answered incorrectly for more than one
+% time with hyperlink to answers
+\dbNewStyle[hard]{bad}{ques-book}{
+  before-code = {\section{Bad Questions}},
+  raw-filter = {bad && hard},
+}
+% show all questions that plan to be reviewed on 2022-01-07 with hyperlink to
+% answers
+\dbNewStyle[hard]{review}{ques-book}{
+  before-code = {\section{Questions to be Reviewed}},
+  raw-filter = {review},
+}
+
+\AtEndDocument{
+  \dbshow{review}{ques-book}
+  \dbshow{hard}{ques-book}
+  \dbshow{bad}{ques-book}
+  \dbshow{ques}{ques-book}
+  \dbshow{answer}{ques-book}
+}
+
+\begin{document}
+
+\begin{dbitem}{ques-book}[
+  date=2022-01-01,
+  labels={math, equation, easy},
+  count=2
+  ]
+  \dbsave{ques}{%
+    Solve the linear equation: $x + 16 = 31$.
   }
-  \dbNewReviewPoints{review}{1, 3, 7, 15, 30, 60}
-
-  \begin{dbFilters}{ques}
-    % which need reviewed today?
-    \dbNewConditional{date}{date}{review|2021-12-25}
-    \dbNewConditional{easy}{labels}{easy}
-    \dbNewConditional{not-easy}{labels}{mid, hard}
-    % questions you haven't answered correctly for more than 3 times!
-    \dbNewConditional{bad}{count}{\dbval > 3}
-    \dbCombineConditionals{date}{date}[to be review today]
-    \dbCombineConditionals{easy}{easy}[easy questions]
-    \dbCombineConditionals{not-easy}{not-easy}[hard questions]
-    \dbCombineConditionals{bad}{bad}[bad questions]
-    \dbCombineConditionals{bad-easy}{bad && easy}[bad but easy questions]
-  \end{dbFilters}
-
-  \newcounter{ques}
-
-  \dbNewStyle{test}{ques} {
-    before-code = {\setcounter{ques}{0}\section{Test}},
-    item-code = {
-      \refstepcounter{ques}
-      \par\noindent\arabic{ques}. \dbuse{labels} \dbuse{date}\hfill \dbuse{count}
-      \par\noindent ques: \dbuse{question}
-      \par\noindent\hyperlinktarget
-        {answer_\dbIndex}{ques_\dbIndex}{go to answer}
-    },
+  \dbsave{answer}{%
+    $x = 31 - 16 = 15$
   }
-  \dbNewStyle{check}{ques} {
-    before-code = {\setcounter{ques}{0}\section{Answer}},
-    item-code = {
-      \refstepcounter{ques}
-      \par\noindent\arabic{ques}. \dbuse{labels} \dbuse{date}\hfill \dbuse{count}
-      \par\noindent ques: \dbuse{question}
-      \par\noindent\hyperlinktarget
-        {ques_\dbIndex}{answer_\dbIndex}{back to question}
-      \par\noindent answer: \dbuse{answer}
-    },
+\end{dbitem}
+
+\begin{dbitem}{ques-book}[
+  date=2022-01-01,
+  labels={math, equation, hard},
+  count=3
+  ]
+  \dbsave{ques}{%
+    Solve the linear equation: $2y = 16$.
   }
-  \dbNewStyle[test]{test-bad}{ques}{
-    filter=bad,
-    before-code = {\setcounter{ques}{0}\section{Bad Question}}
+  \dbsave{answer}{%
+    $y = 16 / 2 = 8$
   }
+\end{dbitem}
 
-  \AtEndDocument{
-    \dbshow{test}{ques}
-    \dbshow{test-bad}{ques}
-    \dbshow{check}{ques}
+\begin{dbitem}{ques-book}[
+  date=2022-01-04,
+  labels={math, integral, hard},
+  count=1
+  ]
+  \dbsave{ques}{%
+    Find the indefinite integral: $\int 2x \dd x$.
   }
+  \dbsave{answer}{%
+    $\int 2x \dd x = x^2$
+  }
+\end{dbitem}
 
-  \begin{document}
+\end{document}
+\end{tcblisting}
 
-  \begin{dbitem}{ques}[date=2021-12-21, count=1, labels=easy]
-    \dbsave{question}{This is test question 1.}
-    \dbsave{answer}{This is test question 1.}
-  \end{dbitem}
-
-  \begin{dbitem}{ques}[date=2021-12-22, count=4, labels=easy]
-    \dbsave{question}{This is test question 2.}
-    \dbsave{answer}{This is test question 2.}
-  \end{dbitem}
-
-  \begin{dbitem}{ques}[date=2021-12-23, count=3, labels=hard]
-    \dbsave{question}{This is test question 3.}
-    \dbsave{answer}{This is test question 3.}
-  \end{dbitem}
-
-  \end{document}
-\end{verbatim}
+\section*{Change History}
+\markboth{Change History}{Change History}
+\addcontentsline{toc}{section}{Change History}
+\noindent
+\begin{tblr}{
+  colspec = {lll},
+  row{1} = {font=\bfseries},
+}
+  Date & Ver. & Describe \\
+  2022-01-05 & 1.0 & {
+    First version \\
+    Add macro: \cmd{\dbarabic}, \cmd{\dbalph}, \cmd{\dbAlph}, \cmd{\dbroman}, \cmd{\dbRoman}
+  } \\
+  2022-01-06 & & {
+    Fix bug: \cmd{\dbIndex} undefined \\
+    Add style option: \opt{raw-filter}
+  } \\
+  2022-01-07 & 1.1 & Improve example \\
+\end{tblr}
 
 \end{documentation}
 
