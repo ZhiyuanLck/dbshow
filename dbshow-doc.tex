@@ -275,7 +275,7 @@
   \meta{base styles}，比如 |\dbNewStyle[base1, base2]{new-style}{ques}{}|。
 \end{function}
 
-\bigskip
+\subsubsection{通用选项}
 
 \begin{option}{opt=filter, desc={= \meta{filter}}, init=-none-}
   为当前样式设置由 \cs{dbCombineFilters} 所定义的过滤器
@@ -324,41 +324,11 @@
 \end{verbatim}
 
 \begin{option}{
-  opt = before-code,
-  desc = {= \meta{before code}}
-}
-  该选项用来设置在展示整个数据库之前需要执行的代码。
-\end{option}
-
-\begin{option}{
-  opt = after-code,
-  desc = {= \meta{after code}}
-}
-  该选项用来设置在展示整个数据库之后需要执行的代码。
-\end{option}
-
-\begin{option}{
   opt = item-code,
   desc = {= \meta{item code}}
 }
   该选项用来设置展示数据库中每条记录的代码。你可以使用 \cs{dbuse} 来展示属性的
   值。
-\end{option}
-
-\begin{option}{
-  opt = {\meta{attr}/before-code},
-  desc = {= \meta{before code}}
-}
-  该选项用来设置展示数据库中属性 \meta{attr} 对应数据之前需要执行的代码。
-  \cs{dbuse} 会在展示属性数据前执行此代码。
-\end{option}
-
-\begin{option}{
-  opt = {\meta{attr}/after-code},
-  desc = {= \meta{after code}}
-}
-  该选项用来设置展示数据库中属性 \meta{attr} 对应数据之后需要执行的代码。
-  \cs{dbuse} 会在展示属性数据后执行此代码。
 \end{option}
 
 \begin{option}{
@@ -383,8 +353,84 @@
 
 \end{option}
 
+\subsubsection{装饰器}
+
+下面这些选项在不同层次上装饰原有的展示代码，有些其实不必通过选项的形式来装饰，
+但这样做的好处是可以进一步使样式与内容分离。下面的例子中，\meta{style1} 和
+\meta{style2} 是相同的样式，都用 * 将 \meta{attr1} 包裹住了，但是如果你还想定
+义一个样式用 = 将 \meta{attr1} 包裹住，如果用 \meta{style1} 的方式，那就可能
+需要重复大片代码，用 \meta{style2} 的方式则可以很轻松的继承 \meta{style1} 中的
+代码。
+
+\begin{verbatim}
+  \dbNewStyle{style1}{db}{
+    item-code = {%
+      *\rvuse{attr1}*\rvuse{attr2}
+      % more code
+    }
+  }
+  \dbNewStyle{base-style}{db}{
+    item-code = {%
+      \rvuse{attr1}\rvuse{attr2}
+      % more code
+    }
+  }
+  \dbNewStyle[base-style]{style2}{db}{
+    attr1/before-code = { * },
+    attr1/after-code = { * },
+  }
+  \dbNewStyle[base-style]{style3}{db}{
+    attr1/before-code = { = },
+    attr1/after-code = { = },
+  }
+\end{verbatim}
+
 \begin{option}{
-  opt = item-before-code,
+  opt = before-code,
+  desc = {= \meta{before code}}
+}
+  该选项用来设置在展示整个数据库之前需要执行的代码。
+\end{option}
+
+\begin{option}{
+  opt = after-code,
+  desc = {= \meta{after code}}
+}
+  该选项用来设置在展示整个数据库之后需要执行的代码。
+\end{option}
+
+\begin{option}{
+  opt = record-before-code,
+  desc = {= \meta{before code}}
+}
+  该选项用来设置在展示当前记录之前需要执行的代码。
+\end{option}
+
+\begin{option}{
+  opt = record-after-code,
+  desc = {= \meta{after code}}
+}
+  该选项用来设置在展示当前记录之后需要执行的代码。
+\end{option}
+
+\begin{option}{
+  opt = {\meta{attr}/before-code},
+  desc = {= \meta{before code}}
+}
+  该选项用来设置展示数据库中属性 \meta{attr} 对应数据之前需要执行的代码。
+  \cs{dbuse} 会在展示属性数据前执行此代码。
+\end{option}
+
+\begin{option}{
+  opt = {\meta{attr}/after-code},
+  desc = {= \meta{after code}}
+}
+  该选项用来设置展示数据库中属性 \meta{attr} 对应数据之后需要执行的代码。
+  \cs{dbuse} 会在展示属性数据后执行此代码。
+\end{option}
+
+\begin{option}{
+  opt = {\meta{attr}/item-before-code},
   desc = {= \meta{before code}}
 }
   该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素前需要执行的代
@@ -392,7 +438,7 @@
 \end{option}
 
 \begin{option}{
-  opt = item-after-code,
+  opt = {\meta{attr}/item-after-code},
   desc = {= \meta{after code}}
 }
   该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素后需要执行的代
@@ -516,19 +562,26 @@
 
 \subsection{\cs{dbsave} 和 \cs{dbuse}}
 
-\begin{function}{\dbsave, \dbuse}
+\begin{function}{\dbsave}
   \begin{syntax}
-    \cs{dbsave} \marg{attr} \marg{data} \\
-    \cs{dbuse}  \marg{attr} \\
+    \cs{dbsave} \marg{attr} \marg{data}
   \end{syntax}
 
-  \cs{dbsave} 用来存储数据，只能在 \env{item} 环境中使用。\cs{dbuse} 用来使用
-  数据，只能在 \opt{item-code} 选项中使用。
+  \cs{dbsave} 用来存储数据，只能在 \env{item} 环境中使用。
+\end{function}
+
+\begin{function}[EXP]{\dbuse}
+  \begin{syntax}
+    \cs{dbuse}  \marg{attr}
+  \end{syntax}
+
+  \cs{dbuse} 用来使用数据，只能在 \opt{item-code} 选项中使用。\cs{dbuse} 是可
+  展开的。
 \end{function}
 
 \subsection{条件判别式}
 
-\begin{function}{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
+\begin{function}[EXP]{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
   \begin{syntax}
     \cs{dbIfEmptyTF} \marg{true code} \marg{false code} \\
     \cs{dbIfEmptyT} \marg{true code} \\
@@ -543,44 +596,6 @@
     before-code = {\dbIfEmptyF{\begin{enumerate}}},
     after-code = {\dbIfEmptyF{\end{enumerate}}},
     item-code = {\item \dbuse{attr-test}}
-  }
-\end{verbatim}
-
-\begin{function}{\dbItemIfEmptyT, \dbItemIfEmptyF, \dbItemIfEmptyTF}
-  \begin{syntax}
-    \cs{dbItemIfEmptyTF} \marg{true code} \marg{false code} \\
-    \cs{dbItemIfEmptyT} \marg{true code} \\
-    \cs{dbItemIfEmptyF} \marg{false code}
-  \end{syntax}
-
-  该判别式用来判断当前元素是否为空。下面的示例展示了如何在展示 |database-test|
-  数据库中 |text| 属性的元素时在元素非空的时候前后都加上 |*|。
-\end{function}
-
-\begin{verbatim}
-  \dbNewStyle{style-cond2}{database-test}{
-    text/before-code = {\dbItemIfEmptyF{*}},
-    text/after-code = {\dbItemIfEmptyF{*}},
-  }
-\end{verbatim}
-
-\begin{function}{\dbClistItemIfEmptyT, \dbClistItemIfEmptyF, \dbClistItemIfEmptyTF}
-  \begin{syntax}
-    \cs{dbClistItemIfEmptyTF} \marg{true code} \marg{false code} \\
-    \cs{dbClistItemIfEmptyT} \marg{true code} \\
-    \cs{dbClistItemIfEmptyF} \marg{false code}
-  \end{syntax}
-
-  该判别式用来判断列表属性中的元素是否为空。下面的示例展示了如何在展示
-  |database-test| 数据库中 |labels| 属性（标签列表）的元素时在标签非空的时候前
-  后都加上 |*|。
-\end{function}
-
-\begin{verbatim}
-  \dbNewDatabase{database-test}{labels=clist}
-  \dbNewStyle{style-cond3}{database-test}{
-    labels/item-before-code = {\dbClistItemIfEmptyF{*}},
-    labels/item-after-code = {\dbClistItemIfEmptyF{*}},
   }
 \end{verbatim}
 
@@ -750,7 +765,7 @@ from a list of \meta{base styles} such as
 |\dbNewStyle[base1, base2]{new-style}{ques}{}|.
 \end{function}
 
-\bigskip
+\subsubsection{General Options}
 
 \begin{option}{opt=filter, desc={= \meta{filter}}, init=-none-}
   Set the \meta{filter} defined by \cs{dbCombineFilters}.
@@ -802,41 +817,11 @@ from a list of \meta{base styles} such as
 \end{verbatim}
 
 \begin{option}{
-  opt = before-code,
-  desc = {= \meta{before code}}
-}
-  Set the \meta{before code} that is executed before displaying the database.
-\end{option}
-
-\begin{option}{
-  opt = after-code,
-  desc = {= \meta{after code}}
-}
-  Set the \meta{after code} that is executed after displaying the database.
-\end{option}
-
-\begin{option}{
   opt = item-code,
   desc = {= \meta{item code}}
 }
   Set the code that show a single record. You can use \cs{dbuse} to display
   certian attribute.
-\end{option}
-
-\begin{option}{
-  opt = {\meta{attr}/before-code},
-  desc = {= \meta{before code}}
-}
-  Set the \meta{before code} that is executed by \cs{dbuse} before displaying
-  certain attribute.
-\end{option}
-
-\begin{option}{
-  opt = {\meta{attr}/after-code},
-  desc = {= \meta{after code}}
-}
-  Set the \meta{after code} that is executed by \cs{dbuse} after displaying
-  certain attribute.
 \end{option}
 
 \begin{option}{
@@ -869,8 +854,87 @@ from a list of \meta{base styles} such as
 
 \end{option}
 
+\subsubsection{Decorators}
+
+The options below serves as decorators. In some cases, decorator can also be
+encoded directly into |item-code| or some other places, which is convenient
+sometimes. The benefit of defining decorators with options is that styles step
+further to be divided with contents. In the examples below, \meta{style1} and
+\meta{style2} is the same style, which wrap \meta{attr1} with *. When you want
+another style which wrap \meta{attr1} with =, if you choose the way of
+\meta{style1}, \meta{item code} are repeated, otherwise if you choose the way
+of \meta{style2}, \meta{item code} is inherited and you only need define the
+decorators.
+
+\begin{verbatim}
+  \dbNewStyle{style1}{db}{
+    item-code = {%
+      *\rvuse{attr1}*\rvuse{attr2}
+      % more code
+    }
+  }
+  \dbNewStyle{base-style}{db}{
+    item-code = {%
+      \rvuse{attr1}\rvuse{attr2}
+      % more code
+    }
+  }
+  \dbNewStyle[base-style]{style2}{db}{
+    attr1/before-code = { * },
+    attr1/after-code = { * },
+  }
+  \dbNewStyle[base-style]{style3}{db}{
+    attr1/before-code = { = },
+    attr1/after-code = { = },
+  }
+\end{verbatim}
+
 \begin{option}{
-  opt = item-before-code,
+  opt = before-code,
+  desc = {= \meta{before code}}
+}
+  Set the \meta{before code} that is executed before displaying the database.
+\end{option}
+
+\begin{option}{
+  opt = after-code,
+  desc = {= \meta{after code}}
+}
+  Set the \meta{after code} that is executed after displaying the database.
+\end{option}
+
+\begin{option}{
+  opt = record-before-code,
+  desc = {= \meta{before code}}
+}
+  Set the \meta{before code} that is executed before displaying the record.
+\end{option}
+
+\begin{option}{
+  opt = record-after-code,
+  desc = {= \meta{after code}}
+}
+  Set the \meta{after code} that is executed after displaying the record.
+\end{option}
+
+\begin{option}{
+  opt = {\meta{attr}/before-code},
+  desc = {= \meta{before code}}
+}
+  Set the \meta{before code} that is executed by \cs{dbuse} before displaying
+  certain attribute.
+\end{option}
+
+\begin{option}{
+  opt = {\meta{attr}/after-code},
+  desc = {= \meta{after code}}
+}
+  Set the \meta{after code} that is executed by \cs{dbuse} after displaying
+  certain attribute.
+\end{option}
+
+\begin{option}{
+  opt = {\meta{attr}/item-before-code},
   desc = {= \meta{before code}}
 }
   Only for attributes of type |clist|. Set the \meta{after code} that is
@@ -878,7 +942,7 @@ from a list of \meta{base styles} such as
 \end{option}
 
 \begin{option}{
-  opt = item-after-code,
+  opt = {\meta{attr}/item-after-code},
   desc = {= \meta{after code}}
 }
   Only for attributes of type |clist|. Set the \meta{after code} that is
@@ -1007,20 +1071,27 @@ code is showned below.
 
 \subsection{\cs{dbsave} and \cs{dbuse}}
 
-\begin{function}{\dbsave, \dbuse}
+\begin{function}{\dbsave}
   \begin{syntax}
-    \cs{dbsave} \marg{attr} \marg{data} \\
-    \cs{dbuse}  \marg{attr} \\
+    \cs{dbsave} \marg{attr} \marg{data}
   \end{syntax}
 
-  Date is stored with \cs{dbsave} and is displayed with \cs{dbuse}.  \cs{dbsave}
-  can be used only inside the \env{dbitem} environment and \cs{dbuse} can be
-  only used inside the option \opt{item-code}.
+  \cs{dbsave} save the \meta{data} to \meta{attr} of current record.
+  \cs{dbsave} can be used only inside the \env{dbitem} environment.
+\end{function}
+
+\begin{function}[EXP]{\dbuse}
+  \begin{syntax}
+    \cs{dbuse}  \marg{attr}
+  \end{syntax}
+
+  Display the value of \meta{attr} of current record. \cs{dbuse} is
+  \textbf{expandable} and can be only used inside the option \opt{item-code}.
 \end{function}
 
 \subsection{Conditionals}
 
-\begin{function}{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
+\begin{function}[EXP]{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
   \begin{syntax}
     \cs{dbIfEmptyTF} \marg{true code} \marg{false code} \\
     \cs{dbIfEmptyT} \marg{true code} \\
@@ -1036,43 +1107,6 @@ code is showned below.
     before-code = {\dbIfEmptyF{\begin{enumerate}}},
     after-code = {\dbIfEmptyF{\end{enumerate}}},
     item-code = {\item \dbuse{attr-test}}
-  }
-\end{verbatim}
-
-\begin{function}{\dbItemIfEmptyT, \dbItemIfEmptyF, \dbItemIfEmptyTF}
-  \begin{syntax}
-    \cs{dbItemIfEmptyTF} \marg{true code} \marg{false code} \\
-    \cs{dbItemIfEmptyT} \marg{true code} \\
-    \cs{dbItemIfEmptyF} \marg{false code}
-  \end{syntax}
-
-  Test if the value of the attribute is empty. The example belows shows how to
-  surround the non-empty |text| attribute with the symbol *.
-\end{function}
-
-\begin{verbatim}
-  \dbNewStyle{style-cond2}{database-test}{
-    text/before-code = {\dbItemIfEmptyF{*}},
-    text/after-code = {\dbItemIfEmptyF{*}},
-  }
-\end{verbatim}
-
-\begin{function}{\dbClistItemIfEmptyT, \dbClistItemIfEmptyF, \dbClistItemIfEmptyTF}
-  \begin{syntax}
-    \cs{dbClistItemIfEmptyTF} \marg{true code} \marg{false code} \\
-    \cs{dbClistItemIfEmptyT} \marg{true code} \\
-    \cs{dbClistItemIfEmptyF} \marg{false code}
-  \end{syntax}
-
-  Test if the item of comma list is empty. The example belows shows how to
-  surround the non-empty label with the symbol *.
-\end{function}
-
-\begin{verbatim}
-  \dbNewDatabase{database-test}{labels=clist}
-  \dbNewStyle{style-cond3}{database-test}{
-    labels/item-before-code = {\dbClistItemIfEmptyF{*}},
-    labels/item-after-code = {\dbClistItemIfEmptyF{*}},
   }
 \end{verbatim}
 
@@ -1311,6 +1345,12 @@ run pdflatex
   2022-01-07 & 1.1 & Improve example \\
   2022-01-07 & 1.1.1 & Add macro: \cmd{\dbclear} \\
   2022-01-07 & 1.1.2 & Add documentation: comparison to \pkg{datatool} \\
+  2022-01-08 & 1.2 & {
+    Fix str sorting bug \\
+    Remove macros: \cmd{\dbItemIfEmpty(TF)}, \cmd{\dbClistItemIfEmpty(TF)} \\
+    Make \cs{dbuse} expandable \\
+    Add option: \opt{record-before-code}, \opt{record-after-code}
+  } \\
 \end{tblr}
 
 \end{documentation}

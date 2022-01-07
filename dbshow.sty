@@ -97,15 +97,15 @@
   sep~=~\{#2\}~\msg_line_context:.
 }
 
-\msg_new:nnn { dbshow } { unsupported-sort-type } {
-  unsupported~sort~type:~'#1'~\msg_line_context:.~The~type~should~be~one~of~
-  \{str,~date,~int,~fp\}.
-}
-
 \cs_new:Nn \dbshow_sep_error:nn {
   \msg_error:nnnn { dbshow } { wrong-seperator } { #1 } { #2 }
 }
 \cs_generate_variant:Nn \dbshow_sep_error:nn { xx }
+
+\msg_new:nnn { dbshow } { unsupported-sort-type } {
+  unsupported~sort~type:~'#1'~\msg_line_context:.~The~type~should~be~one~of~
+  \{str,~date,~int,~fp\}.
+}
 
 \clist_const:Nn \dbshow_type_clist { date, str, tl, clist, int, fp }
 
@@ -127,15 +127,6 @@
   fp = fp_gset:cn
 }
 
-\prop_const_from_keyval:Nn \dbshow_use_cs_map {
-  date = str_use:c,
-  str = str_use:c,
-  tl = tl_use:c,
-  clist = dbshow_clist_use:c,
-  int = int_use:c,
-  fp = fp_use:c
-}
-
 \prop_const_from_keyval:Nn \dbshow_default_value {
   date = \Today,
   str = ,
@@ -146,6 +137,14 @@
 }
 
 \newcount\l_dbshow_date_diff
+\clist_new:N \l_style_sep_clist
+\tl_new:N \l_style_item_before_code
+\tl_new:N \l_style_item_after_code
+\cs_generate_variant:Nn \clist_use:nn { xx }
+\cs_generate_variant:Nn \clist_use:nnnn { xxxx }
+\prg_generate_conditional_variant:Nnn \str_compare:nNn { VNV } { TF }
+\prg_generate_conditional_variant:Nnn \int_compare:nNn { VNV } { TF }
+\prg_generate_conditional_variant:Nnn \fp_compare:nNn { VNV } { TF }
 
 % #1 database #2 attr #3 type #4 default value
 \cs_new:Npn \dbshow_process_default_value:w #1|#2=#3|#4\scan_stop {
@@ -225,53 +224,53 @@
 }
 \cs_generate_variant:Nn \dbshow_save_data:nnn { nnx }
 
-\cs_new:Nn \dbshow_clist_use:N {
-  \clist_clear:N \l_tmpa_clist
+\cs_new:Nn \dbshow_brace:n {
+  \exp_not:n { { #1 } }
+}
 
-  \clist_map_inline:Nn #1 {
-    \prg_set_conditional:Nnn \dbshow_clist_item_if_empty: { T, F, TF } {
-      \tl_if_empty:nTF { ##1 }
-        { \prg_return_true: }
-        { \prg_return_false: }
-    }
-    \cs_set_eq:NN \dbClistItemIfEmptyT\dbshow_clist_item_if_empty:T
-    \cs_set_eq:NN \dbClistItemIfEmptyF\dbshow_clist_item_if_empty:F
-    \cs_set_eq:NN \dbClistItemIfEmptyTF\dbshow_clist_item_if_empty:TF
+% #1 before code tl #2 after code tl #3 item
+\cs_new:Nn \dbshow_clist_wrapper:NNn {
+  \exp_not:n { { #1#3#2 }, }
+}
 
-    \clist_put_right:Nn \l_tmpa_clist {
-      \l_style_item_before_code
-      ##1
-      \l_style_item_after_code
-    }
-  }
-
-  \tl_clear:N \l_tmpa_tl
-  \clist_map_inline:Nn \l_style_sep_clist {
-    \tl_put_right:Nn \l_tmpa_tl { { ##1 } }
-  }
-
-  \int_set:Nn \l_tmpa_int { \clist_count:N \l_style_sep_clist }
-  \int_case:nnF { \l_tmpa_int } {
+% #1 clist #2 sep #3 before code tl #4 after code tl
+\cs_new:Nn \dbshow_clist_use:NNNN {
+  \int_case:nnF { \clist_count:N #2 } {
     { 1 } {
-      \exp_after:wN \clist_use:Nn \exp_after:wN \l_tmpa_clist \l_tmpa_tl
+      \clist_use:xx
+        { \clist_map_tokens:Nn #1 { \dbshow_clist_wrapper:NNn #3 #4 } }
+        { \clist_item:Nn #2 { 1 } }
     }
     { 3 } {
-      \exp_after:wN \clist_use:Nnnn \exp_after:wN \l_tmpa_clist \l_tmpa_tl
+      \clist_use:xxxx
+        { \clist_map_tokens:Nn #1 { \dbshow_clist_wrapper:NNn #3 #4 } }
+        { \clist_item:Nn #2 { 1 } }
+        { \clist_item:Nn #2 { 2 } }
+        { \clist_item:Nn #2 { 3 } }
     }
-  }
-  {
+  } {
     \dbshow_sep_error:xx
-      { \int_use:N \l_tmpa_int }
-      { \clist_use:Nn \l_style_sep_clist { , } }
+      { \clist_count:N #2 }
+      { \clist_use:Nn #2 { , } }
   }
 }
-\cs_generate_variant:Nn \dbshow_clist_use:N { c }
+\cs_generate_variant:Nn \dbshow_clist_use:NNNN { cccc }
 
-% #1 database #2 attr #3 index
-\cs_new:Nn \dbshow_use_data:nnn {
-  \str_set:Nx \l_tmp_type { \dbshow_get_type:nn { #1 } { #2 } }
-  \prop_get:NVN \dbshow_use_cs_map \l_tmp_type \l_tmp_cs
-  \use:c { \l_tmp_cs } { g__dbshow_data_#1_#2_#3 }
+% #1 database #2 attr #3 index #4 style
+\cs_new:Nn \dbshow_use_data:nnnn {
+  \str_case_e:nn { \prop_item:cn { g__dbshow_type_map_#1 } { #2 } } {
+    { date } { \str_use:c { g__dbshow_data_#1_#2_#3 } }
+    { str } { \str_use:c { g__dbshow_data_#1_#2_#3 } }
+    { tl } { \tl_use:c { g__dbshow_data_#1_#2_#3 } }
+    { int } { \int_use:c { g__dbshow_data_#1_#2_#3 } }
+    { fp } { \fp_use:c { g__dbshow_data_#1_#2_#3 } }
+    { clist } {
+      \dbshow_clist_use:cccc { g__dbshow_data_#1_#2_#3 }
+        { g__dbshow_style_clist_sep_#4_#1_#2 }
+        { g__dbshow_style_clist_item_before_#4_#1_#2 }
+        { g__dbshow_style_clist_item_after_#4_#1_#2 }
+    }
+  }
 }
 
 % #1 database
@@ -473,19 +472,19 @@
 \cs_new_protected:Nn \dbshow_new_attr_style:nnn {
   \dbshow_check_attr:nn { #2 } { #3 }
   \keys_define:nn { dbshow/style/#1/#3 } {
-    before-code .tl_gset:c = { g__dbshow_style_before_#1_#2_#3 },
+    before-code .tl_gset:c = { g__dbshow_style_attr_before_#1_#2_#3 },
     before-code .initial:n = ,
-    after-code .tl_gset:c = { g__dbshow_style_after_#1_#2_#3 },
+    after-code .tl_gset:c = { g__dbshow_style_attr_after_#1_#2_#3 },
     after-code .initial:n = ,
   }
   \prop_get:cnN { g__dbshow_type_map_#2 } { #3 } \l_tmp_type
   \str_if_eq:eeT { \l_tmp_type } { clist } {
     \keys_define:nn { dbshow/style/#1/#3 } {
-      sep .clist_gset:c = { g__dbshow_style_sep_#1_#2_#3 },
+      sep .clist_gset:c = { g__dbshow_style_clist_sep_#1_#2_#3 },
       sep .initial:n = { { ,~ } },
-      item-before-code .tl_gset:c = { g__dbshow_style_item_before_#1_#2_#3 },
+      item-before-code .tl_gset:c = { g__dbshow_style_clist_item_before_#1_#2_#3 },
       item-before-code .initial:n = ,
-      item-after-code .tl_gset:c = { g__dbshow_style_item_after_#1_#2_#3 },
+      item-after-code .tl_gset:c = { g__dbshow_style_clist_item_after_#1_#2_#3 },
       item-after-code .initial:n = ,
     }
   }
@@ -511,6 +510,10 @@
     item-code .initial:n = ,
     after-code .tl_gset:c = { g__dbshow_style_after_#1_#2 },
     after-code .initial:n = ,
+    record-before-code .tl_gset:c = { g__dbshow_style_record_before_#1_#2 },
+    record-before-code .initial:n = ,
+    record-after-code .tl_gset:c = { g__dbshow_style_record_after_#1_#2 },
+    record-after-code .initial:n = ,
   }
   \prop_map_inline:cn { g__dbshow_type_map_#2 } {
     \dbshow_new_attr_style:nnn { #1 } { #2 } { ##1 }
@@ -570,13 +573,11 @@
       }
       \str_if_eq:eeT { \l_tmp_type } { date }
         { \str_set:Nn \l_tmp_type { str } }
-      \cs_set_eq:Nc \dbshow_compare { \l_tmp_type _compare:nNnTF }
+      \cs_set_eq:Nc \dbshow_compare { \l_tmp_type _compare:VNVTF }
 
-      \exp_args:NnV
-      \dbshow_compare { \l_tmpa_tl } \l_op_same { \l_tmpb_tl }
+      \dbshow_compare \l_tmpa_tl \l_op_same \l_tmpb_tl
         { \sort_return_same: }
       {
-        \exp_args:NnV
         \dbshow_compare { \l_tmpa_tl } \l_op_swap { \l_tmpb_tl }
           { \sort_return_swapped: }
         {
@@ -625,34 +626,15 @@
     \tl_set:Nn \dbIndex { ##1 }
 
     % ####1 attr
-    \cs_set:Npn \dbuse ####1 {
+    \DeclareExpandableDocumentCommand { \dbuse } { m } {
       \dbshow_check_attr:nn { #2 } { ####1 }
-      \clist_set_eq:Nc \l_style_sep_clist
-        { g__dbshow_style_sep_#1_#2_####1 }
-      \tl_set_eq:Nc \l_style_item_before_code
-        { g__dbshow_style_item_before_#1_#2_####1 }
-      \tl_set_eq:Nc \l_style_item_after_code
-        { g__dbshow_style_item_after_#1_#2_####1 }
-
-      \prop_get:cnN { g__dbshow_type_map_#2 } { ####1 } \l_tmp_type
-      % \tl_show:N \l_tmp_type
-      \str_if_eq:eeT { \l_tmp_type } { date }
-        { \tl_set:Nn \l_tmp_type { str } }
-      \prg_set_conditional:Nnn \dbshow_item_if_empty: { T, F, TF } {
-        \use:c { \l_tmp_type _if_empty:cTF }
-          { g__dbshow_data_#2_####1_##1 }
-          { \prg_return_true: }
-          { \prg_return_false: }
-      }
-      \cs_set_eq:NN \dbItemIfEmptyT\dbshow_item_if_empty:T
-      \cs_set_eq:NN \dbItemIfEmptyF\dbshow_item_if_empty:F
-      \cs_set_eq:NN \dbItemIfEmptyTF\dbshow_item_if_empty:TF
-
-      \tl_use:c { g__dbshow_style_before_#1_#2_####1 }
-      \dbshow_use_data:nnn { #2 } { ####1 } { ##1 }
-      \tl_use:c { g__dbshow_style_after_#1_#2_####1 }
+      \tl_use:c { g__dbshow_style_attr_before_#1_#2_####1 }
+      \dbshow_use_data:nnnn { #2 } { ####1 } { ##1 } { #1 }
+      \tl_use:c { g__dbshow_style_attr_after_#1_#2_####1 }
     }
+    \tl_use:c { g__dbshow_style_record_before_#1_#2 }
     \tl_use:c { g__dbshow_style_database_item_#1_#2 }
+    \tl_use:c { g__dbshow_style_record_after_#1_#2 }
   }
   \prg_set_conditional:Nnn \dbshow_if_empty: { T, F, TF } {
     \clist_if_empty:NTF \l_index
@@ -672,8 +654,10 @@
 \NewDocumentCommand { \dbshow } { m m } {
   \dbshow_check_database:n { #2 }
   \tl_set_eq:Nc \l_dbshow_filter { g__dbshow_filter_#1_#2 }
-  \dbshow_check_filter:nn  { #2 } { \l_dbshow_filter }
-  \dbshow_init_iterator:nnn { #1 } { #2 } { \l_dbshow_filter }
+  \exp_args:Nnv \dbshow_check_filter:nn 
+    { #2 } { g__dbshow_filter_#1_#2 }
+  \exp_args:Nnnv \dbshow_init_iterator:nnn
+    { #1 } { #2 } { g__dbshow_filter_#1_#2 }
 }
 
 \endinput

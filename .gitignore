@@ -280,7 +280,9 @@ TSWLatexianTemp*
 *.hd
 
 # custom
-a.tex
 *.zip
 dbshow/
 dbshow-doc-listing*
+
+*.tex
+!dbshow-doc.tex
