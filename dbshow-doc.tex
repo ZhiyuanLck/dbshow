@@ -11,6 +11,9 @@
 \tcbuselibrary{listings, skins, raster, breakable}
 \usepackage{tabularray}
 
+\def\zhdate{2022年1月7日}
+\def\endate{2022/01/07}
+
 \IndexPrologue
   {
     \section*{Index}
@@ -138,7 +141,7 @@
   }}
 }
 \author{\textit{李昌锴} \texttt{<lichangkai225@qq.com>}}
-\date{2022年1月7日}
+\date{\zhdate}
 \maketitle
 
 \tableofcontents
@@ -173,7 +176,8 @@
 \end{Description}
 
 \section{接口文档}
-\subsection{\cs{dbNewDatabase}}
+
+\subsection{创建、展示和清空数据库}
 \begin{function}{\dbNewDatabase, \dbNewDatabase*}
   \begin{syntax}
     \cs{dbNewDatabase} \oarg{base database} \marg{database} \{ \\
@@ -223,6 +227,23 @@
     labels = clist
   }
 \end{verbatim}
+
+\begin{function}{\dbshow}
+  \begin{syntax}
+    \cs{dbshow} \marg{style} \marg{database}
+  \end{syntax}
+
+  使用 \meta{style} 样式来展示 \meta{database}。
+\end{function}
+
+\begin{function}{\dbclear}
+  \begin{syntax}
+    \cs{dbclear} \marg{database}
+  \end{syntax}
+
+  清空 \meta{database} 里的所有内容。
+
+\end{function}
 
 \subsection{\cs{dbNewStyle} 和样式选项}
 
@@ -486,16 +507,6 @@
   数据，只能在 \opt{item-code} 选项中使用。
 \end{function}
 
-\subsection{使用 \cs{dbshow} 展示数据库}
-
-\begin{function}{\dbshow}
-  \begin{syntax}
-    \cs{dbshow} \marg{style} \marg{database}
-  \end{syntax}
-
-  使用 \meta{style} 样式来展示 \meta{database}。
-\end{function}
-
 \subsection{条件判别式}
 
 \begin{function}{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
@@ -593,7 +604,7 @@
   }}
 }
 \author{Li Changkai \texttt{<lichangkai225@qq.com>}}
-\date{2022/01/07}
+\date{\endate}
 \maketitle
 
 \section{Introduction}
@@ -628,7 +639,7 @@ The package constructs 6 types based on the internal typed of \pkg{expl3}:
 
 \section{Interfaces}
 
-\subsection{\cs{dbNewDatabase}}
+\subsection{Create, Display and Clear Database}
 
 \begin{function}{\dbNewDatabase, \dbNewDatabase*}
   \begin{syntax}
@@ -673,6 +684,23 @@ The example below define a database named |ques|.
     labels = clist % store question labels
   }
 \end{verbatim}
+
+\begin{function}{\dbshow}
+  \begin{syntax}
+    \cs{dbshow} \marg{style} \marg{database}
+  \end{syntax}
+
+  Show the \meta{database} with \meta{style}.
+\end{function}
+
+\begin{function}{\dbclear}
+  \begin{syntax}
+    \cs{dbclear} \marg{database}
+  \end{syntax}
+
+  Clear the content of \meta{database}.
+
+\end{function}
 
 \subsection{\cs{dbNewStyle} and Style Options}
 
@@ -952,16 +980,6 @@ code is showned below.
   Date is stored with \cs{dbsave} and is displayed with \cs{dbuse}.  \cs{dbsave}
   can be used only inside the \env{dbitem} environment and \cs{dbuse} can be
   only used inside the option \opt{item-code}.
-\end{function}
-
-\subsection{Use \cs{dbshow} to Display the Database}
-
-\begin{function}{\dbshow}
-  \begin{syntax}
-    \cs{dbshow} \marg{style} \marg{database}
-  \end{syntax}
-
-  Show the \meta{database} with \meta{style}.
 \end{function}
 
 \subsection{Conditionals}
@@ -1254,7 +1272,10 @@ run pdflatex
     Fix bug: \cmd{\dbIndex} undefined \\
     Add style option: \opt{raw-filter}
   } \\
-  2022-01-07 & 1.1 & Improve example \\
+  2022-01-07 & 1.1 & {
+    Improve example \\
+    Add macro: \cmd{\dbclear}
+  }
 \end{tblr}
 
 \end{documentation}

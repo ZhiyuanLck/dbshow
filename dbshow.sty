@@ -208,6 +208,10 @@
   \int_gincr:c { g__dbshow_counter_#1 }
 }
 
+\NewDocumentCommand { \dbclear } { m } {
+  \int_gzero:c { g__dbshow_counter_#1 }
+}
+
 % #1 database #2 attr #3 content
 \cs_new:Nn \dbshow_save_data:nnn {
   \dbshow_check_attr:nn { #1 } { #2 }
