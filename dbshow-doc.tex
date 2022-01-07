@@ -562,12 +562,13 @@
 
 \subsection{\cs{dbsave} 和 \cs{dbuse}}
 
-\begin{function}{\dbsave}
+\begin{function}{\dbsave, \dbsave*}
   \begin{syntax}
     \cs{dbsave} \marg{attr} \marg{data}
   \end{syntax}
 
-  \cs{dbsave} 用来存储数据，只能在 \env{item} 环境中使用。
+  \cs{dbsave} 用来存储数据，只能在 \env{item} 环境中使用。使用 \cs{dbsave} 存
+  储的数据会被 \cs{exp_not:n} 包裹；使用 \cs{dbsave*} 存储的数据为原始数据。
 \end{function}
 
 \begin{function}[EXP]{\dbuse}
@@ -1071,13 +1072,15 @@ code is showned below.
 
 \subsection{\cs{dbsave} and \cs{dbuse}}
 
-\begin{function}{\dbsave}
+\begin{function}{\dbsave, \dbsave*}
   \begin{syntax}
     \cs{dbsave} \marg{attr} \marg{data}
   \end{syntax}
 
   \cs{dbsave} save the \meta{data} to \meta{attr} of current record.
   \cs{dbsave} can be used only inside the \env{dbitem} environment.
+  \meta{data} stored by \cs{dbsave} is wrapped with \cs{exp_not:n} while
+  \meta{data} stored by \cs{dbsave*} is not wrapped.
 \end{function}
 
 \begin{function}[EXP]{\dbuse}
@@ -1351,6 +1354,7 @@ run pdflatex
     Make \cs{dbuse} expandable \\
     Add option: \opt{record-before-code}, \opt{record-after-code}
   } \\
+  2022-01-08 & 1.2.1 & Add macro: \cs{dbsave*} \\
 \end{tblr}
 
 \end{documentation}
