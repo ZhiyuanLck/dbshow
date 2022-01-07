@@ -13,6 +13,7 @@
 
 \def\zhdate{2022年1月7日}
 \def\endate{2022/01/07}
+\def\version{v1.1}
 
 \IndexPrologue
   {
@@ -125,19 +126,23 @@
 
 \DeclareDocumentCommand \opt { O{} m }
   { \__codedoc_cmd:no {#1} { #2 } }
+
+\NewDocumentCommand \linktarget { m m m } {%
+  \hyperlink{#1}{#3}%
+  \raisebox{1em}{\hypertarget{#2}{}}%
+}
 \ExplSyntaxOff
 
 
 \begin{document}
 \title{
-  \pkg{dbshow} 宏包
+  \pkg{dbshow} 宏包 \version%
   \protect\footnote{%
     代码仓库：\url{https://github.com/ZhiyuanLck/dbshow}，
     QQ群：788706534}
   \rlap{\makebox[4cm][r]{
     \normalsize $\Longrightarrow$ \color{red}
-    \protect\hyperlink{en}{English Version}
-    \protect\hypertarget{zh}{}
+    \linktarget{en}{zh}{English Version}
   }}
 }
 \author{\textit{李昌锴} \texttt{<lichangkai225@qq.com>}}
@@ -158,6 +163,8 @@
 和其他数据库宏包比如 \pkg{datatool} 相比，\pkg{dbshow} 更专注于非图表类型的数
 据展示。
 
+\subsection{数据类型}
+
 宏包基于 \pkg{expl3} 的基础类型构建了6种类型：
 \begin{Description}[\texttt{clist}]
   \item[\texttt{date}]
@@ -174,6 +181,18 @@
   \item[\texttt{clist}]
     逗号分隔的列表类型。默认值为空列表。
 \end{Description}
+
+\subsection{与 \pkg{datatool} 的区别}
+
+从核心功能上看，\pkg{dbshow} 和 \pkg{datatool} 实现了相同的功能。区别在于
+\pkg{dbshow} 基于 \pkg{expl3} 实现，支持字符串的正则匹配，还支持多级排序。使用
+方式上更倾向于样式与内容分离，所有的样式都可以通过选项提前定义好并且可以复用。
+\pkg{dbshow} 并没有实现从外部文件读取数据以及将数据持久化的功能，我认为这些应
+该是更专业的外部程序的工作而不应该在 \LaTeX 中设计这些功能。因此，\pkg{dbshow}
+只提供了一个运行时的临时数据库，足够轻便且满足大部分正常需求。如果你想删除或修
+改数据库中某一条记录，请去对应的位置删除或修改掉对应的 \env{dbitem} 环境，而不
+是让宏包提供一个输出某一行记录的命令。某种意义上记录数据库的 \TeX 源文件本身就
+是数据的一种持久化。
 
 \section{接口文档}
 
@@ -593,14 +612,13 @@
 见第 \ref{sec:example} 节。
 
 \title{
-  Package \pkg{dbshow}
+  Package \pkg{dbshow} \version%
   \protect\footnote{%
     Repository: \url{https://github.com/ZhiyuanLck/dbshow},
     Telegram Group: \url{https://t.me/latex_dbshow}}
   \rlap{\makebox[4cm][r]{
     \normalsize $\Longrightarrow$ \color{red}
-    \protect\hyperlink{zh}{中文版本}
-    \protect\hypertarget{en}{}
+    \linktarget{zh}{en}{中文版本}
   }}
 }
 \author{Li Changkai \texttt{<lichangkai225@qq.com>}}
@@ -620,6 +638,8 @@ The package provides four core functions: data storage and display, data
 filtering, data sorting and data display. All data is saved once and then you
 can display these data with custom filters, orders and styles.
 
+\subsection{Data Types}
+
 The package constructs 6 types based on the internal typed of \pkg{expl3}:
 \begin{Description}[\texttt{clist}]
   \item[\texttt{date}]
@@ -636,6 +656,22 @@ The package constructs 6 types based on the internal typed of \pkg{expl3}:
   \item[\texttt{clist}]
     comma list, default empty.
 \end{Description}
+
+\subsection{Comparison to \pkg{datatool}}
+
+\pkg{dbshow} and \pkg{datatool} implement the same core functions. But
+\pkg{dbshow} is based on \pkg{expl3} and it supports string regex and
+multi-level sorting. \pkg{dbshow} tries to divide style from the contents
+(data in database): all styles are predefined and can be reused conveniently
+so that there can be only codes to save data and one-line code to show the
+database inside the \env{document} environment. You can hide the details in
+the preamble and focus on the data you want to display. \pkg{dbshow} provides
+a simple temporary runtime database, which means it can not input and output
+data from/to extern files (they should be responsible by some professional
+programming languages). When you need to delete or revise a record, just go to
+where it is recorded in the source code rather than use a macro to manipulate
+data after they are saved. In a sense, \TeX~file is also a kind of data
+persistence.
 
 \section{Interfaces}
 
@@ -1272,10 +1308,9 @@ run pdflatex
     Fix bug: \cmd{\dbIndex} undefined \\
     Add style option: \opt{raw-filter}
   } \\
-  2022-01-07 & 1.1 & {
-    Improve example \\
-    Add macro: \cmd{\dbclear}
-  }
+  2022-01-07 & 1.1 & Improve example \\
+  2022-01-07 & 1.1.1 & Add macro: \cmd{\dbclear} \\
+  2022-01-07 & 1.1.2 & Add documentation: comparison to \pkg{datatool} \\
 \end{tblr}
 
 \end{documentation}
