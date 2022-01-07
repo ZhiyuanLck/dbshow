@@ -307,7 +307,7 @@
   \prop_map_function:cN { g__dbshow_type_map_#1 } \dbshow_set_default:nn
   \dbshow_save_data:nnx { #1 } { id } { \dbshow_get_counter:n { #1 } }
   \keys_set:nn { dbshow/database/#1 } { #2 }
-  % #2 attr #3 content
+  % #1 attr #2 content
   \NewDocumentCommand { \dbsave } { m m } {
     \dbshow_save_data:nnn { #1 } { ##1 } { ##2 }
   }
