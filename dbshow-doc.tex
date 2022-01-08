@@ -1206,6 +1206,7 @@ run pdflatex
   \dbNewConditional{hard}{labels}{hard}
   \dbNewConditional{bad}{count}{\dbval > 1}
   \dbNewConditional{review}{date}{review|2022-01-07}
+  \dbNewConditional*{after}{date}{\dbval > 2022-01-02}
 \end{dbFilters}
 
 % show all questions with hyperlink to answers
@@ -1263,8 +1264,8 @@ run pdflatex
   labels/sep = /,
 }
 
-% show all hard questions that have answered incorrectly for more than one
-% time with hyperlink to answers
+% show all hard questions that have been answered incorrectly for more than
+% one time with hyperlink to answers
 \dbNewStyle[hard]{bad}{ques-book}{
   before-code = {\section{Bad Questions}},
   raw-filter = {bad && hard},
@@ -1275,11 +1276,17 @@ run pdflatex
   before-code = {\section{Questions to be Reviewed}},
   raw-filter = {review},
 }
+% show all questions that is record after 2022-01-02 with hyperlink to answers
+\dbNewStyle[hard]{after}{ques-book}{
+  before-code = {\section{Questions after 2022-01-02}},
+  raw-filter = {after},
+}
 
 \AtEndDocument{
   \dbshow{review}{ques-book}
   \dbshow{hard}{ques-book}
   \dbshow{bad}{ques-book}
+  \dbshow{after}{ques-book}
   \dbshow{ques}{ques-book}
   \dbshow{answer}{ques-book}
 }
@@ -1355,6 +1362,7 @@ run pdflatex
     Add option: \opt{record-before-code}, \opt{record-after-code}
   } \\
   2022-01-08 & 1.2.1 & Add macro: \cs{dbsave*} \\
+  2022-01-08 & 1.2.2 & Fix bug of date conditional \\
 \end{tblr}
 
 \end{documentation}

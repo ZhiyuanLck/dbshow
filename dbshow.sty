@@ -14,7 +14,7 @@
 % The Current Maintainer of this work is Li Changkai.
 %
 % This work consists of the files dbshow.sty, dbshow-doc.tex.
-\def\myfileversion{v1.2}
+\def\myfileversion{v1.2.2}
 \def\myfiledate{2022/01/08}
 \RequirePackage{expl3, xparse}
 \RequirePackage[calc]{datetime2}
@@ -105,6 +105,10 @@
 \msg_new:nnn { dbshow } { unsupported-sort-type } {
   unsupported~sort~type:~'#1'~\msg_line_context:.~The~type~should~be~one~of~
   \{str,~date,~int,~fp\}.
+}
+
+\msg_new:nnn { dbshow } { invalid-relation } {
+  invalid~relation:~'#1'.
 }
 
 \clist_const:Nn \dbshow_type_clist { date, str, tl, clist, int, fp }
@@ -372,16 +376,41 @@
   \tl_set:Nn \l_date_tl { #2 }
 }
 
+% #1 rela #2 operator
+\cs_new:Nn \dbshow_parse_date_w:nn {
+  \cs_set:cpn { dbshow_parse_date#1:w } ##1#2##2\dbshow_stop {
+    % \tl_show:n {|##1~#2~##2|}
+    \tl_set:Nn \l_lval_tl { ##1 }
+    \tl_set:Nn \l_rval_tl { ##2 }
+    \tl_set:Nn \l_rela_tl { #2 }
+  }
+  \use:c { dbshow_parse_date#1:w } #1\dbshow_stop
+}
+
+% #1 rela
+\cs_new:Nn \dbshow_parse_date_star:n {
+  \bool_set_false:N \l_tmpa_bool
+  \clist_map_inline:nn { !=, ==, >=, <=, <, >, = } {
+    \tl_if_in:nnT { #1 } { ##1 } {
+      \dbshow_parse_date_w:nn { #1 } { ##1 }
+      \bool_set_true:N \l_tmpa_bool
+      \clist_map_break:
+    }
+  }
+  \bool_if:NF \l_tmpa_bool {
+    \msg_error:nnn { dbshow } { invalid-relation } { #1 }
+  }
+}
+\cs_generate_variant:Nn \dbshow_parse_date_star:n { V }
+
 \cs_new:Nn \dbshow_if_date: {
   \bool_if:NTF \l_star_bool {
-    \regex_extract_once:nVNF { \A(.*)([!<>=]+)(.*)\Z }
-      \l_dbshow_rela \l_tmpa_seq { }
-    \exp_args:Nnx \DTMsavedate{day1}{ \seq_item:Nn \l_tmpa_seq { 2 } }
-    \tl_set:Nx \l_rela { \seq_item:Nn \l_tmpa_seq { 3 } }
-    \exp_args:Nnx \DTMsavedate{day2}{ \seq_item:Nn \l_tmpa_seq { 4 } }
+    \dbshow_parse_date_star:V \l_dbshow_rela
+    \exp_args:Nnx \DTMsavedate{day1}{\l_lval_tl}
+    \exp_args:Nnx \DTMsavedate{day2}{\l_rval_tl}
     \DTMsaveddatediff{day1}{day2}{\l_dbshow_date_diff}% specious blank
-    \exp_args:NnV \int_compare:nNnTF
-      { \the\l_dbshow_date_diff } \l_rela { 0 }
+    \exp_args:NnV \int_compare:nTF
+      { \the\l_dbshow_date_diff \l_rela_tl 0 }
       { \dbshow_set_true: }
       { \dbshow_set_false: }
   }
