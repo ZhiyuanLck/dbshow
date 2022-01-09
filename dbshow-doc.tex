@@ -1,5 +1,7 @@
 \documentclass[full]{l3doc}
-\usepackage[scheme=plain]{ctex}
+\usepackage[scheme=plain, fontset=ubuntu]{ctex}
+\usepackage{multicol}
+\usepackage{adjustbox}
 \usepackage{zhlineskip}
 \usepackage{enumitem}
 \usepackage{indentfirst}
@@ -14,19 +16,6 @@
 \def\zhdate{2022年1月8日}
 \def\endate{2022/01/08}
 \def\version{v1.2}
-
-\IndexPrologue
-  {
-    \section*{Index}
-    \markboth{Index}{Index}
-    \addcontentsline{toc}{section}{Index}
-    The~italic~numbers~denote~the~pages~where~the~
-    corresponding~entry~is~described,~
-    numbers~underlined~point~to~the~definition,~
-    all~others~indicate~the~places~where~it~is~used.
-  }
-
-\newcommand\tikzmark[1]{\tikz \coordinate[overlay, remember picture] (#1);}
 
 \geometry{
   left=4.5cm,
@@ -46,8 +35,39 @@
  }
 }
 
+\IndexPrologue {
+  \part*{Index}
+  \markboth{Index}{Index}
+  \addcontentsline{toc}{part}{Index}
+  The~italic~numbers~denote~the~pages~where~the~
+  corresponding~entry~is~described,~
+  numbers~underlined~point~to~the~definition,~
+  all~others~indicate~the~places~where~it~is~used.
+}
+
+\GlossaryPrologue {
+  \part*{Change~History}
+  {\GlossaryParms\ttfamily\hyphenchar\font=`\-}
+  \markboth{Change~History}{Change~History}
+  \addcontentsline{toc}{part}{Change~History}
+}
+
+\let\subsubitem\subitem
+
 \DoNotIndex{\begin, \end}
 \setlength{\parskip}{\medskipamount}
+
+\newcommand\tikzmark[1]{\tikz \coordinate[overlay, remember picture] (#1);}
+\def\levelchar{?}
+\def\orbar{\textup{\textbar}}
+\def\defaultval#1{\textbf{\textup{#1}}}
+\def\TF{true\orbar false}
+\def\TTF{\defaultval{true}\orbar false}
+\def\TFF{true\orbar\defaultval{false}}
+\def\zhbefore{\textbf{前}}
+\def\zhafter{\textbf{后}}
+\def\enbefore{\textbf{before}~}
+\def\enafter{\textbf{after}~}
 \DeclareDocumentEnvironment { note } { +b } {
   \par\textbf{\textsf{NOTE:~}}#1\par
 } {}
@@ -59,32 +79,55 @@
     top=2cm,
     bottom=2cm
   }
+  \PrintChanges
   \PrintIndex
 }
 
 \ExplSyntaxOn
-\NewDocumentCommand { \strcs } { m } {
-  \texttt{\tl_to_str:n { #1 }}
+\makeatletter
+\cs_new_protected:Nn \dbshow_changes:nnnn {
+  \@bsphack\group_begin:\@sanitize
+  \catcode`\\\z@ \catcode`\ 10 \MakePercentIgnore
+  \exp_args:Nx \glossary {
+    \exp_not:N \textbf{#1}\levelchar
+    \exp_not:N \textit{#2}\c_space_tl
+    \exp_not:N \textbf{#3}\c_colon_str\c_space_tl
+    \exp_not:n { #4 }
+  }
+  \group_end:\@esphack
+}
+\cs_generate_variant:Nn \dbshow_changes:nnnn { xnnn }
+
+\cs_new_protected:Nn \dbshow_changes_what:nnnn {
+  \regex_extract_once:nnNT { doc|macro|bug|option }
+  { #3 } \l_tmpa_seq {
+    \dbshow_changes:xnnn {
+      \str_case_e:nn { \seq_item:Nn \l_tmpa_seq { 1 } } {
+        { doc } { Documentation }
+        { macro } { Macro }
+        { bug } { Bug }
+        { option } {  Option }
+        { logic } {  Logic }
+      }
+    }
+      {#2} {#3} {#4}
+  }
 }
 
-\dim_new:N \l__my_syntax_dim
-\box_new:N \g__my_syntax_box
-\NewDocumentEnvironment { Syntax } { s }
-  {
-    \dim_set:Nn \l__my_syntax_dim
-      { \textwidth }
-    \hbox_gset:Nw \g__my_syntax_box
-      \small \ttfamily
-      \begin{minipage}[t]{\l__my_syntax_dim}
-        \raggedright\obeyspaces\obeylines
+\cs_new_protected:Nn \dbshow_changes_how:nnnn {
+  \regex_extract_once:nnNT { Add|Update|Remove } { #3 } \l_tmpa_seq {
+    \dbshow_changes:xnnn { \seq_item:Nn \l_tmpa_seq { 1 } }
+      {#2} {#3} {#4}
   }
-  {
-      \end{minipage}
-    \hbox_gset_end:
-    \IfValueF { #1 } { \smallskip }
-    \box_use_drop:N \g__my_syntax_box
-    \smallskip
-  }
+}
+
+% #1 version #2 date #3 type #4 desc
+\DeclareDocumentCommand \changes { m m m m } {
+  \dbshow_changes:nnnn {#1} {#2} {#3} {#4}
+  \dbshow_changes_what:nnnn {#1} {#2} {#3} {#4}
+  \dbshow_changes_how:nnnn {#1} {#2} {#3} {#4}
+}
+\makeatother
 
 \DeclareDocumentEnvironment { Description } { o +b } {
   \hbox_set:Nn \l_tmpa_box { #1 }
@@ -94,35 +137,38 @@
   \end{itemize}
 } {  }
 
-\keys_define:nn { dbshow/doc } {
-  opt .tl_set:N = \l_opt_tl,
-  desc .tl_set:N = \l_desc_tl,
-  init .tl_set:N = \l_init_tl,
-  init .initial:n = init-none,
+\cs_new_protected:Nn \dbshowdoc_function_begin:N {
+  \cs_set_eq:NN \__codedoc_tmp_cs:nN \__codedoc_typeset_function_block:nN
+  \cs_set_protected:Npn \__codedoc_typeset_function_block:nN ##1##2 {
+    \__codedoc_function_label:xN {##1} ##2
+    \hbox_set:Nn \l_tmpa_box {##1}
+    \int_compare:nTF { \str_count:n {##1} <= 22 }
+      {##1} { \adjustbox{width=.7\marginparwidth, height=\box_ht:N \l_tmpa_box}{##1} }
+    #1{##1}
+    \__codedoc_typeset_expandability: \\
+  }
 }
-
-\box_new:N \l__option_box
-\NewDocumentEnvironment { option } { m +b } {
-  \keys_set:nn { dbshow/doc } { #1 }
-  \hbox_set:Nw \l__option_box
-    \small \ttfamily
-    \begin{minipage}[t]{\textwidth}
-      \obeyspaces\obeylines
-      \textcolor{red}{
-        \l_opt_tl
-        \exp_args:Nx\SpecialOptionIndex{\l_opt_tl}
-      }
-      {~}\l_desc_tl
-      \hfill(
-      \tl_if_eq:NnTF \l_init_tl { init-none } { no~value }
-        { initially~\texttt{\l_init_tl} }
-      )
-    \end{minipage}
-  \hbox_gset_end:
-  \box_use_drop:N \l__option_box
-  #2
-  \medskip
-} {  }
+\cs_new_protected:Nn \dbshowdoc_function_end: {
+  \cs_set_eq:NN \__codedoc_typeset_function_block:nN \__codedoc_tmp_cs:nN
+}
+\DeclareDocumentEnvironment { option } { O{} +v }
+  {
+    \dbshowdoc_function_begin:N \SpecialOptionIndex
+    \__codedoc_function:nnw {#1} {#2}
+  }
+  {
+    \__codedoc_function_end:
+    \dbshowdoc_function_end:
+  }
+\DeclareDocumentEnvironment { environment } { O{} +v }
+  {
+    \dbshowdoc_function_begin:N \SpecialEnvIndex
+    \__codedoc_function:nnw {#1} {#2}
+  }
+  {
+    \__codedoc_function_end:
+    \dbshowdoc_function_end:
+  }
 
 \DeclareDocumentCommand \opt { O{} m }
   { \__codedoc_cmd:no {#1} { #2 } }
@@ -163,13 +209,23 @@
 和其他数据库宏包比如 \pkg{datatool} 相比，\pkg{dbshow} 更专注于非图表类型的数
 据展示。
 
+\changes{1.2}{2022-01-09}{Add doc}{descripton for expansion}
+\begin{itemize}
+  \item 名字后带有 $\star$ 的命令是可以完全展开的（fully-expandable）；
+  \item 名字后带有 \ding{73} 的命令可以有限制地展开（restricted-expandable）；
+  \item 名字后不带有特殊字符的命令是不可展开的（non-expandable）；
+  \item 名字后带有 $\star$ 的选项不影响相关的代码的是否可展开；
+  \item 名字后带有 \ding{73} 的选项是否影响相关代码的可展开性取决于选项的设置；
+  \item 名字后不带有特殊字符的选项会使与之相关的代码变得不可展开。
+\end{itemize}
+
 \subsection{数据类型}
 
 宏包基于 \pkg{expl3} 的基础类型构建了6种类型：
 \begin{Description}[\texttt{clist}]
   \item[\texttt{date}]
-    基于宏包 \pkg{datetime2} 的日期类型，以iso标准存储，支持大小比较，排序（转
-    换成字符串）。默认值为 \cs{Today}。
+    日期类型，以 |yyyy/mm/dd| 形式存储，支持大小比较，排序（转
+    换成字符串）。默认值为 \cs{dbtoday}。
   \item[\texttt{str}]
     字符串类型，支持正则匹配，英文排序。默认值为空。
   \item[\texttt{tl}]
@@ -182,7 +238,13 @@
     逗号分隔的列表类型。默认值为空列表。
 \end{Description}
 
+\changes{1.3}{2022-01-08}{Remove dependency}{\pkg{datatime2}}
+除了日期类型，所有类型都是 \pkg{expl3} 的内置类型。\pkg{dbshow} 构建了一个简单
+的 |date| 类型，支持转换成整数以及带样式的打印。
+
 \subsection{与 \pkg{datatool} 的区别}
+
+\changes{1.2}{2022-01-07}{Add doc}{add comparison to \pkg{datatool}}
 
 从核心功能上看，\pkg{dbshow} 和 \pkg{datatool} 实现了相同的功能。区别在于
 \pkg{dbshow} 基于 \pkg{expl3} 实现，支持字符串的正则匹配，还支持多级排序。使用
@@ -197,7 +259,7 @@
 \section{接口文档}
 
 \subsection{创建、展示和清空数据库}
-\begin{function}{\dbNewDatabase, \dbNewDatabase*}
+\begin{function}[added=2022-01-05]{\dbNewDatabase, \dbNewDatabase*}
   \begin{syntax}
     \cs{dbNewDatabase} \oarg{base database} \marg{database} \{ \\
     ~~\meta{attr1} = \meta{type spec1}, \\
@@ -226,7 +288,7 @@
   }
     \meta{attr} = \meta{type} &
     将 \meta{attr} 声明为 \meta{type} 类型 \\
-    \meta{attr} = \meta{type}\textbar\meta{default} &
+    \meta{attr} = \meta{type}\orbar\meta{default} &
     将 \meta{attr} 声明为 \meta{type} 类型，并且将默认值设置为 \meta{default}。
     \\
   \end{tblr}
@@ -247,7 +309,7 @@
   }
 \end{verbatim}
 
-\begin{function}{\dbshow}
+\begin{function}[added=2022-01-05]{\dbshow}
   \begin{syntax}
     \cs{dbshow} \marg{style} \marg{database}
   \end{syntax}
@@ -255,18 +317,17 @@
   使用 \meta{style} 样式来展示 \meta{database}。
 \end{function}
 
-\begin{function}{\dbclear}
+\changes{1.2}{2022-01-07}{Add macro}{\cs{dbclear}}
+\begin{function}[added=2022-01-07]{\dbclear}
   \begin{syntax}
     \cs{dbclear} \marg{database}
   \end{syntax}
-
   清空 \meta{database} 里的所有内容。
-
 \end{function}
 
 \subsection{\cs{dbNewStyle} 和样式选项}
 
-\begin{function}{\dbNewStyle}
+\begin{function}[added=2022-01-05]{\dbNewStyle}
   \begin{syntax}
     \cs{dbNewStyle} \oarg{base styles} \marg{style} \marg{database} \marg{opts}
   \end{syntax}
@@ -277,13 +338,24 @@
 
 \subsubsection{通用选项}
 
-\begin{option}{opt=filter, desc={= \meta{filter}}, init=-none-}
+\begin{option}[added=2022-01-05]{filter}
+  \begin{syntax}
+    filter = <filter>
+  \end{syntax}
+
   为当前样式设置由 \cs{dbCombineFilters} 所定义的过滤器
 \end{option}
 
-\begin{option}{opt=raw-filter, desc={= \meta{cond combination}}}
-  用已定义的条件为当前样式设置匿名过滤器。下面两个例子的作用是等同的。
+\begin{option}[added=2022-01-06]{raw-filter}
+  \begin{syntax}
+    raw-filter = <conditional expression>
+  \end{syntax}
+
+  使用条件表达式设置匿名过滤器，这里的条件指通过 \cs{dbNewConditional} 定义的
+  条件。下面代码中两个示例的过滤器具有相同的功能。
 \end{option}
+
+\changes{1.1}{2022-01-06}{Add option}{\opt{raw-filter}}
 
 \begin{verbatim}
   % method 1
@@ -301,10 +373,12 @@
   \dbNewStyle{style}{db}{filter=filter}
 \end{verbatim}
 
-\begin{option}{
-  opt = sort,
-  desc = {= \{ \meta{attr spec1}, \meta{attr spec2}, \ldots{} \}},
-}
+\changes{1.2}{2022-01-08}{Fix bug}{string sorting bug}
+\begin{option}[added=2022-01-05]{sort}
+  \begin{syntax}
+    sort = \{ <attr spec1>, <attr spec2>, \ldots{} \}
+  \end{syntax}
+
   为当前样式设置排序规则。支持根据 |str|，|date|，|int|，|fp| 类型的数据进行排
   序，支持多级排序。\meta{attr} 表示增序，\meta{attr}* 表示降序。下面例子中，
   使用 |sort-style| 展示数据时的顺序为先按 |level| 降序，|level| 相同的再按出
@@ -323,34 +397,74 @@
   }
 \end{verbatim}
 
-\begin{option}{
-  opt = item-code,
-  desc = {= \meta{item code}}
-}
+\begin{option}[added=2022-01-05, rEXP]{item-code}
+  \begin{syntax}
+    item-code = <code>
+  \end{syntax}
+
   该选项用来设置展示数据库中每条记录的代码。你可以使用 \cs{dbuse} 来展示属性的
   值。
 \end{option}
 
-\begin{option}{
-  opt = {\meta{attr}/sep},
-  desc = {= \meta{sep spec}},
-  init = {,~\~}
-}
-\begin{Syntax}
-  \meta{attr}/sep = \meta{separator} \\
-  \meta{attr}/sep = \{ \\
-  ~~\meta{separator between two}, \\
-  ~~\meta{separator between more than two}, \\
-  ~~\meta{separator between final two} \\
-  \}
-\end{Syntax}
+\changes{1.3}{2022-01-09}{Update option}{\opt{<attr>/sep}}
+\begin{option}[added=2022-01-05, updated=2022-01-08, rEXP]{<attr>/sep}
+  \begin{syntax}
+    <attr>/sep = <separator> \\
+    <attr>/sep = \{ \\
+    ~~\meta{separator between two}, \\
+    ~~\meta{separator between more than two}, \\
+    ~~\meta{separator between final two} \\
+    \} \\
+    <attr>/sep = \{ \\
+    ~~\meta{separator before year}, \\
+    ~~\meta{separator between year and month}, \\
+    ~~\meta{separator between month and day}, \\
+    ~~\meta{separator after day} \\
+    \} \\
+  \end{syntax}
 
-  该选项只适用于类型为 |clist| 的属性，用来设置列表间元素的间隔。第一个版本接
-  受一个参数，将所有的元素间隔设置为 \meta{separator}。第二个版本接受逗号分隔
-  的三个参数，分别用来设置只有两个元素时的分隔符 \meta{separator between two}，
-  超过两个元素时的分隔符 \meta{separator between more than two}，和最后两个元
-  素之间的分隔符 \meta{separator between final two}。
+  该选项只适用于类型为 |clist| 或 |date| 的属性，用来设置列表间元素的间隔。参
+  数为一个 \meta{separator} 时，所有元素间的分隔符被设置为 \meta{separator}。
+  \meta{separator before year} 和 \meta{separator after day} 被设置为空。
+\end{option}
 
+  参数为3个元素的逗号分隔的列表时，此选项用来设置列表元素的分隔符，分别用来设
+  置只有两个元素时的分隔符 \meta{separator between two}，超过两个元素时的分隔
+  符 \meta{separator between more than two}，和最后两个元素之间的分隔符
+  \meta{separator between final two}。对于类型为 |clist| 的属性，设置此选项时
+  如果参数列表数量不是1或者3会触发报错。
+
+\begin{verbatim}
+  % clist-attr is an attribute of database db
+  % suppose the val of clist-attr is { 1, 2, 3 }
+  \dbNewStyle{clist-sep}{db}{
+    clist-attr/sep = { ,~ },                % print 1, 2, 3
+    clist-attr/sep = { {,~}, {,~}, {and~} } % print 1, 2 and 3
+  }
+\end{verbatim}
+
+  参数为4个元素的逗号分隔的列表时，此选项用来设置日期的分隔符，分别用来设
+  置 \meta{year} 之前的分隔符 \meta{separator before year} ，\meta{year} 和
+  \meta{month} 之间的分隔符 \meta{separator between year and month} ，
+  \meta{month} 和 \meta{day} 之间的分隔符，以及 \meta{day} 之后的分隔符。对于
+  类型为 |date| 的属性，设置此选项时如果参数列表数量不是1或者4会触发报错。
+
+\begin{verbatim}
+  % date-attr is an attribute of database db
+  % suppose the val of date-attr is 2022/01/01
+  \dbNewStyle{date-sep}{db}{
+    date-attr/sep = -,             % print 2022-01-01
+    date-attr/sep = { |, -, -, | } % print |2022-01-01|
+  }
+\end{verbatim}
+
+\changes{1.3}{2022-01-08}{Add option}{\opt{<attr>/zfill}}
+\begin{option}[added=2022-01-08, EXP]{<attr>/zfill}
+  \begin{syntax}
+    <attr>/zfill = <\TTF>
+  \end{syntax}
+
+  该选项只适用于类型为 |date| 的属性。控制输出月份和天时是否补零。
 \end{option}
 
 \subsubsection{装饰器}
@@ -385,69 +499,90 @@
   }
 \end{verbatim}
 
-\begin{option}{
-  opt = before-code,
-  desc = {= \meta{before code}}
-}
-  该选项用来设置在展示整个数据库之前需要执行的代码。
+\changes{1.3}{2022-01-08}{Add option}{\opt{<attr>/wrapper}}
+\begin{option}[added=2022-01-08, rEXP]{<attr>/wrapper}
+  \begin{syntax}
+    <attr>/wrapper = <control sequence>
+  \end{syntax}
+
+  该选项只适用于类型为 |date| 的属性。\meta{control sequence} 只接收一个参数即
+  日期，如果设置了此选项，则最后输出的日期为
+  \meta{control sequence}\marg{date}。
 \end{option}
 
-\begin{option}{
-  opt = after-code,
-  desc = {= \meta{after code}}
-}
-  该选项用来设置在展示整个数据库之后需要执行的代码。
+\begin{option}[added=2022-01-05, rEXP]{before-code}
+  \begin{syntax}
+    before-code = <code>
+  \end{syntax}
+
+  该选项用来设置在展示整个数据库之\zhbefore 需要执行的代码。
 \end{option}
 
-\begin{option}{
-  opt = record-before-code,
-  desc = {= \meta{before code}}
-}
-  该选项用来设置在展示当前记录之前需要执行的代码。
+\begin{option}[added=2022-01-05, rEXP]{after-code}
+  \begin{syntax}
+    after-code = <code>
+  \end{syntax}
+
+  该选项用来设置在展示整个数据库之\zhafter 需要执行的代码。
 \end{option}
 
-\begin{option}{
-  opt = record-after-code,
-  desc = {= \meta{after code}}
-}
-  该选项用来设置在展示当前记录之后需要执行的代码。
+\changes{1.2}{2022-01-08}{Add options}{\opt{record-before-code},
+\opt{record-after-code}}
+\begin{option}[added=2022-01-05, rEXP]{record-before-code}
+  \begin{syntax}
+    record-before-code = <code>
+  \end{syntax}
+
+  该选项用来设置在展示当前记录之\zhbefore 需要执行的代码。
 \end{option}
 
-\begin{option}{
-  opt = {\meta{attr}/before-code},
-  desc = {= \meta{before code}}
-}
-  该选项用来设置展示数据库中属性 \meta{attr} 对应数据之前需要执行的代码。
-  \cs{dbuse} 会在展示属性数据前执行此代码。
+\begin{option}[added=2022-01-05, rEXP]{record-after-code}
+  \begin{syntax}
+    record-after-code = <code>
+  \end{syntax}
+
+  该选项用来设置在展示当前记录之\zhafter 需要执行的代码。
 \end{option}
 
-\begin{option}{
-  opt = {\meta{attr}/after-code},
-  desc = {= \meta{after code}}
-}
-  该选项用来设置展示数据库中属性 \meta{attr} 对应数据之后需要执行的代码。
-  \cs{dbuse} 会在展示属性数据后执行此代码。
+\begin{option}[added=2022-01-05, rEXP]{<attr>/before-code}
+  \begin{syntax}
+    <attr>/before-code = <code>
+  \end{syntax}
+
+  该选项用来设置展示数据库中属性 \meta{attr} 对应数据之\zhbefore 需要执行的代
+  码。\cs{dbuse} 会在展示属性数据\zhbefore 执行此代码。
 \end{option}
 
-\begin{option}{
-  opt = {\meta{attr}/item-before-code},
-  desc = {= \meta{before code}}
-}
-  该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素前需要执行的代
-  码。
+\begin{option}[added=2022-01-05, rEXP]{<attr>/after-code}
+  \begin{syntax}
+    <attr>/after-code = <code>
+  \end{syntax}
+
+  该选项用来设置展示数据库中属性 \meta{attr} 对应数据之\zhafter 需要执行的代码。
+  \cs{dbuse} 会在展示属性数据\zhafter 执行此代码。
 \end{option}
 
-\begin{option}{
-  opt = {\meta{attr}/item-after-code},
-  desc = {= \meta{after code}}
-}
-  该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素后需要执行的代
-  码。
+\begin{option}[added=2022-01-05, rEXP]{<attr>/item-before-code}
+  \begin{syntax}
+    <attr>/item-before-code = <code>
+  \end{syntax}
+
+  该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素\zhbefore 需要
+  执行的代码。
+\end{option}
+
+\begin{option}[added=2022-01-05, rEXP]{<attr>/item-after-code}
+  \begin{syntax}
+    <attr>/item-after-code = <code>
+  \end{syntax}
+
+  该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素\zhafter 需要执
+  行的代码。
 \end{option}
 
 \subsection{使用 \cs{dbNewReviewPoints} 定义复习点}
 
-\begin{function}{\dbNewReviewPoints}
+\begin{function}[added=2022-01-05]{\dbNewReviewPoints}
   \begin{syntax}
     \cs{dbNewReviewPoints} \marg{name} \marg{points}
   \end{syntax}
@@ -455,6 +590,8 @@
   定义名为 \meta{name} 的复习点。这是专门为错题本或复习所定制的功能，
   \meta{points}是一系列整数，现在假设每道错题你都将写错时的日期记录在了 |date|
   属性中，并且你希望每隔2，5，15天复习一次。下面的代码给出了一个实现示例。
+\end{function}
+
 \begin{verbatim}
   \dbNewReviewPoints{review-point}{2, 5, 15}            % 定义复习点
   \begin{dbFilters}
@@ -463,47 +600,52 @@
   \end{dbFilters}
   \dbNewStyle{review-style}{ques}{filter=filter1}       % 定义展示样式
 \end{verbatim}
-\end{function}
 
 \subsection{在 \env{dbFilters} 环境中定义过滤器}
 
-\noindent\DescribeEnv{dbFilters}
-\begin{Syntax}*
-  |\begin{dbFilters}|\marg{database} \\
-  ~~\meta{code}
-  |\end{dbFilters}| \\
-\end{Syntax}
+\begin{environment}[added=2022-01-05]{dbFilters}
+  \begin{syntax}
+    |\begin{dbFilters}|\marg{database} \\
+    ~~\meta{code}
+    |\end{dbFilters}| \\
+  \end{syntax}
 
-\env{dbFilters}用来定义过滤器，此环境中定义了 \cs{dbNewConditional} 命令用来定
-义条件和 \cs{dbCombineConditionals} 命令用来组合条件定义过滤器。过滤器独立于每
-个 \meta{database}，这意味着你可以在不同数据库中定义名称相同的过滤条件和过滤器。
+  \env{dbFilters}用来定义过滤器，此环境中定义了 \cs{dbNewConditional} 命令用来
+  定义条件和 \cs{dbCombineConditionals} 命令用来组合条件定义过滤器。过滤器独立
+  于每个 \meta{database}，这意味着你可以在不同数据库中定义名称相同的过滤条件和
+  过滤器。
+\end{environment}
 
-\begin{function}{\dbNewConditional, \dbNewConditional*}
+\begin{function}[added=2022-01-05, updated=2022-01-08]{\dbNewConditional, \dbNewConditional*}
   \begin{syntax}
     \cs{dbNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
     \cs{dbNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
-    \cs{dbNewConditional}  \marg{name} \marg{int/fp attr} \marg{relation} \\
-    \cs{dbNewConditional}* \marg{name} \marg{int/fp attr} \marg{relation} \\
+    \cs{dbNewConditional}  \marg{name} \marg{int/fp attr} \marg{expr} \\
+    \cs{dbNewConditional}* \marg{name} \marg{int/fp attr} \marg{expr} \\
     \cs{dbNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \\
     \cs{dbNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \\
     \cs{dbNewConditional}  \marg{name}  \marg{clist attr} \marg{val list} \\
     \cs{dbNewConditional}* \marg{name}  \marg{clist attr} \marg{val list} \\
-    \cs{dbNewConditional}  \marg{name}   \marg{date attr} \{\meta{review points}\textbar\meta{date}\} \\
-    \cs{dbNewConditional}* \marg{name}   \marg{date attr} \marg{relation}
+    \cs{dbNewConditional}  \marg{name}   \marg{date attr} \marg{expr}
+    \cs{dbNewConditional}* \marg{name}   \marg{date attr} \{\meta{review points}\orbar\meta{date}\} \\
   \end{syntax}
 
   \cs{dbNewConditional} 用来定义名为 \meta{name} 的条件，\meta{attr} 指定条件
   所绑定的属性，在 \meta{cond spec} 中可以用 \cs{dbval} 指代属性的值。
 \end{function}
 
-  对于类型为 |int| 和 |fp| 的属性，两个版本的定义是一致的，\meta{relation} 可
-  以是单个关系式，比如 |\dbval > 3|，也可以是组合关系式，比如
-  |\dbval > 3 && \dbval < 10.2|。支持的操作符有 |<, >, =, ==, !=, >=, <=, !|。
+  \changes{1.3}{2022-01-10}{Update doc}{truncated division}
+  对于类型为 |int| 和 |fp| 的属性，\meta{expr} 传递给 \cs{int_compare:nTF} 或
+  \cs{fp_compare:nTF} 处理。
+  \begin{note}
+    |/| 为四舍五入除法，截断除法请用 \cs{dbIntDivTruncate}。
+  \end{note}
 
   对于类型为 |str| 和 |tl| 的属性，\meta{regex} 为正则表达式，
   \cs{dbNewConditional} 表示部分匹配，\cs{dbNewConditional*} 表示整体匹配。
+
 \begin{verbatim}
-  \dbNewConditional{cond1}{str-attr}{abc}  % 匹配 abc, abcd, 1abc, =abc= 等
+  \dbNewConditional {cond1}{str-attr}{abc} % 匹配 abc, abcd, 1abc, =abc= 等
   \dbNewConditional*{cond2}{str-attr}{abc} % 只匹配 abc
 \end{verbatim}
 
@@ -513,16 +655,19 @@
   （列表）中条件才成立。
 
 \begin{verbatim}
-  \dbNewConditional{cond1}{clist-attr}{a, b, c}  % a, b, d 满足条件
+  \dbNewConditional {cond1}{clist-attr}{a, b, c} % a, b, d 满足条件
   \dbNewConditional*{cond2}{clist-attr}{a, b, c} % a, b, d 不满足条件
 \end{verbatim}
 
-  对于类型为 |date| 的属性，\cs{dbNewConditional} 使用复习点来定义过滤条件，
-  \meta{review points} 是 \cs{dbNewReviewPoints} 定义的复习点，\meta{date} 是
-  用来比较的日期；\cs{dbNewConditional*} 使用\textbf{单个}关系式来定义过滤条件。
-  支持的操作符有 |<, >, =, ==, !=, >=, <=|。
+  \changes{1.3}{2022-01-08}{Update logic}{swap definition of starred and
+  unstarred conditionals of date}
+  对于类型为 |date| 的属性，\cs{dbNewConditional} 定义的条件后续处理中会将
+  \meta{expr} 中的所有日期转换成相对\textit{1971年1月1日}的一个整数值，然后将
+  处理后的表达式传递给 \cs{int_compare:nTF} 做进一步处理；
+  \cs{dbNewConditional*} 使用复习点来定义过滤条件，\meta{review points} 是
+  \cs{dbNewReviewPoints} 定义的复习点，\meta{date} 是用来比较的日期。
 
-\begin{function}{\dbCombineConditionals}
+\begin{function}[added=2022-01-05]{\dbCombineConditionals}
   \begin{syntax}
     \cs{dbCombineConditionals} \marg{name} \marg{cond combination} \oarg{info}
   \end{syntax}
@@ -537,52 +682,56 @@
 
 \subsection{使用 \env{dbitem} 环境存储数据}
 
-\noindent\DescribeEnv{dbitem}
-\begin{Syntax}*
-  |\begin{dbitem}|\marg{database}[ \\
-  ~~\meta{attr1} = \meta{val1}, \\
-  ~~\meta{attr2} = \meta{val2}, \\
-  ~~\ldots{} \\
-  ] \\
-  ~~\meta{code} \\
-  |\end{dbitem}|
-\end{Syntax}
+\begin{environment}[added=2022-01-05]{dbitem}
+  \begin{syntax}
+    |\begin{dbitem}|\marg{database}[ \\
+    ~~\meta{attr1} = \meta{val1}, \\
+    ~~\meta{attr2} = \meta{val2}, \\
+    ~~\ldots{} \\
+    ] \\
+    ~~\meta{code} \\
+    |\end{dbitem}|
+  \end{syntax}
 
   \env{dbitem} 环境用来存储数据。有两种存储数据的方法，较短的数据可以在选项列
   表中通过键值对设置值，较长的数据可以在 \meta{code} 中使用 \cs{dbsave} 存储。
   \cs{dbsave}会覆盖选项中设置的值。没有设置的值将会被设置为全局默认值，下面给
   出一个存储示例。
+\end{environment}
 
 \begin{verbatim}
-  \begin{dbitem}[date=2022-01-01, info=测试]
+  \begin{dbitem}[date = 2022-01-01, info = 测试]
     \dbsave{question}{这是一个测试问题}
-    \dbsave{answer}{这是一个测试答案}
+    \dbsave{answer}  {这是一个测试答案}
   \end{dbitem}
 \end{verbatim}
 
 \subsection{\cs{dbsave} 和 \cs{dbuse}}
 
-\begin{function}{\dbsave, \dbsave*}
+\changes{1.3}{2022-01-08}{Add macro}{\cs{dbsave*}}
+\begin{function}[added=2022-01-05, updated=2022-01-08]{\dbsave, \dbsave*}
   \begin{syntax}
-    \cs{dbsave} \marg{attr} \marg{data}
+    \cs{dbsave}  \marg{attr} \marg{data} \\
+    \cs{dbsave}* \marg{attr} \marg{data}
   \end{syntax}
 
-  \cs{dbsave} 用来存储数据，只能在 \env{item} 环境中使用。使用 \cs{dbsave} 存
-  储的数据会被 \cs{exp_not:n} 包裹；使用 \cs{dbsave*} 存储的数据为原始数据。
+  \cs{dbsave} 用来存储数据，只能在 \env{item} 环境中使用。使用 \cs{dbsave*} 存
+  储的数据会被 \cs{exp_not:n} 包裹。
 \end{function}
 
-\begin{function}[EXP]{\dbuse}
+\changes{1.2}{2022-01-08}{Update macro}{make \cs{dbuse} fully-expandable}
+\begin{function}[added=2022-01-05, updated=2022-01-08, EXP]{\dbuse}
   \begin{syntax}
-    \cs{dbuse}  \marg{attr}
+    \cs{dbuse} \marg{attr}
   \end{syntax}
 
-  \cs{dbuse} 用来使用数据，只能在 \opt{item-code} 选项中使用。\cs{dbuse} 是可
+  \cs{dbuse} 用来展示数据，只能在 \opt{item-code} 选项中使用。\cs{dbuse} 是可
   展开的。
 \end{function}
 
 \subsection{条件判别式}
 
-\begin{function}[EXP]{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
+\begin{function}[added=2022-01-05, EXP]{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
   \begin{syntax}
     \cs{dbIfEmptyTF} \marg{true code} \marg{false code} \\
     \cs{dbIfEmptyT} \marg{true code} \\
@@ -600,32 +749,67 @@
   }
 \end{verbatim}
 
+\changes{1.2}{2022-01-08}{Remove macros}{\cs{dbItemIfEmpty(TF)}, \cs{dbClistItemIfEmpty(TF)}}
+
+\subsection{表达式函数}
+
+\changes{1.3}{2022-01-10}{Add macros}{expression function aliases}
+\begin{function}[added=2022-01-10, EXP]{
+  \dbIntAbs, \dbIntSign, \dbIntDivRound, \dbIntDivTruncate, \dbIntMax,
+  \dbIntMin, \dbIntMod, \dbFpSign,
+}
+  \begin{syntax}
+    \cs{dbIntAbs} \Arg{intexpr}
+    \cs{dbIntSign} \Arg{intexpr}
+    \cs{dbIntDivRound} \Arg{intexpr_1} \marg{intexpr_2}
+    \cs{dbIntDivTruncate} \Arg{intexpr_1} \marg{intexpr_2}
+    \cs{dbIntMax} \Arg{intexpr_1} \marg{intexpr_2}
+    \cs{dbIntMin} \Arg{intexpr_1} \marg{intexpr_2}
+    \cs{dbIntMod} \Arg{intexpr_1} \marg{intexpr_2}
+    \cs{dbFpSign} \Arg{fpexpr}
+  \end{syntax}
+  \cs{dbIntAbs} 等同于 \cs{int_abs:n} \\
+  \cs{dbIntSign} 等同于 \cs{int_sign:n} \\
+  \cs{dbIntDivRound} 等同于 \cs{int_div_round:nn} \\
+  \cs{dbIntDivTruncate} 等同于 \cs{int_div_truncate:nn} \\
+  \cs{dbIntMax} 等同于 \cs{int_max:nn} \\
+  \cs{dbIntMin} 等同于 \cs{int_min:nn} \\
+  \cs{dbIntMod} 等同于 \cs{int_mod:nn} \\
+  \cs{dbFpSign} 等同于 \cs{fp_sign:n} \\
+   详细的文档见 \pkg{interface3} \\
+\end{function}
+
 \subsection{特殊命令}
 
 \pkg{dbshow} 定义了一些特殊的命令，会根据语境展开为不同的内容。
 
-\DescribeMacro{\dbval}当前属性的值，只能在 \cs{dbNewConditional} 中使用
-
-\DescribeMacro{\dbDatabase}数据库名称
-
-\DescribeMacro{\dbFilterName}过滤器名称
-
-\DescribeMacro{\dbFilterInfo}过滤器信息
-
-\DescribeMacro{\dbIndex}原始数据索引，等同于 |\dbuse{id}| 但是 \cs{dbuse} 是不可展开的
-
-\DescribeMacro{\dbarabic}用数字表示的查询集数据计数
-
-\DescribeMacro{\dbalph}用小写字母表示的查询集数据计数
-
-\DescribeMacro{\dbAlph}用小写字母表示的查询集数据计数
-
-\DescribeMacro{\dbroman}用小写罗马数字表示的查询集数据计数
-
-\DescribeMacro{\dbRoman}用大写罗马数字表示的查询集数据计数
+\changes{1.1}{2022-01-05}{Add macro}{
+  \cs{dbarabic}, \cs{dbalph}, \cs{dbAlph}, \cs{dbroman},
+  \cs{dbRoman}
+}
+\changes{1.1}{2022-01-06}{Fix bug}{\cs{dbIndex} not defined}
+\begin{function}[added=2022-01-05, EXP]{
+  \dbval, \dbDatabase, \dbFilterName, \dbFilterInfo,
+  \dbIndex, \dbarabic, \dbalph, \dbAlph, \dbroman, \dbRoman
+}
+\begin{tblr}{ll}
+  \cs{dbval} & 当前属性的值 \\
+  \cs{dbDatabase} & 数据库名称 \\
+  \cs{dbFilterName} & 当前样式过滤器的名称 \\
+  \cs{dbFilterInfo} & 当前样式过滤器的相关信息 \\
+  \cs{dbIndex} & 数据索引，等同于 \cs{dbuse}|{id}| \\
+  \cs{dbarabic} & 用数字表示的查询集数据计数 \\
+  \cs{dbalph} & 用小写字母表示的查询集数据计数 \\
+  \cs{dbAlph} & 用大写字母表示的查询集数据计数 \\
+  \cs{dbroman} & 用小写罗马字母表示的查询集数据计数 \\
+  \cs{dbroman} & 用大写罗马字母表示的查询集数据计数 \\
+  \end{tblr}
+\end{function}
 
 \section{错题本示例}
 见第 \ref{sec:example} 节。
+
+\changes{1.1}{2022-01-07}{Update doc}{improve example}
 
 \title{
   Package \pkg{dbshow} \version%
@@ -654,13 +838,26 @@ The package provides four core functions: data storage and display, data
 filtering, data sorting and data display. All data is saved once and then you
 can display these data with custom filters, orders and styles.
 
+\changes{1.2}{2022-01-09}{Add doc}{descripton for expansion}
+\begin{itemize}
+  \item Macros with a $\star$ are fully-expandable;
+  \item Macros with a \ding{73} are restricted-expandable;
+  \item Macros without appending a special symbol are nonexpandable;
+  \item Options with a $\star$ \textit{do not} affect the expandability of
+    related macros;
+  \item Options with a \ding{73} affect the expandability of related macros
+    according to its value;
+  \item Options without appending a special symbol make the related macros
+    nonexpandable.
+\end{itemize}
+
 \subsection{Data Types}
 
 The package constructs 6 types based on the internal typed of \pkg{expl3}:
 \begin{Description}[\texttt{clist}]
   \item[\texttt{date}]
-    date based on \pkg{datetime2} in iso format, supports comparison,
-    sorting (converting to |str|), default \cs{Today}.
+    date saved in |yyyy/mm/dd| format, supports comparison, sorting
+    (converting to string), default \cs{dbtoday}.
   \item[\texttt{str}]
     string，supports regex match and sorting, default empty.
   \item[\texttt{tl}]
@@ -673,7 +870,14 @@ The package constructs 6 types based on the internal typed of \pkg{expl3}:
     comma list, default empty.
 \end{Description}
 
+\changes{1.3}{2022-01-08}{Remove dependency}{\pkg{datatime2}}
+All types are internal types of \pkg{expl3} except |date| type, which provides
+by \pkg{dbshow} itself and supports converting to integer and printing with
+style.
+
 \subsection{Comparison to \pkg{datatool}}
+
+\changes{1.2}{2022-01-07}{Add doc}{add comparison to \pkg{datatool}}
 
 \pkg{dbshow} and \pkg{datatool} implement the same core functions. But
 \pkg{dbshow} is based on \pkg{expl3} and it supports string regex and
@@ -693,7 +897,7 @@ persistence.
 
 \subsection{Create, Display and Clear Database}
 
-\begin{function}{\dbNewDatabase, \dbNewDatabase*}
+\begin{function}[added=2022-01-05]{\dbNewDatabase, \dbNewDatabase*}
   \begin{syntax}
     \cs{dbNewDatabase} \oarg{base database} \marg{database} \{ \\
     ~~\meta{attr1} = \meta{type spec1}, \\
@@ -714,10 +918,10 @@ Create a new database named \meta{database}, unstarred form provides the optiona
 The unstarred form always replace the old definition, while starred form
 appends the new options.
 
-\begin{Syntax}
+\begin{syntax}
   \meta{attr} = \meta{type} \\
-  \meta{attr} = \meta{type}\textbar\meta{default}
-\end{Syntax}
+  \meta{attr} = \meta{type}\orbar\meta{default}
+\end{syntax}
 
 The first form defines the \meta{attr} as \meta{type}, and the second also
 sets the default value.
@@ -737,7 +941,7 @@ The example below define a database named |ques|.
   }
 \end{verbatim}
 
-\begin{function}{\dbshow}
+\begin{function}[added=2022-01-05]{\dbshow}
   \begin{syntax}
     \cs{dbshow} \marg{style} \marg{database}
   \end{syntax}
@@ -745,36 +949,45 @@ The example below define a database named |ques|.
   Show the \meta{database} with \meta{style}.
 \end{function}
 
-\begin{function}{\dbclear}
+\changes{1.2}{2022-01-07}{Add macro}{\cs{dbclear}}
+\begin{function}[added=2022-01-07]{\dbclear}
   \begin{syntax}
     \cs{dbclear} \marg{database}
   \end{syntax}
 
   Clear the content of \meta{database}.
-
 \end{function}
 
 \subsection{\cs{dbNewStyle} and Style Options}
 
-\begin{function}{\dbNewStyle}
+\begin{function}[added=2022-01-05]{\dbNewStyle}
   \begin{syntax}
     \cs{dbNewStyle} \oarg{base styles} \marg{style} \marg{database} \marg{opts}
   \end{syntax}
 
-Define a new \meta{style} that binds to \meta{database}. The style can inherit
-from a list of \meta{base styles} such as
-|\dbNewStyle[base1, base2]{new-style}{ques}{}|.
+  Define a new \meta{style} that binds to \meta{database}. The style can
+  inherit from a list of \meta{base styles} such as
+  |\dbNewStyle[base1, base2]{new-style}{ques}{}|.
 \end{function}
 
 \subsubsection{General Options}
 
-\begin{option}{opt=filter, desc={= \meta{filter}}, init=-none-}
+\begin{option}[added=2022-01-05]{filter}
+  \begin{syntax}
+    filter = <filter>
+  \end{syntax}
+
   Set the \meta{filter} defined by \cs{dbCombineFilters}.
 \end{option}
 
-\begin{option}{opt=raw-filter, desc={= \meta{cond combination}}}
-  Set anonymous with defined conditionals. Two examples below perform the same
-  function.
+\changes{1.1}{2022-01-06}{Add option}{\opt{raw-filter}}
+\begin{option}[added=2022-01-06]{raw-filter}
+  \begin{syntax}
+    raw-filter = <conditional expression>
+  \end{syntax}
+
+  Set anonymous with conditionals defined by \cs{dbNewConditional}. Two
+  filters shows in the code below have the same meaning.
 \end{option}
 
 \begin{verbatim}
@@ -793,10 +1006,12 @@ from a list of \meta{base styles} such as
   \dbNewStyle{style}{db}{filter=filter}
 \end{verbatim}
 
-\begin{option}{
-  opt = sort,
-  desc = {= \{ \meta{attr spec1}, \meta{attr spec2}, \ldots{} \}},
-}
+\changes{1.2}{2022-01-08}{Fix bug}{string sorting bug}
+\begin{option}[added=2022-01-05]{sort}
+  \begin{syntax}
+    sort = \{ <attr spec1>, <attr spec2>, \ldots{} \}
+  \end{syntax}
+
   Set sorting rules. Attributes of type |str, date, int, fp| is supported to
   sort.  Multi-level sort is allowed. \meta{attr} represents for ascending
   order, and \meta{attr}* represents for descending order. The example below
@@ -817,31 +1032,40 @@ from a list of \meta{base styles} such as
   }
 \end{verbatim}
 
-\begin{option}{
-  opt = item-code,
-  desc = {= \meta{item code}}
-}
+\begin{option}[added=2022-01-05, rEXP]{item-code}
+  \begin{syntax}
+    item-code = <code>
+  \end{syntax}
+
   Set the code that show a single record. You can use \cs{dbuse} to display
   certian attribute.
 \end{option}
 
-\begin{option}{
-  opt = {\meta{attr}/sep},
-  desc = {= \meta{sep spec}},
-  init = {,~\~}
-}
-\begin{Syntax}
-  \meta{attr}/separator = \meta{separator} \\
-  \meta{attr}/separator = \{ \\
-  ~~\meta{separator between two}, \\
-  ~~\meta{separator between more than two}, \\
-  ~~\meta{separator between final two} \\
-  \}
-\end{Syntax}
+\changes{1.3}{2022-01-09}{Update option}{\opt{<attr>/sep}}
+\begin{option}[added=2022-01-05, updated=2022-01-08, rEXP]{<attr>/sep}
+  \begin{syntax}
+    <attr>/sep = <separator> \\
+    <attr>/sep = \{ \\
+    ~~\meta{separator between two}, \\
+    ~~\meta{separator between more than two}, \\
+    ~~\meta{separator between final two} \\
+    \} \\
+    <attr>/sep = \{ \\
+    ~~\meta{separator before year}, \\
+    ~~\meta{separator between year and month}, \\
+    ~~\meta{separator between month and day}, \\
+    ~~\meta{separator after day} \\
+    \} \\
+  \end{syntax}
 
-  Only for attributes of type |clist|. Set the separator between clist items.
-  The first form accept one arguments and set the seperator as \meta{sep}. The
-  second form is more complicated, the following documentation is quoted from
+  Only for attributes of type |clist| or |date|. Set the separator between
+  items. If the argument is an one-item comma list, all separators are set to
+  \meta{separator} but \meta{separator before year} and \meta{separator after
+  day} is set empty.
+\end{option}
+
+  If the argument is a comma list of 3 items, it is used to set the separator
+  between items of the comma list. Following documentation is quoted from
   \pkg{interface3}:
   \begin{quote}
     If the comma list has more than two items, the \meta{separator between
@@ -852,7 +1076,39 @@ from a list of \meta{base styles} such as
     it is placed in the input stream, and a comma list with no items produces
     no output.
   \end{quote}
+  For attributes of type |clist|, incorrect number (numbers exclude 1 and 3)
+  of items of the argument will raise an error.
 
+\begin{verbatim}
+  % clist-attr is an attribute of database db
+  % suppose the val of clist-attr is { 1, 2, 3 }
+  \dbNewStyle{clist-sep}{db}{
+    clist-attr/sep = { ,~ },                % print 1, 2, 3
+    clist-attr/sep = { {,~}, {,~}, {and~} } % print 1, 2 and 3
+  }
+\end{verbatim}
+
+  If the argument is a comma list of 4 items, it is used to set the separators
+  of the date. For attributes of type |date|, incorrect number (numbers
+  exclude 1 and 4) will raise an error.
+
+\begin{verbatim}
+  % date-attr is an attribute of database db
+  % suppose the val of date-attr is 2022/01/01
+  \dbNewStyle{date-sep}{db}{
+    date-attr/sep = -,             % print 2022-01-01
+    date-attr/sep = { |, -, -, | } % print |2022-01-01|
+  }
+\end{verbatim}
+
+\changes{1.3}{2022-01-08}{Add option}{\opt{<attr>/zfill}}
+\begin{option}[added=2022-01-08, EXP]{<attr>/zfill}
+  \begin{syntax}
+    <attr>/zfill = <\TTF>
+  \end{syntax}
+
+  Only for attributes of type |date|. Control whether to fill zero on the left
+  of the month or day.
 \end{option}
 
 \subsubsection{Decorators}
@@ -890,69 +1146,89 @@ decorators.
   }
 \end{verbatim}
 
-\begin{option}{
-  opt = before-code,
-  desc = {= \meta{before code}}
-}
-  Set the \meta{before code} that is executed before displaying the database.
+\changes{1.3}{2022-01-08}{Add option}{\opt{<attr>/wrapper}}
+\begin{option}[added=2022-01-08, rEXP]{<attr>/wrapper}
+  \begin{syntax}
+    <attr>/wrapper = <control sequence>
+  \end{syntax}
+
+  Only for attributes of type |date|. Output of \cs{dbuse}\marg{date attr}
+  will be \meta{control sequence}\marg{date}.
 \end{option}
 
-\begin{option}{
-  opt = after-code,
-  desc = {= \meta{after code}}
-}
-  Set the \meta{after code} that is executed after displaying the database.
+\begin{option}[added=2022-01-05, rEXP]{before-code}
+  \begin{syntax}
+    before-code = <code>
+  \end{syntax}
+
+  Set the \meta{code} that is executed \enbefore displaying the database.
 \end{option}
 
-\begin{option}{
-  opt = record-before-code,
-  desc = {= \meta{before code}}
-}
-  Set the \meta{before code} that is executed before displaying the record.
+\begin{option}[added=2022-01-05, rEXP]{after-code}
+  \begin{syntax}
+    after-code = <code>
+  \end{syntax}
+
+  Set the \meta{code} that is executed \enafter displaying the database.
 \end{option}
 
-\begin{option}{
-  opt = record-after-code,
-  desc = {= \meta{after code}}
-}
-  Set the \meta{after code} that is executed after displaying the record.
+\changes{1.2}{2022-01-08}{Add options}{\opt{record-before-code},
+\opt{record-after-code}}
+\begin{option}[added=2022-01-05, rEXP]{record-before-code}
+  \begin{syntax}
+    record-before-code = <code>
+  \end{syntax}
+
+  Set the \meta{code} that is executed \enbefore displaying a record.
 \end{option}
 
-\begin{option}{
-  opt = {\meta{attr}/before-code},
-  desc = {= \meta{before code}}
-}
-  Set the \meta{before code} that is executed by \cs{dbuse} before displaying
+\begin{option}[added=2022-01-05, rEXP]{record-after-code}
+  \begin{syntax}
+    record-after-code = <code>
+  \end{syntax}
+
+  Set the \meta{code} that is executed \enafter displaying the record.
+\end{option}
+
+\begin{option}[added=2022-01-05, rEXP]{<attr>/before-code}
+  \begin{syntax}
+    <attr>/before-code = <code>
+  \end{syntax}
+
+  Set the \meta{code} that is executed by \cs{dbuse} \enbefore displaying
   certain attribute.
 \end{option}
 
-\begin{option}{
-  opt = {\meta{attr}/after-code},
-  desc = {= \meta{after code}}
-}
-  Set the \meta{after code} that is executed by \cs{dbuse} after displaying
+\begin{option}[added=2022-01-05, rEXP]{<attr>/after-code}
+  \begin{syntax}
+    <attr>/after-code = <code>
+  \end{syntax}
+
+  Set the \meta{code} that is executed by \cs{dbuse} \enafter displaying
   certain attribute.
 \end{option}
 
-\begin{option}{
-  opt = {\meta{attr}/item-before-code},
-  desc = {= \meta{before code}}
-}
-  Only for attributes of type |clist|. Set the \meta{after code} that is
-  excuted before displaying the item of the comma list.
+\begin{option}[added=2022-01-05, rEXP]{<attr>/item-before-code}
+  \begin{syntax}
+    <attr>/item-before-code = <code>
+  \end{syntax}
+
+  Only for attributes of type |clist|. Set the \meta{code} that is excuted
+  \enbefore displaying the item of the comma list.
 \end{option}
 
-\begin{option}{
-  opt = {\meta{attr}/item-after-code},
-  desc = {= \meta{after code}}
-}
-  Only for attributes of type |clist|. Set the \meta{after code} that is
-  excuted after displaying the item of the comma list.
+\begin{option}[added=2022-01-05, rEXP]{<attr>/item-after-code}
+  \begin{syntax}
+    <attr>/item-after-code = <code>
+  \end{syntax}
+
+  Only for attributes of type |clist|. Set the \meta{code} that is excuted
+  \enafter displaying the item of the comma list.
 \end{option}
 
 \subsection{Use \cs{dbNewReviewPoints} to Define Review Points}
 
-\begin{function}{\dbNewReviewPoints}
+\begin{function}[added=2022-01-05]{\dbNewReviewPoints}
   \begin{syntax}
     \cs{dbNewReviewPoints} \marg{name} \marg{points}
   \end{syntax}
@@ -961,6 +1237,8 @@ decorators.
   something. \meta{points} is a list of integers. Suppose you record the date
   when you did not answer correctly and you plan to review every 2, 5 and 15
   days. The following code give what you want.
+\end{function}
+
 \begin{verbatim}
   \dbNewReviewPoints{review-point}{2, 5, 15}            % define points
   \begin{dbFilters}
@@ -969,71 +1247,78 @@ decorators.
   \end{dbFilters}
   \dbNewStyle{review-style}{ques}{filter=filter1}       % define style
 \end{verbatim}
-\end{function}
 
 \subsection{Define Filters inside \env{dbFilters} Environment}
 
-\noindent\DescribeEnv{dbFilters}
-\begin{Syntax}*
-  |\begin{dbFilters}|\marg{database} \\
-  ~~\meta{code}
-  |\end{dbFilters}| \\
-\end{Syntax}
+\begin{environment}[added=2022-01-05]{dbFilters}
+  \begin{syntax}
+    |\begin{dbFilters}|\marg{database} \\
+    ~~\meta{code}
+    |\end{dbFilters}| \\
+  \end{syntax}
 
-Filters are defined inside \env{dbFilters} environment, inside which,
-\cs{dbNewConditional} is defined to declare conditionals and
-\cs{dbCombineConditionals} is defined to combine conditionals. Filters are
-independent in different databases, which means the same name of filters is
-allowed in different databases.
+  Filters are defined inside \env{dbFilters} environment, inside which,
+  \cs{dbNewConditional} is defined to declare conditionals and
+  \cs{dbCombineConditionals} is defined to combine conditionals. Filters are
+  independent in different databases, which means the same name of filters is
+  allowed in different databases.
+\end{environment}
 
-\begin{function}{\dbNewConditional, \dbNewConditional*}
+\begin{function}[added=2022-01-05, updated=2022-01-08]{\dbNewConditional, \dbNewConditional*}
   \begin{syntax}
     \cs{dbNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
     \cs{dbNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
-    \cs{dbNewConditional}  \marg{name} \marg{int/fp attr} \marg{relation} \\
-    \cs{dbNewConditional}* \marg{name} \marg{int/fp attr} \marg{relation} \\
+    \cs{dbNewConditional}  \marg{name} \marg{int/fp attr} \marg{expr} \\
+    \cs{dbNewConditional}* \marg{name} \marg{int/fp attr} \marg{expr} \\
     \cs{dbNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \\
     \cs{dbNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \\
     \cs{dbNewConditional}  \marg{name}  \marg{clist attr} \marg{val list} \\
     \cs{dbNewConditional}* \marg{name}  \marg{clist attr} \marg{val list} \\
-    \cs{dbNewConditional}  \marg{name}   \marg{date attr} \{\meta{review points}\textbar\meta{date}\} \\
-    \cs{dbNewConditional}* \marg{name}   \marg{date attr} \marg{relation}
+    \cs{dbNewConditional}  \marg{name}   \marg{date attr} \marg{expr}
+    \cs{dbNewConditional}* \marg{name}   \marg{date attr} \{\meta{review points}\orbar\meta{date}\} \\
   \end{syntax}
 
   Define the conditional named \meta{name} that binds to \meta{attr}. \cs{dbval}
   is replaced with the real value of the attribute inside the \meta{cond spec}.
 \end{function}
 
-For attributes of type |int| and |fp|, two forms have the same definition.
-\meta{relation} can be a single relation formula, such as |\dbval > 3|, or the
-combination of several relation formulas, such as |\dbval > 3 && \dbval < 10.2|.
-Supported operators are |<, >, =, ==, !=, >=, <=, !|.
+  \changes{1.3}{2022-01-10}{Update doc}{truncated division}
+  For attributes of type |int| and |fp|, \meta{expr} is passed to
+  \cs{int_compare:nTF} or \cs{fp_compare:nTF}.
+  \begin{note}
+    Division using |/| rounds to the closest integer. Use \cs{dbIntDivTruncate} to rounds
+    the result toward 0.
+  \end{note}
 
-For attribute of type |str| and |tl|, unstarred form matches any part while
-starred form matches the whole part with the \meta{regex expr}.
+  For attribute of type |str| and |tl|, unstarred form matches any part while
+  starred form matches the whole part with the \meta{regex expr}.
+
 \begin{verbatim}
-  \dbNewConditional{cond1}{str-attr}{abc}  % match abc, abcd, 1abc, =abc=, etc
+  \dbNewConditional {cond1}{str-attr}{abc}  % match abc, abcd, 1abc, =abc=, etc
   \dbNewConditional*{cond2}{str-attr}{abc} % only match abc
 \end{verbatim}
 
-For attributes of type |clist|, the conditional defined by unstarred form is
-true if any item of \meta{val list} is in the comma list. While the
-conditional defined by starred form is true only if every item of \meta{val
-list} is in the comma list. As is showed below, for |cond1|, |a| is in
-|{a, b, d}| so |cond1| is true. While |c| is not in |{a, b, d}| so |cond2| is
-false.
+  For attributes of type |clist|, the conditional defined by unstarred form is
+  true if any item of \meta{val list} is in the comma list. While the
+  conditional defined by starred form is true only if every item of \meta{val
+  list} is in the comma list. As is showed below, for |cond1|, |a| is in
+  |{a, b, d}| so |cond1| is true. While |c| is not in |{a, b, d}| so |cond2|
+  is false.
 
 \begin{verbatim}
-  \dbNewConditional{cond1}{clist-attr}{a, b, c}  % {a, b, d} -> true
+  \dbNewConditional {cond1}{clist-attr}{a, b, c}  % {a, b, d} -> true
   \dbNewConditional*{cond2}{clist-attr}{a, b, c} % {a, b, d} -> false
 \end{verbatim}
 
-For attributes of type |date|, unstarred form uses \meta{review points} to
-define the conditional and \meta{date} is the date to be compared. The starred
-form define the conditional with \textbf{single} relation formula. Supported
-operators are |<, >, =, ==, !=, >=, <=|.
+  \changes{1.3}{2022-01-08}{Update logic}{swap definition of starred and
+  unstarred conditionals of date}
+  For attributes of type |date|, unstarred form replace each date with a
+  integer representing for the days between \meta{date} and
+  \textit{1971/01/01}, and the result is passed to \cs{int_compare:nTF}.
+  Starred form defines the conditional with review points defined by
+  \cs{dbNewRdbNewReviewPoints} and \meta{date} is the date to be compared.
 
-\begin{function}{\dbCombineConditionals}
+\begin{function}[added=2022-01-05]{\dbCombineConditionals}
   \begin{syntax}
     \cs{dbCombineConditionals} \marg{name} \marg{cond combination} \oarg{info}
   \end{syntax}
@@ -1047,45 +1332,49 @@ operators are |<, >, =, ==, !=, >=, <=|.
 
 \subsection{Store Data with \env{dbitem} Environment}
 
-\noindent\DescribeEnv{dbitem}
-\begin{Syntax}*
-  |\begin{dbitem}|\marg{database}[ \\
-  ~~\meta{attr1} = \meta{val1}, \\
-  ~~\meta{attr2} = \meta{val2}, \\
-  ~~\ldots{} \\
-  ] \\
-  ~~\meta{code} \\
-  |\end{dbitem}|
-\end{Syntax}
+\begin{environment}[added=2022-01-05]{dbitem}
+  \begin{syntax}
+    |\begin{dbitem}|\marg{database}[ \\
+    ~~\meta{attr1} = \meta{val1}, \\
+    ~~\meta{attr2} = \meta{val2}, \\
+    ~~\ldots{} \\
+    ] \\
+    ~~\meta{code} \\
+    |\end{dbitem}|
+  \end{syntax}
 
-The data are stored with \env{dbitem} environment in two ways. Smaller data
-can be stored in the option list and the bigger data can be stored by
-\cs{dbsave}, which will suppress the value set by the option list. An example
-code is showned below.
+  The data are stored with \env{dbitem} environment in two ways. Smaller data
+  can be stored in the option list and the bigger data can be stored by
+  \cs{dbsave}, which will suppress the value set by the option list. An
+  example code is showned below.
+\end{environment}
 
 \begin{verbatim}
   \begin{dbitem}[date=2022-01-01, info=test]
     \dbsave{question}{This is a test question.}
-    \dbsave{answer}{This is the correct answer of the question.}
+    \dbsave{answer}  {This is a test answer.}
   \end{dbitem}
 \end{verbatim}
 
 \subsection{\cs{dbsave} and \cs{dbuse}}
 
-\begin{function}{\dbsave, \dbsave*}
+\changes{1.3}{2022-01-08}{Add macro}{\cs{dbsave*}}
+\begin{function}[added=2022-01-05, updated=2022-01-08]{\dbsave, \dbsave*}
   \begin{syntax}
-    \cs{dbsave} \marg{attr} \marg{data}
+    \cs{dbsave}  \marg{attr} \marg{data} \\
+    \cs{dbsave}* \marg{attr} \marg{data}
   \end{syntax}
 
   \cs{dbsave} save the \meta{data} to \meta{attr} of current record.
   \cs{dbsave} can be used only inside the \env{dbitem} environment.
-  \meta{data} stored by \cs{dbsave} is wrapped with \cs{exp_not:n} while
-  \meta{data} stored by \cs{dbsave*} is not wrapped.
+  \meta{data} stored by \cs{dbsave*} is wrapped with \cs{exp_not:n} while
+  \meta{data} stored by \cs{dbsave} keeps the same.
 \end{function}
 
-\begin{function}[EXP]{\dbuse}
+\changes{1.2}{2022-01-08}{Update macro}{make \cs{dbuse} fully-expandable}
+\begin{function}[added=2022-01-05, updated=2022-01-08, EXP]{\dbuse}
   \begin{syntax}
-    \cs{dbuse}  \marg{attr}
+    \cs{dbuse} \marg{attr}
   \end{syntax}
 
   Display the value of \meta{attr} of current record. \cs{dbuse} is
@@ -1094,7 +1383,7 @@ code is showned below.
 
 \subsection{Conditionals}
 
-\begin{function}[EXP]{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
+\begin{function}[added=2022-01-05, EXP]{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
   \begin{syntax}
     \cs{dbIfEmptyTF} \marg{true code} \marg{false code} \\
     \cs{dbIfEmptyT} \marg{true code} \\
@@ -1113,43 +1402,77 @@ code is showned below.
   }
 \end{verbatim}
 
+\changes{1.2}{2022-01-08}{Remove macros}{\cs{dbItemIfEmpty(TF)}, \cs{dbClistItemIfEmpty(TF)}}
+
+\subsection{Expression Functions}
+
+\changes{1.3}{2022-01-10}{Add macros}{expression function aliases}
+\begin{function}[added=2022-01-10, EXP]{
+  \dbIntAbs, \dbIntSign, \dbIntDivRound, \dbIntDivTruncate, \dbIntMax,
+  \dbIntMin, \dbIntMod, \dbFpSign,
+}
+  \begin{syntax}
+    \cs{dbIntAbs} \Arg{intexpr}
+    \cs{dbIntSign} \Arg{intexpr}
+    \cs{dbIntDivRound} \Arg{intexpr_1} \marg{intexpr_2}
+    \cs{dbIntDivTruncate} \Arg{intexpr_1} \marg{intexpr_2}
+    \cs{dbIntMax} \Arg{intexpr_1} \marg{intexpr_2}
+    \cs{dbIntMin} \Arg{intexpr_1} \marg{intexpr_2}
+    \cs{dbIntMod} \Arg{intexpr_1} \marg{intexpr_2}
+    \cs{dbFpSign} \Arg{fpexpr}
+  \end{syntax}
+  \cs{dbIntAbs} is identical to \cs{int_abs:n} \\
+  \cs{dbIntSign} is identical to \cs{int_sign:n} \\
+  \cs{dbIntDivRound} is identical to \cs{int_div_round:nn} \\
+  \cs{dbIntDivTruncate} is identical to \cs{int_div_truncate:nn} \\
+  \cs{dbIntMax} is identical to \cs{int_max:nn} \\
+  \cs{dbIntMin} is identical to \cs{int_min:nn} \\
+  \cs{dbIntMod} is identical to \cs{int_mod:nn} \\
+  \cs{dbFpSign} is identical to \cs{fp_sign:n} \\
+   Detailed documentation see \pkg{interface3} \\
+\end{function}
+
 \subsection{Special Macros}
 
 Some special macros are defined to expand to different contents according to context.
 
-\DescribeMacro{\dbval} Attribute value, only accessible in \cs{dbNewConditional}.
-
-\DescribeMacro{\dbDatabase} Database name.
-
-\DescribeMacro{\dbFilterName} Filter name.
-
-\DescribeMacro{\dbFilterInfo} Filter information.
-
-\DescribeMacro{\dbIndex} Index of original records, which is equal to |\rvuse{id}| but \cs{rvuse} is nonexpandable.
-
-
-\DescribeMacro{\dbarabic} Show the counter of query set as digits.
-
-\DescribeMacro{\dbalph} Show the counter of query set as lowercase letters.
-
-\DescribeMacro{\dbAlph} Show the counter of query set as uppercase letters.
-
-\DescribeMacro{\dbroman} Show the counter of query set as roman numerals.
-
-\DescribeMacro{\dbRoman} Show the counter of query set as Roman numerals.
+\changes{1.1}{2022-01-05}{Add macro}{
+  \cs{dbarabic}, \cs{dbalph}, \cs{dbAlph}, \cs{dbroman},
+  \cs{dbRoman}
+}
+\changes{1.1}{2022-01-06}{Fix bug}{\cs{dbIndex} not defined}
+\begin{function}[added=2022-01-05, EXP]{
+  \dbval, \dbDatabase, \dbFilterName, \dbFilterInfo,
+  \dbIndex, \dbarabic, \dbalph, \dbAlph, \dbroman, \dbRoman
+}
+\begin{tblr}{ll}
+  \cs{dbval} & Attribute value, only according in \cs{dbNewConditional}. \\
+  \cs{dbDatabase} & Database name. \\
+  \cs{dbFilterName} & Filter name. \\
+  \cs{dbFilterInfo} & Filter information. \\
+  \cs{dbIndex} & Record index, identical to \cs{dbuse}|{id}| \\
+  \cs{dbarabic} & Show the counter of query set as digits. \\
+  \cs{dbalph} & Show the counter of query set as lowercase letters. \\
+  \cs{dbAlph} & Show the counter of query set as uppercase letters. \\
+  \cs{dbroman} & Show the counter of query set as lowercase roman numerals. \\
+  \cs{dbroman} & Show the counter of query set as uppercase roman numerals. \\
+  \end{tblr}
+\end{function}
 
 \section{Example of Flaw Sweeper Template}
 \label{sec:example}
 
+\changes{1.1}{2022-01-07}{Update doc}{improve example}
+
 \begin{tcblisting}{enhanced jigsaw,lower separated=false,
-leftlower=0pt,rightlower=0pt,
-colframe=red!50!black,colback=yellow!10!white,
-listing options={style=tcblatex,texcsstyle=*\color{red!70!black}},
-listing and comment,
-pdf comment,freeze pdf,
-compilable listing,
-breakable,
-run pdflatex
+  leftlower=0pt,rightlower=0pt,
+  colframe=red!50!black,colback=yellow!10!white,
+  listing options={style=tcblatex,texcsstyle=*\color{red!70!black}},
+  listing and comment,
+  pdf comment,freeze pdf,
+  compilable listing,
+  breakable,
+  run pdflatex
 }
 \documentclass{article}
 \usepackage{amsmath, physics}
@@ -1205,8 +1528,8 @@ run pdflatex
 \begin{dbFilters}{ques-book}
   \dbNewConditional{hard}{labels}{hard}
   \dbNewConditional{bad}{count}{\dbval > 1}
-  \dbNewConditional{review}{date}{review|2022-01-07}
-  \dbNewConditional*{after}{date}{\dbval > 2022-01-02}
+  \dbNewConditional*{review}{date}{review|2022/01/07}
+  \dbNewConditional{after}{date}{\dbval > 2022/01/02}
 \end{dbFilters}
 
 % show all questions with hyperlink to answers
@@ -1270,15 +1593,15 @@ run pdflatex
   before-code = {\section{Bad Questions}},
   raw-filter = {bad && hard},
 }
-% show all questions that plan to be reviewed on 2022-01-07 with hyperlink to
+% show all questions that plan to be reviewed on 2022/01/07 with hyperlink to
 % answers
 \dbNewStyle[hard]{review}{ques-book}{
   before-code = {\section{Questions to be Reviewed}},
   raw-filter = {review},
 }
-% show all questions that is record after 2022-01-02 with hyperlink to answers
+% show all questions that is record after 2022/01/02 with hyperlink to answers
 \dbNewStyle[hard]{after}{ques-book}{
-  before-code = {\section{Questions after 2022-01-02}},
+  before-code = {\section{Questions after 2022/01/02}},
   raw-filter = {after},
 }
 
@@ -1294,7 +1617,7 @@ run pdflatex
 \begin{document}
 
 \begin{dbitem}{ques-book}[
-  date=2022-01-01,
+  date=2022/01/01,
   labels={math, equation, easy},
   count=2
   ]
@@ -1307,7 +1630,7 @@ run pdflatex
 \end{dbitem}
 
 \begin{dbitem}{ques-book}[
-  date=2022-01-01,
+  date=2022/01/01,
   labels={math, equation, hard},
   count=3
   ]
@@ -1320,7 +1643,7 @@ run pdflatex
 \end{dbitem}
 
 \begin{dbitem}{ques-book}[
-  date=2022-01-04,
+  date=2022/01/04,
   labels={math, integral, hard},
   count=1
   ]
@@ -1335,37 +1658,5 @@ run pdflatex
 \end{document}
 \end{tcblisting}
 
-\section*{Change History}
-\markboth{Change History}{Change History}
-\addcontentsline{toc}{section}{Change History}
-\noindent
-\begin{tblr}{
-  colspec = {lll},
-  row{1} = {font=\bfseries},
-}
-  Date & Ver. & Describe \\
-  2022-01-05 & 1.0 & {
-    First version \\
-    Add macro: \cmd{\dbarabic}, \cmd{\dbalph}, \cmd{\dbAlph}, \cmd{\dbroman}, \cmd{\dbRoman}
-  } \\
-  2022-01-06 & & {
-    Fix bug: \cmd{\dbIndex} undefined \\
-    Add style option: \opt{raw-filter}
-  } \\
-  2022-01-07 & 1.1 & Improve example \\
-  2022-01-07 & 1.1.1 & Add macro: \cmd{\dbclear} \\
-  2022-01-07 & 1.1.2 & Add documentation: comparison to \pkg{datatool} \\
-  2022-01-08 & 1.2 & {
-    Fix str sorting bug \\
-    Remove macros: \cmd{\dbItemIfEmpty(TF)}, \cmd{\dbClistItemIfEmpty(TF)} \\
-    Make \cs{dbuse} expandable \\
-    Add option: \opt{record-before-code}, \opt{record-after-code}
-  } \\
-  2022-01-08 & 1.2.1 & Add macro: \cs{dbsave*} \\
-  2022-01-08 & 1.2.2 & Fix bug of date conditional \\
-\end{tblr}
-
 \end{documentation}
-
-
 \end{document}

@@ -286,3 +286,4 @@ dbshow-doc-listing*
 
 *.tex
 !dbshow-doc.tex
+*.otf

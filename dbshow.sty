@@ -17,14 +17,11 @@
 \def\myfileversion{v1.2.2}
 \def\myfiledate{2022/01/08}
 \RequirePackage{expl3, xparse}
-\RequirePackage[calc]{datetime2}
 \ProvidesExplPackage
   {dbshow}
   {\myfiledate}
   {\myfileversion}
   {database to store and show data}
-
-\DTMsetdatestyle{iso}
 
 \msg_new:nnn { dbshow } { non-existent-database } {
   Database~'#1'~does~not~exist~\msg_line_context:.
@@ -91,16 +88,17 @@
     { \msg_fatal:nnn { dbshow } { non-existent-type } { #1 } }
 }
 
-% #1 count #2 content
+% #1 valid count #2 real count #3 content
 \msg_new:nnn { dbshow } { wrong-seperator } {
-  option~sep~should~contain~1~or~3~items~but~only~#1~items~was~given,~
-  sep~=~\{#2\}~\msg_line_context:.
+  option~'sep'~should~contain~#1~items~but~only~#2~items~was~given,~
+  sep~=~\{#3\}~\msg_line_context:.
 }
 
-\cs_new:Nn \dbshow_sep_error:nn {
-  \msg_error:nnnn { dbshow } { wrong-seperator } { #1 } { #2 }
+% #1 valid count #2 real count #3 content
+\cs_new:Nn \dbshow_sep_error:nnn {
+  \msg_error:nnnnn { dbshow } { wrong-seperator } { #1 } { #2 } { #3 }
 }
-\cs_generate_variant:Nn \dbshow_sep_error:nn { xx }
+\cs_generate_variant:Nn \dbshow_sep_error:nnn { xxx }
 
 \msg_new:nnn { dbshow } { unsupported-sort-type } {
   unsupported~sort~type:~'#1'~\msg_line_context:.~The~type~should~be~one~of~
@@ -113,26 +111,8 @@
 
 \clist_const:Nn \dbshow_type_clist { date, str, tl, clist, int, fp }
 
-\prop_const_from_keyval:Nn \dbshow_new_cs_map {
-  date = str_clear_new:c,
-  str = str_clear_new:c,
-  tl = tl_gclear_new:c,
-  clist = clist_gclear_new:c,
-  int = int_gzero_new:c,
-  fp = fp_gzero_new:c
-}
-
-\prop_const_from_keyval:Nn \dbshow_set_cs_map {
-  date = str_gset:cn,
-  str = str_gset:cn,
-  tl = tl_gset:cn,
-  clist = clist_gset:cn,
-  int = int_gset:cn,
-  fp = fp_gset:cn
-}
-
 \prop_const_from_keyval:Nn \dbshow_default_value {
-  date = \Today,
+  date = \dbtoday,
   str = ,
   tl = ,
   clist = ,
@@ -140,15 +120,16 @@
   fp = 0
 }
 
-\newcount\l_dbshow_date_diff
-\clist_new:N \l_style_sep_clist
-\tl_new:N \l_style_item_before_code
-\tl_new:N \l_style_item_after_code
 \cs_generate_variant:Nn \clist_use:nn { xx }
 \cs_generate_variant:Nn \clist_use:nnnn { xxxx }
+\cs_generate_variant:Nn \prop_get:NnN { cVN }
+\cs_generate_variant:Nn \regex_extract_all:nnN { nVN }
+\cs_generate_variant:Nn \regex_split:nnN { nVN }
 \prg_generate_conditional_variant:Nnn \str_compare:nNn { VNV } { TF }
 \prg_generate_conditional_variant:Nnn \int_compare:nNn { VNV } { TF }
 \prg_generate_conditional_variant:Nnn \fp_compare:nNn { VNV } { TF }
+\prg_generate_conditional_variant:Nnn \regex_match:nn { VV } { TF }
+\prg_generate_conditional_variant:Nnn \clist_if_in:Nn { Nx } { TF }
 
 % #1 database #2 attr #3 type #4 default value
 \cs_new:Npn \dbshow_process_default_value:w #1|#2=#3|#4\scan_stop {
@@ -218,19 +199,28 @@
 % #1 database #2 attr #3 content
 \cs_new:Nn \dbshow_save_data:nnn {
   \dbshow_check_attr:nn { #1 } { #2 }
-  \str_set:Nx \l_tmp_type { \dbshow_get_type:nn { #1 } { #2 } }
-  \prop_get:NVN \dbshow_new_cs_map \l_tmp_type \l_tmp_cs_new
-  \prop_get:NVN \dbshow_set_cs_map \l_tmp_type \l_tmp_cs_set
-  \use:c { \l_tmp_cs_new }
-    { g__dbshow_data_#1_#2_\dbshow_get_counter:n { #1 } }
-  \use:c { \l_tmp_cs_set }
-    { g__dbshow_data_#1_#2_\dbshow_get_counter:n { #1 } } { #3 }
+  \use:c {
+    \str_case_e:nn { \prop_item:cn { g__dbshow_type_map_#1 } { #2 } } {
+      { str } { str_clear_new:c }
+      { tl } { tl_gclear_new:c }
+      { clist } { clist_gclear_new:c }
+      { int } { int_gzero_new:c }
+      { fp } { fp_gzero_new:c }
+      { date } { dbshow_date_gclear_new:n }
+    }
+  } { g__dbshow_data_#1_#2_\int_use:c { g__dbshow_counter_#1 } }
+  \use:c {
+    \str_case_e:nn { \prop_item:cn { g__dbshow_type_map_#1 } { #2 } } {
+      { str } { str_gset:cn }
+      { tl } { tl_gset:cn }
+      { clist } { clist_gset:cn }
+      { int } { int_gset:cn }
+      { fp } { fp_gset:cn }
+      { date } { dbshow_date_gset:nx }
+    }
+  } { g__dbshow_data_#1_#2_\int_use:c { g__dbshow_counter_#1 } } { #3 }
 }
 \cs_generate_variant:Nn \dbshow_save_data:nnn { nnx }
-
-\cs_new:Nn \dbshow_brace:n {
-  \exp_not:n { { #1 } }
-}
 
 % #1 before code tl #2 after code tl #3 item
 \cs_new:Nn \dbshow_clist_wrapper:NNn {
@@ -253,26 +243,63 @@
         { \clist_item:Nn #2 { 3 } }
     }
   } {
-    \dbshow_sep_error:xx
+    \dbshow_sep_error:xxx
+      { 1~or~3 }
       { \clist_count:N #2 }
-      { \clist_use:Nn #2 { , } }
+      { \clist_use:Nn #2 { ,~ } }
   }
 }
 \cs_generate_variant:Nn \dbshow_clist_use:NNNN { cccc }
 
+% #1 date #2 sep #3 zfill bool
+\cs_new:Nn \dbshow_date_use:nNN {
+  \int_case:nnF { \clist_count:N #2 } {
+    { 1 } {
+      \bool_if:NTF { #3 }
+        { \dbshow_date_use_zfill:nf }
+        { \dbshow_date_use:nf }
+        { #1 }
+        { \clist_item:Nn #2 { 1 } }
+    }
+    { 4 } {
+      \bool_if:NTF { #3 }
+        { \dbshow_date_use_zfill:nffff }
+        { \dbshow_date_use:nffff }
+        { #1 }
+        { \clist_item:Nn #2 { 1 } }
+        { \clist_item:Nn #2 { 2 } }
+        { \clist_item:Nn #2 { 3 } }
+        { \clist_item:Nn #2 { 4 } }
+    }
+  } {
+    \dbshow_sep_error:xxx
+      { 1~or~4 }
+      { \clist_count:N #2 }
+      { \clist_use:Nn #2 { ,~ } }
+  }
+}
+\cs_generate_variant:Nn \dbshow_date_use:nNN { ncc }
+
 % #1 database #2 attr #3 index #4 style
 \cs_new:Nn \dbshow_use_data:nnnn {
   \str_case_e:nn { \prop_item:cn { g__dbshow_type_map_#1 } { #2 } } {
-    { date } { \str_use:c { g__dbshow_data_#1_#2_#3 } }
     { str } { \str_use:c { g__dbshow_data_#1_#2_#3 } }
     { tl } { \tl_use:c { g__dbshow_data_#1_#2_#3 } }
     { int } { \int_use:c { g__dbshow_data_#1_#2_#3 } }
     { fp } { \fp_use:c { g__dbshow_data_#1_#2_#3 } }
     { clist } {
       \dbshow_clist_use:cccc { g__dbshow_data_#1_#2_#3 }
-        { g__dbshow_style_clist_sep_#4_#1_#2 }
-        { g__dbshow_style_clist_item_before_#4_#1_#2 }
-        { g__dbshow_style_clist_item_after_#4_#1_#2 }
+        { g__dbshow_style_attr_sep_#4_#1_#2 }
+        { g__dbshow_style_attr_item_before_#4_#1_#2 }
+        { g__dbshow_style_attr_item_after_#4_#1_#2 }
+    }
+    { date } {
+      \exp_args:Nnx
+      \tl_use:c { g__dbshow_style_attr_wrapper_#4_#1_#2 } {
+        \dbshow_date_use:ncc { g__dbshow_data_#1_#2_#3 }
+          { g__dbshow_style_attr_sep_#4_#1_#2 }
+          { g__dbshow_style_attr_zfill_#4_#1_#2 }
+      }
     }
   }
 }
@@ -314,9 +341,9 @@
   % ##1 exp or not ##2 attr ##3 content
   \NewDocumentCommand { \dbsave } { s m m } {
     \IfBooleanTF { ##1 } {
-      \dbshow_save_data:nnn { #1 } { ##2 } { ##3 }
-    } {
       \dbshow_save_data:nnn { #1 } { ##2 } { \exp_not:n { ##3 } }
+    } {
+      \dbshow_save_data:nnn { #1 } { ##2 } { ##3 }
     }
   }
 } { #3 }
@@ -376,68 +403,53 @@
   \tl_set:Nn \l_date_tl { #2 }
 }
 
-% #1 rela #2 operator
-\cs_new:Nn \dbshow_parse_date_w:nn {
-  \cs_set:cpn { dbshow_parse_date#1:w } ##1#2##2\dbshow_stop {
-    % \tl_show:n {|##1~#2~##2|}
-    \tl_set:Nn \l_lval_tl { ##1 }
-    \tl_set:Nn \l_rval_tl { ##2 }
-    \tl_set:Nn \l_rela_tl { #2 }
-  }
-  \use:c { dbshow_parse_date#1:w } #1\dbshow_stop
-}
-
-% #1 rela
-\cs_new:Nn \dbshow_parse_date_star:n {
-  \bool_set_false:N \l_tmpa_bool
-  \clist_map_inline:nn { !=, ==, >=, <=, <, >, = } {
-    \tl_if_in:nnT { #1 } { ##1 } {
-      \dbshow_parse_date_w:nn { #1 } { ##1 }
-      \bool_set_true:N \l_tmpa_bool
-      \clist_map_break:
-    }
-  }
-  \bool_if:NF \l_tmpa_bool {
-    \msg_error:nnn { dbshow } { invalid-relation } { #1 }
-  }
-}
-\cs_generate_variant:Nn \dbshow_parse_date_star:n { V }
-
-\cs_new:Nn \dbshow_if_date: {
-  \bool_if:NTF \l_star_bool {
-    \dbshow_parse_date_star:V \l_dbshow_rela
-    \exp_args:Nnx \DTMsavedate{day1}{\l_lval_tl}
-    \exp_args:Nnx \DTMsavedate{day2}{\l_rval_tl}
-    \DTMsaveddatediff{day1}{day2}{\l_dbshow_date_diff}% specious blank
-    \exp_args:NnV \int_compare:nTF
-      { \the\l_dbshow_date_diff \l_rela_tl 0 }
-      { \dbshow_set_true: }
-      { \dbshow_set_false: }
-  }
-  {
+\cs_new_protected:Nn \dbshow_if_date: {
+  \int_zero_new:N \l__dbshow_if_tmpa_int
+  \int_zero_new:N \l__dbshow_if_tmpb_int
+  \int_zero_new:N \l__dbshow_if_diff_int
+  \bool_if:NTF \l_star_bool { % review points
     \exp_after:wN \dbshow_parse_date:w \l_dbshow_rela\dbshow_stop
-    \exp_args:Nnx \DTMsavedate{day1}{ \l_date_tl }
-    \exp_args:Nnx \DTMsavedate{day2}{ \dbval }
-    \DTMsaveddatediff{day1}{day2}{\l_dbshow_date_diff}% specious blank
-    \clist_if_in:NoTF \l_point_clist { \the\l_dbshow_date_diff }
+    \dbshow_date_clear_new:n { tmp_day1 }
+    \dbshow_date_clear_new:n { tmp_day2 }
+    \dbshow_date_set:nx { tmp_day1 } { \l_date_tl }
+    \dbshow_date_set:nx { tmp_day2 } { \dbval }
+    \dbshow_date_sub:nnN { tmp_day1 } { tmp_day2 } \l__dbshow_if_diff_int
+    \clist_if_in:NxTF \l_point_clist { \int_use:N \l__dbshow_if_diff_int }
+      { \dbshow_set_true: }
+      { \dbshow_set_false: }
+  }
+  { % rela
+    \tl_set:Nx \l_dbshow_rela { \l_dbshow_rela }
+    \regex_extract_all:nVN { \d{4}/\d+/\d+ } \l_dbshow_rela \l_date_seq
+    \regex_split:nVN { \d{4}/\d+/\d+ } \l_dbshow_rela \l_other_seq
+    \tl_clear:N \l_dbshow_rela
+    \int_set:Nn \l__dbshow_if_tmpa_int { \seq_count:N \l_date_seq }
+    \int_step_inline:nn { \l__dbshow_if_tmpa_int } {
+      \tl_put_right:Nx \l_dbshow_rela { \seq_item:Nn \l_other_seq { ##1 } }
+      \dbshow_date_clear_new:n { rela-tmp }
+      \dbshow_date_set:nx { rela-tmp } { \seq_item:Nn \l_date_seq { ##1 } }
+      \dbshow_date_to_int:nN { rela-tmp } \l__dbshow_if_tmpb_int
+      \tl_put_right:Nx \l_dbshow_rela { \int_use:N \l__dbshow_if_tmpb_int }
+    }
+    \tl_put_right:Nx \l_dbshow_rela {
+      \seq_item:Nn \l_other_seq { \l__dbshow_if_tmpa_int + 1 }
+    }
+    \int_compare:nTF { \l_dbshow_rela }
       { \dbshow_set_true: }
       { \dbshow_set_false: }
   }
 }
 
-\cs_generate_variant:Nn \prop_get:NnN { cVN }
-\prg_generate_conditional_variant:Nnn \regex_extract_once:nnN { nVN } { T, F, TF, p }
-\prg_generate_conditional_variant:Nnn \regex_match:nn { VV } { T, F, TF, p }
 % #1 database name #2 cond name #3 index
 \cs_set:Nn \dbshow_if:nnn {
   \tl_set_eq:Nc \l_dbshow_attr { g__dbshow_filter_attr_#1_#2 }
   \tl_set_eq:Nc \l_dbshow_rela { g__dbshow_filter_rela_#1_#2 }
+  \prop_get:cVN { g__dbshow_type_map_#1 } \l_dbshow_attr \l_tmp_type
   \cs_set_eq:Nc \dbval { g__dbshow_data_#1_\l_dbshow_attr _#3 }
   \cs_set:Nn \dbshow_set_true:
     { \bool_gset_true:c { g__dbshow_filter_bool_#1_#2 } }
   \cs_set:Nn \dbshow_set_false:
     { \bool_gset_false:c { g__dbshow_filter_bool_#1_#2 } }
-  \prop_get:cVN { g__dbshow_type_map_#1 } \l_dbshow_attr \l_tmp_type
   \bool_set_eq:Nc \l_star_bool { g__dbshow_cond_star_#1_#2 }
   \use:c { dbshow_if_\l_tmp_type : }
 }
@@ -501,6 +513,8 @@
   \clist_set:cn { g__review_points_#1 } { #2 }
 }
 
+\cs_new:Nn \dbshow_identity:n { #1 }
+
 % #1 style name #2 database name #3 attr
 \cs_new_protected:Nn \dbshow_new_attr_style:nnn {
   \dbshow_check_attr:nn { #2 } { #3 }
@@ -509,17 +523,23 @@
     before-code .initial:n = ,
     after-code .tl_gset:c = { g__dbshow_style_attr_after_#1_#2_#3 },
     after-code .initial:n = ,
+    % for date and clist
+    sep .clist_gset:c = { g__dbshow_style_attr_sep_#1_#2_#3 },
+    % only for clist
+    item-before-code .tl_gset:c = { g__dbshow_style_attr_item_before_#1_#2_#3 },
+    item-before-code .initial:n = ,
+    item-after-code .tl_gset:c = { g__dbshow_style_attr_item_after_#1_#2_#3 },
+    item-after-code .initial:n = ,
+    % only for date
+    zfill .bool_gset:c = { g__dbshow_style_attr_zfill_#1_#2_#3 },
+    zfill .initial:n = true,
+    zfill .default:n = true,
+    wrapper .tl_gset:c = { g__dbshow_style_attr_wrapper_#1_#2_#3 },
+    wrapper .initial:n = { \dbshow_identity:n },
   }
-  \prop_get:cnN { g__dbshow_type_map_#2 } { #3 } \l_tmp_type
-  \str_if_eq:eeT { \l_tmp_type } { clist } {
-    \keys_define:nn { dbshow/style/#1/#3 } {
-      sep .clist_gset:c = { g__dbshow_style_clist_sep_#1_#2_#3 },
-      sep .initial:n = { { ,~ } },
-      item-before-code .tl_gset:c = { g__dbshow_style_clist_item_before_#1_#2_#3 },
-      item-before-code .initial:n = ,
-      item-after-code .tl_gset:c = { g__dbshow_style_clist_item_after_#1_#2_#3 },
-      item-after-code .initial:n = ,
-    }
+  \str_case_e:nn { \prop_item:cn { g__dbshow_type_map_#2 } { #3 } } {
+    { clist } { \keys_set:nn { dbshow/style/#1/#3 } { sep = { { ,~ } } } }
+    { date } { \keys_set:nn { dbshow/style/#1/#3 } { sep = { { / } } } }
   }
 }
 
@@ -586,7 +606,7 @@
     \int_zero:N \l_tmpa_int
     \cs_set:Nn \dbshow_sort_single: {
       \int_incr:N \l_tmpa_int
-      \str_set:Nx \l_tmpa_str
+      \str_set:Nx \l_tmpa_str % attr
         { \clist_item:cn { g__dbshow_sort_#3_#1 } { \l_tmpa_int } }
       \str_if_in:NnTF \l_tmpa_str { * } {
         \exp_after:wN \dbshow_sort_parse_star:w \l_tmpa_str
@@ -597,15 +617,17 @@
       }
       \exp_args:NnV \dbshow_check_attr:nn { #1 } \l_tmpa_str
 
-      \cs_set_eq:Nc \l_tmpa_tl { g__dbshow_data_#1_\l_tmpa_str _##1 }
-      \cs_set_eq:Nc \l_tmpb_tl { g__dbshow_data_#1_\l_tmpa_str _##2 }
-
       \prop_get:cVN { g__dbshow_type_map_#1 } \l_tmpa_str \l_tmp_type
       \clist_if_in:nVF { str, int, date, fp  } \l_tmp_type {
         \msg_error:nnx { dbshow } { unsupported-sort-type } { \l_tmp_type }
       }
-      \str_if_eq:eeT { \l_tmp_type } { date }
-        { \str_set:Nn \l_tmp_type { str } }
+
+      \str_if_eq:eeT { \l_tmp_type } { date } {
+        \str_set:Nn \l_tmp_type { str }
+      }
+
+      \cs_set_eq:Nc \l_tmpa_tl { g__dbshow_data_#1_\l_tmpa_str _##1 }
+      \cs_set_eq:Nc \l_tmpb_tl { g__dbshow_data_#1_\l_tmpa_str _##2 }
       \cs_set_eq:Nc \dbshow_compare { \l_tmp_type _compare:VNVTF }
 
       \dbshow_compare \l_tmpa_tl \l_op_same \l_tmpb_tl
@@ -693,6 +715,15 @@
     { #1 } { #2 } { g__dbshow_filter_#1_#2 }
 }
 
+\cs_set_eq:NN \dbIntAbs \int_abs:n
+\cs_set_eq:NN \dbIntSign \int_sign:n
+\cs_set_eq:NN \dbIntDivRound \int_div_round:nn
+\cs_set_eq:NN \dbIntDivTruncate \int_div_truncate:nn
+\cs_set_eq:NN \dbIntMax \int_max:nn
+\cs_set_eq:NN \dbIntMin \int_min:nn
+\cs_set_eq:NN \dbIntMod \int_mod:nn
+\cs_set_eq:NN \dbFpSign \fp_sign:n
+
 %%%%%%%%%%%%%%%%% date
 
 % #1 year
@@ -748,7 +779,7 @@
 }
 \cs_generate_variant:Nn \dbshow_date_to_int:NNNN { cccN }
 
-% date tl
+% #1 date #2 int
 \cs_new:Nn \dbshow_date_to_int:nN {
   \dbshow_date_to_int:cccN
     { dbshow_date_year_#1 }
@@ -757,11 +788,20 @@
     #2
 }
 
+\cs_new_protected:Nn \dbshow_date_set_val:n {
+  \tl_set:cx { #1 } { \dbshow_date_use_zfill:nn { #1 } { / } }
+}
+\cs_new_protected:Nn \dbshow_date_gset_val:n {
+  \tl_gset:cx { #1 } { \dbshow_date_use_zfill:nn { #1 } { / } }
+}
+
 \cs_new_protected:Nn \dbshow_date_init:n {
   \dbshow_date_set:nnnn { #1 } { 1971 } { 1 } { 1 }
+  \dbshow_date_set_val:n { #1 }
 }
 \cs_new_protected:Nn \dbshow_date_ginit:n {
   \dbshow_date_gset:nnnn { #1 } { 1971 } { 1 } { 1 }
+  \dbshow_date_gset_val:n { #1 }
 }
 
 \cs_new_protected:Nn \dbshow_date_new:n {
@@ -790,6 +830,7 @@
   \int_set:cn { dbshow_date_year_#1 } { #2 }
   \int_set:cn { dbshow_date_month_#1 } { #3 }
   \int_set:cn { dbshow_date_day_#1 } { #4 }
+  \dbshow_date_set_val:n { #1 }
 }
 
 % #1 name #2 year #3 month #4 day
@@ -797,7 +838,27 @@
   \int_gset:cn { dbshow_date_year_#1 } { #2 }
   \int_gset:cn { dbshow_date_month_#1 } { #3 }
   \int_gset:cn { dbshow_date_day_#1 } { #4 }
+  \dbshow_date_gset_val:n { #1 }
 }
+
+\cs_new_protected:Npn \dbshow_date_set:w #1\dbshow_sep#2/#3/#4\dbshow_stop {
+  \dbshow_date_clear_new:n { #1 }
+  \dbshow_date_set:nnnn { #1 } { #2 } { #3 } { #4 }
+}
+\cs_new_protected:Npn \dbshow_date_gset:w #1\dbshow_sep#2/#3/#4\dbshow_stop {
+  \dbshow_date_gclear_new:n { #1 }
+  \dbshow_date_gset:nnnn { #1 } { #2 } { #3 } { #4 }
+}
+
+% #1 date name #2 date
+\cs_new_protected:Nn \dbshow_date_set:nn {
+  \dbshow_date_set:w #1\dbshow_sep#2\dbshow_stop
+}
+\cs_generate_variant:Nn \dbshow_date_set:nn { nx }
+\cs_new_protected:Nn \dbshow_date_gset:nn {
+  \dbshow_date_gset:w #1\dbshow_sep#2\dbshow_stop
+}
+\cs_generate_variant:Nn \dbshow_date_gset:nn { nx }
 
 % #1 date 1 #2 date 2 #3 int token
 \cs_new_protected:Nn \dbshow_date_sub:nnN {
@@ -812,34 +873,34 @@
 }
 \cs_generate_variant:Nn \dbshow_date_show_two:N { c }
 
-\cs_new:Nn \dbshow_date_use:nn {
-  \int_use:c { dbshow_date_year_#1 }#2
-  \int_use:c { dbshow_date_month_#1 }#2
-  \int_use:c { dbshow_date_day_#1 }
-}
-
-\cs_new:Nn \dbshow_date_use_zfill:nn {
-  \int_use:c { dbshow_date_year_#1 }#2
-  \dbshow_date_show_two:c { dbshow_date_month_#1 }#2
-  \dbshow_date_show_two:c { dbshow_date_day_#1 }
-}
-
 \cs_new:Nn \dbshow_date_use:nnnnn {
   #2\int_use:c { dbshow_date_year_#1 }
   #3\int_use:c { dbshow_date_month_#1 }
   #4\int_use:c { dbshow_date_day_#1 }#5
 }
+\cs_generate_variant:Nn \dbshow_date_use:nnnnn { nffff }
 
 \cs_new:Nn \dbshow_date_use_zfill:nnnnn {
   #2\int_use:c { dbshow_date_year_#1 }
   #3\dbshow_date_show_two:c { dbshow_date_month_#1 }
   #4\dbshow_date_show_two:c { dbshow_date_day_#1 }#5
 }
+\cs_generate_variant:Nn \dbshow_date_use_zfill:nnnnn { nffff }
 
-% \dbshow_date_new:n { a }
-% \dbshow_date_new:n { b }
+\cs_new:Nn \dbshow_date_use:nn {
+  \dbshow_date_use:nnnnn { #1 } {  } { #2 } { #2 } {  }
+}
+\cs_generate_variant:Nn \dbshow_date_use:nn { nf }
 
-% \dbshow_date_set:nnnn { a } { 2022 } { 1 } { 3 }
-% \dbshow_date_set:nnnn { b } { 2021 } { 5 } { 7 }
+\cs_new:Nn \dbshow_date_use_zfill:nn {
+  \dbshow_date_use_zfill:nnnnn { #1 } {  } { #2 } { #2 } {  }
+}
+\cs_generate_variant:Nn \dbshow_date_use_zfill:nn { nf }
+
+\tl_set:Nx \dbtoday {
+  \int_use:N \c_sys_year_int/
+  \int_use:N \c_sys_month_int/
+  \int_use:N \c_sys_day_int
+}
 
 \endinput

@@ -21,7 +21,7 @@
 %% File: l3doc.dtx
 actual '='
 quote '!'
-level '>'
+level '?'
 preamble
 "\n \\begin{theindex} \n \\makeatletter\\scan@allowedfalse\n"
 postamble
