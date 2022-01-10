@@ -15,7 +15,7 @@
 
 \def\zhdate{2022年1月10日}
 \def\endate{2022/01/10}
-\def\version{v1.3}
+\def\version{v1.4}
 
 \geometry{
   left=4.5cm,
@@ -132,7 +132,12 @@
 \DeclareDocumentEnvironment { Description } { o +b } {
   \hbox_set:Nn \l_tmpa_box { #1 }
   \dim_set:Nn \l_tmpa_dim { \box_wd:N \l_tmpa_box }
-  \begin{itemize}[labelwidth=\l_tmpa_dim, align=left]
+  \begin{itemize}[
+    itemindent=0pt,
+    labelindent=0pt,
+    labelwidth=\l_tmpa_dim,
+    leftmargin=!,
+    align=left]
     #2
   \end{itemize}
 } {  }
@@ -208,6 +213,9 @@
 如上所述，本宏包其实实现了一个非常简单的数据库，复习错题的功能只是其中一个应用，
 和其他数据库宏包比如 \pkg{datatool} 相比，\pkg{dbshow} 更专注于非图表类型的数
 据展示。
+
+\changes{1.4}{2022-01-10}{Add check}{version of \pkg{l3kernel}}
+\pkg{dbshow} 依赖版本日期至少为 |2022-11-07| 的 \pkg{l3kernel}。
 
 \changes{1.2}{2022-01-09}{Add doc}{descripton for expansion}
 \begin{itemize}
@@ -837,6 +845,9 @@ package provides a database to do such thing.
 The package provides four core functions: data storage and display, data
 filtering, data sorting and data display. All data is saved once and then you
 can display these data with custom filters, orders and styles.
+
+\changes{1.4}{2022-01-10}{Add check}{version of \pkg{l3kernel}}
+\pkg{dbshow} depends on \pkg{l3kernel} with version date after |2022-11-07|.
 
 \changes{1.2}{2022-01-09}{Add doc}{descripton for expansion}
 \begin{itemize}
