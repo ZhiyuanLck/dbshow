@@ -138,7 +138,8 @@
 \prg_generate_conditional_variant:Nnn \clist_if_in:Nn { Nx } { TF }
 
 % #1 database #2 attr #3 type #4 default value
-\cs_new:Npn \dbshow_process_default_value:w #1|#2=#3|#4\scan_stop {
+\cs_new:Npn \dbshow_process_default_value:w
+#1\scan_sep #2\scan_sep #3|#4\scan_stop {
   \dbshow_check_type:n { #3 }
   \prop_gput:cxx { g__dbshow_type_map_#1 } { #2 } { #3 }
   \prop_gput:cxx { g__dbshow_default_map_#1 } { #2 } { #4 }
@@ -147,12 +148,14 @@
 \cs_new_protected:Nn \dbshow_process_type_map:n {
   \prop_gclear_new:c { g__dbshow_default_map_#1 }
   \prop_map_inline:cn { g__dbshow_type_map_#1 } {
-    \str_if_in:nnTF { ##2 } { | }
-      { \dbshow_process_default_value:w #1|##1=##2\scan_stop }
-      {
-        \prop_get:NnN \dbshow_default_value { ##2 } \l_tmp_default
-        \dbshow_process_default_value:w #1|##1=##2|\l_tmp_default\scan_stop
-      }
+    \str_if_in:nnTF { ##2 } { | } {
+      \dbshow_process_default_value:w
+        #1\scan_sep##1\scan_sep##2\scan_stop
+    } {
+      \prop_get:NnN \dbshow_default_value { ##2 } \l_tmp_default
+      \dbshow_process_default_value:w
+        #1\scan_sep##1\scan_sep##2|\l_tmp_default\scan_stop
+    }
   }
 }
 

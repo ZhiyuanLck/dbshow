@@ -1,3 +1,4 @@
+% dbParseDateSep
 \documentclass[full]{l3doc}
 \usepackage[scheme=plain, fontset=ubuntu]{ctex}
 \usepackage{multicol}
@@ -267,7 +268,10 @@
 \section{接口文档}
 
 \subsection{创建、展示和清空数据库}
-\begin{function}[added=2022-01-05]{\dbNewDatabase, \dbNewDatabase*}
+
+\changes{1.4}{2022-01-10}{Update macro}{change \orbar\ to \cs{dbshow_sep} in
+weird argument of \cs{dbshow_process_default_value:w}}
+\begin{function}[added=2022-01-05, updated=2022-01-10]{\dbNewDatabase, \dbNewDatabase*}
   \begin{syntax}
     \cs{dbNewDatabase} \oarg{base database} \marg{database} \{ \\
     ~~\meta{attr1} = \meta{type spec1}, \\
@@ -908,7 +912,9 @@ persistence.
 
 \subsection{Create, Display and Clear Database}
 
-\begin{function}[added=2022-01-05]{\dbNewDatabase, \dbNewDatabase*}
+\changes{1.4}{2022-01-10}{Update macro}{change \orbar\ to \cs{dbshow_sep} in
+weird argument of \cs{dbshow_process_default_value:w}}
+\begin{function}[added=2022-01-05, updated=2022-01-10]{\dbNewDatabase, \dbNewDatabase*}
   \begin{syntax}
     \cs{dbNewDatabase} \oarg{base database} \marg{database} \{ \\
     ~~\meta{attr1} = \meta{type spec1}, \\
