@@ -80,29 +80,47 @@
     top=2cm,
     bottom=2cm
   }
+  \changes{1.4}{2022-01-10}{Fix doc code}{wrong changes history sorting}
   \PrintChanges
   \PrintIndex
 }
 
 \ExplSyntaxOn
 \makeatletter
-\cs_new_protected:Nn \dbshow_changes:nnnn {
+\renewenvironment{theglossary}{
+\glossary@prologue\GlossaryParms \let\item\@idxitem \ignorespaces}{}
+
+\cs_gset_eq:NN \dbshowdocnull \use_none:n
+
+% #1 sort #2 group #3 date #4 type #5 desc
+\cs_new_protected:Nn \dbshowdoc_changes:nnnnn {
   \@bsphack\group_begin:\@sanitize
   \catcode`\\\z@ \catcode`\ 10 \MakePercentIgnore
   \exp_args:Nx \glossary {
-    \exp_not:N \textbf{#1}\levelchar
-    \exp_not:N \textit{#2}\c_space_tl
-    \exp_not:N \textbf{#3}\c_colon_str\c_space_tl
-    \exp_not:n { #4 }
+    \dbshowdocnull{#1}~
+    \exp_not:N \textbf{#2}
+    \exp_not:n { \raisebox{1em}{\pdfbookmark[1]{#2}{#2}} }
+    \levelchar
+    \exp_not:N \textup{#3}\c_space_tl
+    \exp_not:N \textbf{#4}\c_colon_str\c_space_tl
+    \exp_not:n { #5 }
   }
   \group_end:\@esphack
 }
-\cs_generate_variant:Nn \dbshow_changes:nnnn { xnnn }
+\cs_generate_variant:Nn \dbshowdoc_changes:nnnnn { xxnnn, VVnnn }
 
-\cs_new_protected:Nn \dbshow_changes_what:nnnn {
+\cs_new_protected:Nn \dbshowdoc_print_version:n {
+  v#1
+  \int_compare:nNnT { \str_count:n { #1 } } = { 3 } { \phantom{0} }
+  \c_space_tl
+}
+\cs_set_eq:NN \dbshowdocver \dbshowdoc_print_version:n
+
+% #1 ver #2 date #3 type #4 desc
+\cs_new_protected:Nn \dbshowdoc_changes_what:nnnn {
   \regex_extract_once:nnNT { doc|macro|bug|option }
   { #3 } \l_tmpa_seq {
-    \dbshow_changes:xnnn {
+    \tl_set:Nx \l_tmpa_tl {
       \str_case_e:nn { \seq_item:Nn \l_tmpa_seq { 1 } } {
         { doc } { Documentation }
         { macro } { Macro }
@@ -111,22 +129,37 @@
         { logic } {  Logic }
       }
     }
-      {#2} {#3} {#4}
+    \dbshowdoc_changes:VVnnn \l_tmpa_tl \l_tmpa_tl
+      { \dbshowdocver{#1}#2 } {#3} {#4}
   }
 }
 
-\cs_new_protected:Nn \dbshow_changes_how:nnnn {
-  \regex_extract_once:nnNT { Add|Update|Remove } { #3 } \l_tmpa_seq {
-    \dbshow_changes:xnnn { \seq_item:Nn \l_tmpa_seq { 1 } }
-      {#2} {#3} {#4}
+% #1 ver #2 date #3 type #4 desc
+\cs_new_protected:Nn \dbshowdoc_changes_how:nnnn {
+  \regex_extract_once:nnNT { Add|Update|Remove|Fix }
+  { #3 } \l_tmpa_seq {
+    \dbshowdoc_changes:xxnnn
+      { \seq_item:Nn \l_tmpa_seq { 1 } }
+      { \seq_item:Nn \l_tmpa_seq { 1 } }
+      { \dbshowdocver{#1}#2 } {#3} {#4}
   }
 }
 
-% #1 version #2 date #3 type #4 desc
+\cs_new:Nn \dbshowdoc_fill_two:n {
+  \int_compare:nNnTF { #1 } > { 9 }
+    { #1 } { 0#1 }
+}
+
+% #1 major number #2 minor number
+\cs_new_protected:Npn \dbshowdoc_changes_ver:w #1.#2\dbshowdoc_stop {
+  \dbshowdoc_changes:xxnnn { #1.\dbshowdoc_fill_two:n {#2} }
+}
+
+% #1 ver #2 date #3 type #4 desc
 \DeclareDocumentCommand \changes { m m m m } {
-  \dbshow_changes:nnnn {#1} {#2} {#3} {#4}
-  \dbshow_changes_what:nnnn {#1} {#2} {#3} {#4}
-  \dbshow_changes_how:nnnn {#1} {#2} {#3} {#4}
+  \dbshowdoc_changes_ver:w #1\dbshowdoc_stop {#1} {#2} {#3} {#4}
+  \dbshowdoc_changes_what:nnnn {#1} {#2} {#3} {#4}
+  \dbshowdoc_changes_how:nnnn {#1} {#2} {#3} {#4}
 }
 \makeatother
 
@@ -218,7 +251,7 @@
 \changes{1.4}{2022-01-10}{Add check}{version of \pkg{l3kernel}}
 \pkg{dbshow} 依赖版本日期至少为 |2022-11-07| 的 \pkg{l3kernel}。
 
-\changes{1.2}{2022-01-09}{Add doc}{descripton for expansion}
+\changes{1.3}{2022-01-09}{Add doc}{descripton for expansion}
 \begin{itemize}
   \item 名字后带有 $\star$ 的命令是可以完全展开的（fully-expandable）；
   \item 名字后带有 \ding{73} 的命令可以有限制地展开（restricted-expandable）；
@@ -853,7 +886,7 @@ can display these data with custom filters, orders and styles.
 \changes{1.4}{2022-01-10}{Add check}{version of \pkg{l3kernel}}
 \pkg{dbshow} depends on \pkg{l3kernel} with version date after |2022-11-07|.
 
-\changes{1.2}{2022-01-09}{Add doc}{descripton for expansion}
+\changes{1.3}{2022-01-09}{Add doc}{descripton for expansion}
 \begin{itemize}
   \item Macros with a $\star$ are fully-expandable;
   \item Macros with a \ding{73} are restricted-expandable;
