@@ -14,14 +14,20 @@
 % The Current Maintainer of this work is Li Changkai.
 %
 % This work consists of the files dbshow.sty, dbshow-doc.tex.
-\def\myfileversion{v1.3}
+\def\myfileversion{v1.4}
 \def\myfiledate{2022/01/10}
-\RequirePackage{expl3, xparse}
 \ProvidesExplPackage
   {dbshow}
   {\myfiledate}
   {\myfileversion}
   {database to store and show data}
+
+% prop_concat, prop_gset_from_keyval
+\__kernel_dependency_version_check:nn { 2021-11-07 } { l3prop }
+% str_compare
+\__kernel_dependency_version_check:nn { 2021-05-17 } { l3str }
+% clist_map_tokens, clist_use
+\__kernel_dependency_version_check:nn { 2021-05-10 } { l3clist }
 
 \msg_new:nnn { dbshow } { non-existent-database } {
   Database~'#1'~does~not~exist~\msg_line_context:.
