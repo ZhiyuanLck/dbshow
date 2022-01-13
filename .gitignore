@@ -287,3 +287,6 @@ dbshow-doc-listing*
 *.tex
 !dbshow-doc.tex
 *.otf
+
+tmp/
+backup/
