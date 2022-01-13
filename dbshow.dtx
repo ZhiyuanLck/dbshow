@@ -1,0 +1,3640 @@
+% \iffalse meta-comment
+%<*internal>
+\iffalse
+%</internal>
+%<*readme>
+Package dbshow
+==============
+
+Introduction
+------------
+
+The package provides four core functions:
+
+1. data storage and display
+2. data filtering
+3. data sorting
+4. data display
+
+All data is saved once and then you can display these data with custom filters,
+orders and styles. The package can be used, for example, to record and
+display something you'd like to review, maybe the question you always answered
+incorrectly or some forgettable knowledge. But obviously, the package is much
+more powerful and extensible for more interesting tasks depending on the
+individual.
+
+Copyright and License
+---------------------
+
+    Copyright (C) 2022- by Changkai Li <lichangkai225@qq.com>
+    --------------------------------------------------------------------------
+
+    This work may be distributed and/or modified under the
+    conditions of the LaTeX Project Public License, either
+    version 1.3c of this license or (at your option) any later
+    version. This version of this license is in
+       http://www.latex-project.org/lppl/lppl-1-3c.txt
+    and the latest version of this license is in
+       http://www.latex-project.org/lppl.txt
+    and version 1.3 or later is part of all distributions of
+    LaTeX version 2005/12/01 or later.
+
+    This work has the LPPL maintenance status "maintained".
+
+    The Current Maintainer of this work is Changkai Li.
+
+    This package consists of the file  dbshow.dtx,
+                 and the derived files dbshow.pdf,
+                                       dbshow.sty,
+                                       dbshow.ins and
+                                       README.md (this file).
+%</readme>
+%<*internal>
+\fi
+\begingroup
+  \def\temp{LaTeX2e}
+\expandafter\endgroup\ifx\temp\fmtname\else
+\csname fi\endcsname
+%</internal>
+%<*install>
+
+\input l3docstrip.tex
+\keepsilent
+\askforoverwritefalse
+\preamble
+
+    Copyright (C) 2022- by Changkai Li <lichangkai225@qq.com>
+    --------------------------------------------------------------------------
+
+    This work may be distributed and/or modified under the
+    conditions of the LaTeX Project Public License, either
+    version 1.3c of this license or (at your option) any later
+    version. This version of this license is in
+       http://www.latex-project.org/lppl/lppl-1-3c.txt
+    and the latest version of this license is in
+       http://www.latex-project.org/lppl.txt
+    and version 1.3 or later is part of all distributions of
+    LaTeX version 2005/12/01 or later.
+
+    This work has the LPPL maintenance status "maintained".
+
+    The Current Maintainer of this work is Changkai Li.
+
+    This package consists of the file  dbshow.dtx,
+                 and the derived files dbshow.pdf,
+                                       dbshow.sty,
+                                       dbshow.ins and
+                                       README.md.
+    --------------------------------------------------------------------------
+
+\endpreamble
+\postamble
+
+    --------------------------------------------------------------------------
+    This package consists of the file  dbshow.dtx,
+                 and the derived files dbshow.pdf,
+                                       dbshow.sty,
+                                       dbshow.ins and
+                                       README.md.
+\endpostamble
+
+\generate{
+%</install>
+%<*internal>
+  \usedir{source/latex/dbshow}
+  \file{dbshow.ins}{\from{\jobname.dtx}{install}}
+%</internal>
+%<*install>
+  \usedir{tex/latex/dbshow}
+  \file{dbshow.sty}{\from{\jobname.dtx}{package}}
+  \nopreamble\nopostamble
+  \usedir{doc/latex/dbshow}
+  \file{README.md} {\from{\jobname.dtx}{readme}}
+}
+\endbatchfile
+%</install>
+%<*internal>
+\fi
+%</internal>
+%<package>\NeedsTeXFormat{LaTeX2e}
+%<+package|config>\GetIdInfo$Id: dbshow.dtx 73a05f9 2022-01-10 21:10:24 +0800 Changkai Li <lichangkai225@qq.com> $
+%<package>  {Database to store and display data}
+%<package>\ProvidesExplPackage{\ExplFileName}
+%<package|config>  {\ExplFileDate}{1.4}{\ExplFileDescription}
+%<*driver>
+\documentclass[full]{l3doc}
+\usepackage[scheme=plain, fontset=ubuntu]{ctex}
+\usepackage{dbshow}
+\usepackage{multicol}
+\usepackage{adjustbox}
+\usepackage{zhlineskip}
+\usepackage{enumitem}
+\usepackage{indentfirst}
+\usepackage{titling}
+\usepackage{geometry}
+\usepackage{tabularray}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings, skins, raster, breakable}
+\usepackage{tabularray}
+\usepackage{zhnumber}
+
+\geometry{
+  left=4.5cm,
+  right=2cm,
+  top=2cm,
+  bottom=2cm,
+}
+\hypersetup {
+  CJKbookmarks,
+  bookmarksopen,
+  bookmarksopenlevel=3,
+  pdfstartview=FitH,
+  pdfinfo = {
+   Title = The package 'dbshow' ,
+   Subject = A LaTeX package ,
+   Author = Li Changkai
+ }
+}
+
+\IndexPrologue {
+  \part*{Index}
+  \markboth{Index}{Index}
+  \addcontentsline{toc}{part}{Index}
+  The~italic~numbers~denote~the~pages~where~the~
+  corresponding~entry~is~described,~
+  numbers~underlined~point~to~the~definition,~
+  all~others~indicate~the~places~where~it~is~used.
+}
+
+\GlossaryPrologue {
+  \part*{Change~History}
+  {\GlossaryParms\ttfamily\hyphenchar\font=`\-}
+  \markboth{Change~History}{Change~History}
+  \addcontentsline{toc}{part}{Change~History}
+}
+
+\let\subsubitem\subitem
+
+\DoNotIndex{\begin, \end}
+\setlength{\parskip}{\medskipamount}
+
+\newcommand\tikzmark[1]{\tikz \coordinate[overlay, remember picture] (#1);}
+\def\levelchar{?}
+\def\orbar{\textup{\textbar}}
+\def\defaultval#1{\textbf{\textup{#1}}}
+\def\TF{true\orbar false}
+\def\TTF{\defaultval{true}\orbar false}
+\def\TFF{true\orbar\defaultval{false}}
+\def\zhbefore{\textbf{前}}
+\def\zhafter{\textbf{后}}
+\def\enbefore{\textbf{before}~}
+\def\enafter{\textbf{after}~}
+\DeclareDocumentEnvironment { note } { +b } {
+  \par\textbf{\textsf{NOTE:~}}#1\par
+} {}
+
+\ExplSyntaxOn
+\makeatletter
+
+\DeclareDocumentCommand { \csnot } { m } {
+  \group_begin:\ttfamily
+  \tl_set:Nn \l_csnot_tl { \c_backslash_str #1 }
+  \tl_replace_all:Nnn \l_csnot_tl { ~ } { \@xobeysp }
+  \l_csnot_tl
+  \group_end:
+}
+
+\DeclareDocumentEnvironment{ arguments } { O{1} } {
+  \tl_set:Nx \l_tmpa_tl {
+    \int_case:nn {#1} {
+      { 1 } { \# }
+      { 2 } { \#\# }
+      { 3 } { \#\#\#\# }
+    }
+  }
+  \enumerate [
+    nolistsep ,
+    label = \texttt{\l_tmpa_tl\arabic*} ~ : ,
+    labelsep = * ,
+    labelwidth = !,
+    align=left,
+  ]
+} { \endenumerate }
+
+\DoNotIndex{\begin, \end}
+
+\renewenvironment{theglossary}{
+\glossary@prologue\GlossaryParms \let\item\@idxitem \ignorespaces}{}
+
+\cs_gset_eq:NN \dbshowdocnull \use_none:n
+
+% #1 sort #2 group #3 date #4 type #5 desc
+\cs_new_protected:Nn \dbshowdoc_changes:nnnnn {
+  \@bsphack\group_begin:\@sanitize
+  \catcode`\\\z@ \catcode`\ 10 \MakePercentIgnore
+  \exp_args:Nx \glossary {
+    \dbshowdocnull{#1}~
+    \exp_not:N \textbf{#2}
+    \exp_not:n { \raisebox{1em}{\pdfbookmark[1]{#2}{#2}} }
+    \levelchar
+    \exp_not:N \textup{#3}\c_space_tl
+    \exp_not:N \textbf{#4}\c_colon_str\c_space_tl
+    \exp_not:n {#5}
+  }
+  \group_end:\@esphack
+}
+\cs_generate_variant:Nn \dbshowdoc_changes:nnnnn { xxnnn, VVnnn }
+
+\cs_new_protected:Nn \dbshowdoc_print_version:n {
+  v#1
+  \int_compare:nNnT { \str_count:n {#1} } = { 3 } { \phantom{0} }
+  \c_space_tl
+}
+\cs_set_eq:NN \dbshowdocver \dbshowdoc_print_version:n
+
+% #1 ver #2 date #3 type #4 desc
+\cs_new_protected:Nn \dbshowdoc_changes_what:nnnn {
+  \regex_extract_once:nnNT { doc|macro|bug|option }
+  {#3} \l_tmpa_seq {
+    \tl_set:Nx \l_tmpa_tl {
+      \str_case_e:nn { \seq_item:Nn \l_tmpa_seq { 1 } } {
+        { doc } { Documentation }
+        { macro } { Macro }
+        { bug } { Bug }
+        { option } {  Option }
+        { logic } {  Logic }
+      }
+    }
+    \dbshowdoc_changes:VVnnn \l_tmpa_tl \l_tmpa_tl
+      { \dbshowdocver{#1}#2 } {#3} {#4}
+  }
+}
+
+% #1 ver #2 date #3 type #4 desc
+\cs_new_protected:Nn \dbshowdoc_changes_how:nnnn {
+  \regex_extract_once:nnNT { Add|Update|Remove|Fix }
+  {#3} \l_tmpa_seq {
+    \dbshowdoc_changes:xxnnn
+      { \seq_item:Nn \l_tmpa_seq { 1 } }
+      { \seq_item:Nn \l_tmpa_seq { 1 } }
+      { \dbshowdocver{#1}#2 } {#3} {#4}
+  }
+}
+
+\cs_new:Nn \dbshowdoc_fill_two:n {
+  \int_compare:nNnTF {#1} > { 9 }
+    {#1} { 0#1 }
+}
+
+% #1 major number #2 minor number
+\cs_new_protected:Npn \dbshowdoc_changes_ver:w #1.#2\dbshowdoc_stop {
+  \dbshowdoc_changes:xxnnn { #1.\dbshowdoc_fill_two:n {#2} }
+}
+
+% #1 ver #2 date #3 type #4 desc
+\DeclareDocumentCommand \changes { m m m m } {
+  \dbshowdoc_changes_ver:w #1\dbshowdoc_stop {#1} {#2} {#3} {#4}
+  \dbshowdoc_changes_what:nnnn {#1} {#2} {#3} {#4}
+  \dbshowdoc_changes_how:nnnn {#1} {#2} {#3} {#4}
+}
+\makeatother
+
+\DeclareDocumentEnvironment { Description } { o +b } {
+  \hbox_set:Nn \l_tmpa_box {#1}
+  \dim_set:Nn \l_tmpa_dim { \box_wd:N \l_tmpa_box }
+  \begin{itemize}[
+    itemindent=0pt,
+    labelindent=0pt,
+    labelwidth=\l_tmpa_dim,
+    leftmargin=!,
+    align=left]
+    #2
+  \end{itemize}
+} {}
+
+\cs_new_protected:Nn \dbshowdoc_function_begin:N {
+  \cs_set_eq:NN \__codedoc_tmp_cs:nN \__codedoc_typeset_function_block:nN
+  \cs_set_protected:Npn \__codedoc_typeset_function_block:nN ##1##2 {
+    \__codedoc_function_label:xN {##1} ##2
+    \hbox_set:Nn \l_tmpa_box {##1}
+    \int_compare:nTF { \str_count:n {##1} <= 22 }
+      {##1} { \adjustbox{width=.7\marginparwidth, height=\box_ht:N \l_tmpa_box}{##1} }
+    #1{##1}
+    \__codedoc_typeset_expandability: \\
+  }
+}
+\cs_new_protected:Nn \dbshowdoc_function_end: {
+  \cs_set_eq:NN \__codedoc_typeset_function_block:nN \__codedoc_tmp_cs:nN
+}
+\DeclareDocumentEnvironment { option } { O{} +v }
+  {
+    \dbshowdoc_function_begin:N \SpecialOptionIndex
+    \__codedoc_function:nnw {#1} {#2}
+  }
+  {
+    \__codedoc_function_end:
+    \dbshowdoc_function_end:
+  }
+\DeclareDocumentEnvironment { environment } { O{} +v }
+  {
+    \dbshowdoc_function_begin:N \SpecialEnvIndex
+    \__codedoc_function:nnw {#1} {#2}
+  }
+  {
+    \__codedoc_function_end:
+    \dbshowdoc_function_end:
+  }
+
+\DeclareDocumentCommand \opt { O{} m }
+  { \__codedoc_cmd:no {#1} {#2} }
+
+\NewDocumentCommand \linktarget { m m m } {%
+  \hyperlink{#1}{#3}%
+  \raisebox{1em}{\hypertarget{#2}{}}%
+}
+
+\DeclareDocumentCommand \GetFileId { m } {
+  \GetFileInfo {#1}
+  \file_get:nnNTF { \c_sys_jobname_str .id }
+    { \int_set:Nn \tex_endlinechar:D { -1 } } \l__ctxdoc_tmp_tl
+    { \exp_after:wN \GetIdInfo \l__ctxdoc_tmp_tl }
+    { \GetIdInfo $Id$ }
+    { \fileinfo }
+}
+\ExplSyntaxOff
+
+\begin{document}
+\DocInput{dbshow.dtx}
+\newgeometry{
+  left=2cm,
+  right=2cm,
+  top=2cm,
+  bottom=2cm
+}
+\changes{1.4}{2022-01-10}{Fix doc code}{wrong changes history sorting}
+\PrintChanges
+\PrintIndex
+\end{document}
+%</driver>
+% \fi
+%
+% \GetFileId{dbshow.sty}
+% \ExplSyntaxOn
+% \tl_set:Nx \cnfiledate{ \exp_args:NV \zhdate\filedate }
+% \ExplSyntaxOff
+%
+% \title{
+%   \pkg{dbshow} 宏包 \fileversion%
+%   \protect\footnote{%
+%     代码仓库：\url{https://github.com/ZhiyuanLck/dbshow}，
+%     QQ群：788706534}
+%   \rlap{\makebox[4cm][r]{
+%     \normalsize $\Longrightarrow$ \color{red}
+%     \linktarget{en}{zh}{English Version}
+%   }}
+% }
+% \author{\textit{李昌锴} \protect\path{<lichangkai225@qq.com>}}
+% \date{\cnfiledate}
+% \maketitle
+%
+% \tableofcontents
+%
+% \begin{documentation}
+%
+% \section{引言}
+% 编写本宏包的动机来源于当前没有一个很好的错题本宏包，可以方便的根据各种条件对错
+% 题进行筛选、排序，然后以自定义的样式展示出来。\pkg{dbshow} 宏包实现了四个核心
+% 功能：数据存储和使用、数据筛选、数据排序、数据展示。
+%
+% 数据只需要存储一次，就可以通过预定义的筛选、排序条件和样式展示部分或全部的数据。
+% 如上所述，本宏包其实实现了一个非常简单的数据库，复习错题的功能只是其中一个应用，
+% 和其他数据库宏包比如 \pkg{datatool} 相比，\pkg{dbshow} 更专注于非图表类型的数
+% 据展示。
+%
+% \changes{1.4}{2022-01-10}{Add check}{version of \pkg{l3kernel}}
+% \pkg{dbshow} 依赖版本日期至少为 |2022-11-07| 的 \pkg{l3kernel}。
+%
+% \changes{1.3}{2022-01-09}{Add doc}{descripton for expansion}
+% \begin{itemize}
+%   \item 名字后带有 $\star$ 的命令是可以完全展开的（fully-expandable）；
+%   \item 名字后带有 \ding{73} 的命令可以有限制地展开（restricted-expandable）；
+%   \item 名字后不带有特殊字符的命令是不可展开的（non-expandable）；
+%   \item 名字后带有 $\star$ 的选项不影响相关的代码的是否可展开；
+%   \item 名字后带有 \ding{73} 的选项是否影响相关代码的可展开性取决于选项的设置；
+%   \item 名字后不带有特殊字符的选项会使与之相关的代码变得不可展开。
+% \end{itemize}
+%
+% \subsection{数据类型}
+%
+% 宏包基于 \pkg{expl3} 的基础类型构建了6种类型：
+% \begin{Description}[\texttt{clist}]
+%   \item[\texttt{date}]
+%     日期类型，以 |yyyy/mm/dd| 形式存储，支持大小比较，排序（转
+%     换成字符串）。默认值为 \cs{dbtoday}。
+%   \item[\texttt{str}]
+%     字符串类型，支持正则匹配，英文排序。默认值为空。
+%   \item[\texttt{tl}]
+%     \meta{token list}类型，支持正则匹配。默认值为空。
+%   \item[\texttt{int}]
+%     整数类型，支持大小比较，排序。默认值为0。
+%   \item[\texttt{fp}]
+%     浮点数类型，支持大小比较，排序。默认值为0。
+%   \item[\texttt{clist}]
+%     逗号分隔的列表类型。默认值为空列表。
+% \end{Description}
+%
+% \changes{1.3}{2022-01-08}{Remove dependency}{\pkg{datatime2}}
+% 除了日期类型，所有类型都是 \pkg{expl3} 的内置类型。\pkg{dbshow} 构建了一个简单
+% 的 |date| 类型，支持转换成整数以及带样式的打印。
+%
+% \subsection{与 \pkg{datatool} 的区别}
+%
+% \changes{1.2}{2022-01-07}{Add doc}{add comparison to \pkg{datatool}}
+%
+% 从核心功能上看，\pkg{dbshow} 和 \pkg{datatool} 实现了相同的功能。区别在于
+% \pkg{dbshow} 基于 \pkg{expl3} 实现，支持字符串的正则匹配，还支持多级排序。使用
+% 方式上更倾向于样式与内容分离，所有的样式都可以通过选项提前定义好并且可以复用。
+% \pkg{dbshow} 并没有实现从外部文件读取数据以及将数据持久化的功能，我认为这些应
+% 该是更专业的外部程序的工作而不应该在 \LaTeX 中设计这些功能。因此，\pkg{dbshow}
+% 只提供了一个运行时的临时数据库，足够轻便且满足大部分正常需求。如果你想删除或修
+% 改数据库中某一条记录，请去对应的位置删除或修改掉对应的 \env{dbitem} 环境，而不
+% 是让宏包提供一个输出某一行记录的命令。某种意义上记录数据库的 \TeX 源文件本身就
+% 是数据的一种持久化。
+%
+% \section{接口文档}
+%
+% \subsection{创建、展示和清空数据库}
+%
+% \changes{1.4}{2022-01-10}{Update macro}{change \orbar\ to \cs{dbshow_sep} in
+% weird argument of \cs{dbshow_process_default_value:w}}
+% \begin{function}[added=2022-01-05, updated=2022-01-10]{\dbNewDatabase, \dbNewDatabase*}
+%   \begin{syntax}
+%     \cs{dbNewDatabase} \oarg{base database} \marg{database} \{ \\
+%     ~~\meta{attr1} = \meta{type spec1}, \\
+%     ~~\meta{attr2} = \meta{type spec2}, \\
+%     ~~\ldots{} \\
+%     \} \\
+%     \cs{dbNewDatabase}* \marg{database} \{ \\
+%     ~~\meta{attr1} = \meta{type spec1}, \\
+%     ~~\meta{attr2} = \meta{type spec2}, \\
+%     ~~\ldots{} \\
+%     \} \\
+%   \end{syntax}
+%
+% \end{function}
+%
+%   新建一个数据库，不带星号的版本可以指定一个数据库来继承其属性设置，该版本总是
+%   会舍弃掉之前的定义。
+%
+%   带星号的版本不会舍弃之前已有的定义，而是将新的选项添加到后面。
+%
+%   \meta{attr} 为属性名称，\meta{type spec} 负责声明属性类型和属性默认值：
+%
+%   \noindent\begin{tblr}{
+%     colspec = {ll},
+%     column{1} = {font = \ttfamily}
+%   }
+%     \meta{attr} = \meta{type} &
+%     将 \meta{attr} 声明为 \meta{type} 类型 \\
+%     \meta{attr} = \meta{type}\orbar\meta{default} &
+%     将 \meta{attr} 声明为 \meta{type} 类型，并且将默认值设置为 \meta{default}。
+%     \\
+%   \end{tblr}
+%
+%   \begin{note}
+%     每个数据库都有一个默认的属性 |id| 用来存储数据的索引。
+%   \end{note}
+%
+%   下面是定义一个错题数据库的示例，|question| 和 |answer| 属性用来存储问题和答
+%   案，|date| 属性存储日期，|info| 属性存储额外信息，|labels| 存储题目标签。
+% \begin{verbatim}
+%   \dbNewDatabase{ques}{
+%     question = tl,
+%     answer = tl,
+%     date = date,
+%     info = tl,
+%     labels = clist
+%   }
+% \end{verbatim}
+%
+% \begin{function}[added=2022-01-05]{\dbshow}
+%   \begin{syntax}
+%     \cs{dbshow} \marg{style} \marg{database}
+%   \end{syntax}
+%
+%   使用 \meta{style} 样式来展示 \meta{database}。
+% \end{function}
+%
+% \changes{1.2}{2022-01-07}{Add macro}{\cs{dbclear}}
+% \begin{function}[added=2022-01-07]{\dbclear}
+%   \begin{syntax}
+%     \cs{dbclear} \marg{database}
+%   \end{syntax}
+%   清空 \meta{database} 里的所有内容。
+% \end{function}
+%
+% \subsection{\cs{dbNewStyle} 和样式选项}
+%
+% \begin{function}[added=2022-01-05]{\dbNewStyle}
+%   \begin{syntax}
+%     \cs{dbNewStyle} \oarg{base styles} \marg{style} \marg{database} \marg{opts}
+%   \end{syntax}
+%
+%   为 \meta{database} 定义一个新的样式 \meta{style}，该样式可以基于已有的样式
+%   \meta{base styles}，比如 |\dbNewStyle[base1, base2]{new-style}{ques}{}|。
+% \end{function}
+%
+% \subsubsection{通用选项}
+%
+% \begin{option}[added=2022-01-05]{filter}
+%   \begin{syntax}
+%     filter = <filter>
+%   \end{syntax}
+%
+%   为当前样式设置由 \cs{dbCombineFilters} 所定义的过滤器
+% \end{option}
+%
+% \begin{option}[added=2022-01-06]{raw-filter}
+%   \begin{syntax}
+%     raw-filter = <conditional expression>
+%   \end{syntax}
+%
+%   使用条件表达式设置匿名过滤器，这里的条件指通过 \cs{dbNewConditional} 定义的
+%   条件。下面代码中两个示例的过滤器具有相同的功能。
+% \end{option}
+%
+% \changes{1.1}{2022-01-06}{Add option}{\opt{raw-filter}}
+%
+% \begin{verbatim}
+%   % method 1
+%   \begin{dbFilters}{db}
+%     \dbNewConditional{cond1}{int-attr}{\rval > 1}
+%     \dbNewConditional*{cond2}{str-attr}{\d+}
+%   \end{dbFilters}
+%   \dbNewStyle{style}{db}{raw-filter={cond1 && cond2}}
+%   % method 2
+%   \begin{dbFilters}{db}
+%     \dbNewConditional{cond1}{int-attr}{\rval > 1}
+%     \dbNewConditional*{cond2}{str-attr}{\d+}
+%     \dbCombineFilters{filter}{cond1 && cond2}
+%   \end{dbFilters}
+%   \dbNewStyle{style}{db}{filter=filter}
+% \end{verbatim}
+%
+% \changes{1.2}{2022-01-08}{Fix bug}{string sorting bug}
+% \begin{option}[added=2022-01-05]{sort}
+%   \begin{syntax}
+%     sort = \{ <attr spec1>, <attr spec2>, \ldots{} \}
+%   \end{syntax}
+%
+%   为当前样式设置排序规则。支持根据 |str|，|date|，|int|，|fp| 类型的数据进行排
+%   序，支持多级排序。\meta{attr} 表示增序，\meta{attr}* 表示降序。下面例子中，
+%   使用 |sort-style| 展示数据时的顺序为先按 |level| 降序，|level| 相同的再按出
+%   生日期 |birth| 增序，以此类推。
+% \end{option}
+%
+% \begin{verbatim}
+%   \dbNewDatabase{sort-example}{
+%     name = str,
+%     birth = date,
+%     level = int,
+%     weight = fp,
+%   }
+%   \dbNewStyle{sort-style}{sort-example}{
+%     sort = { level*, birth, name, weight }
+%   }
+% \end{verbatim}
+%
+% \begin{option}[added=2022-01-05, rEXP]{item-code}
+%   \begin{syntax}
+%     item-code = <code>
+%   \end{syntax}
+%
+%   该选项用来设置展示数据库中每条记录的代码。你可以使用 \cs{dbuse} 来展示属性的
+%   值。
+% \end{option}
+%
+% \changes{1.3}{2022-01-09}{Update option}{\opt{<attr>/sep}}
+% \begin{option}[added=2022-01-05, updated=2022-01-08, rEXP]{<attr>/sep}
+%   \begin{syntax}
+%     <attr>/sep = <separator> \\
+%     <attr>/sep = \{ \\
+%     ~~\meta{separator between two}, \\
+%     ~~\meta{separator between more than two}, \\
+%     ~~\meta{separator between final two} \\
+%     \} \\
+%     <attr>/sep = \{ \\
+%     ~~\meta{separator before year}, \\
+%     ~~\meta{separator between year and month}, \\
+%     ~~\meta{separator between month and day}, \\
+%     ~~\meta{separator after day} \\
+%     \} \\
+%   \end{syntax}
+%
+%   该选项只适用于类型为 |clist| 或 |date| 的属性，用来设置列表间元素的间隔。参
+%   数为一个 \meta{separator} 时，所有元素间的分隔符被设置为 \meta{separator}。
+%   \meta{separator before year} 和 \meta{separator after day} 被设置为空。
+% \end{option}
+%
+%   参数为3个元素的逗号分隔的列表时，此选项用来设置列表元素的分隔符，分别用来设
+%   置只有两个元素时的分隔符 \meta{separator between two}，超过两个元素时的分隔
+%   符 \meta{separator between more than two}，和最后两个元素之间的分隔符
+%   \meta{separator between final two}。对于类型为 |clist| 的属性，设置此选项时
+%   如果参数列表数量不是1或者3会触发报错。
+%
+% \begin{verbatim}
+%   % clist-attr is an attribute of database db
+%   % suppose the val of clist-attr is { 1, 2, 3 }
+%   \dbNewStyle{clist-sep}{db}{
+%     clist-attr/sep = { ,~ },                % print 1, 2, 3
+%     clist-attr/sep = { {,~}, {,~}, {and~} } % print 1, 2 and 3
+%   }
+% \end{verbatim}
+%
+%   参数为4个元素的逗号分隔的列表时，此选项用来设置日期的分隔符，分别用来设
+%   置 \meta{year} 之前的分隔符 \meta{separator before year} ，\meta{year} 和
+%   \meta{month} 之间的分隔符 \meta{separator between year and month} ，
+%   \meta{month} 和 \meta{day} 之间的分隔符，以及 \meta{day} 之后的分隔符。对于
+%   类型为 |date| 的属性，设置此选项时如果参数列表数量不是1或者4会触发报错。
+%
+% \begin{verbatim}
+%   % date-attr is an attribute of database db
+%   % suppose the val of date-attr is 2022/01/01
+%   \dbNewStyle{date-sep}{db}{
+%     date-attr/sep = -,             % print 2022-01-01
+%     date-attr/sep = { |, -, -, | } % print |2022-01-01|
+%   }
+% \end{verbatim}
+%
+% \changes{1.3}{2022-01-08}{Add option}{\opt{<attr>/zfill}}
+% \begin{option}[added=2022-01-08, EXP]{<attr>/zfill}
+%   \begin{syntax}
+%     <attr>/zfill = <\TTF>
+%   \end{syntax}
+%
+%   该选项只适用于类型为 |date| 的属性。控制输出月份和天时是否补零。
+% \end{option}
+%
+% \subsubsection{装饰器}
+%
+% 下面这些选项在不同层次上装饰原有的展示代码，有些其实不必通过选项的形式来装饰，
+% 但这样做的好处是可以进一步使样式与内容分离。下面的例子中，\meta{style1} 和
+% \meta{style2} 是相同的样式，都用 * 将 \meta{attr1} 包裹住了，但是如果你还想定
+% 义一个样式用 = 将 \meta{attr1} 包裹住，如果用 \meta{style1} 的方式，那就可能
+% 需要重复大片代码，用 \meta{style2} 的方式则可以很轻松的继承 \meta{style1} 中的
+% 代码。
+%
+% \begin{verbatim}
+%   \dbNewStyle{style1}{db}{
+%     item-code = {%
+%       *\rvuse{attr1}*\rvuse{attr2}
+%       % more code
+%     }
+%   }
+%   \dbNewStyle{base-style}{db}{
+%     item-code = {%
+%       \rvuse{attr1}\rvuse{attr2}
+%       % more code
+%     }
+%   }
+%   \dbNewStyle[base-style]{style2}{db}{
+%     attr1/before-code = { * },
+%     attr1/after-code = { * },
+%   }
+%   \dbNewStyle[base-style]{style3}{db}{
+%     attr1/before-code = { = },
+%     attr1/after-code = { = },
+%   }
+% \end{verbatim}
+%
+% \changes{1.3}{2022-01-08}{Add option}{\opt{<attr>/wrapper}}
+% \begin{option}[added=2022-01-08, rEXP]{<attr>/wrapper}
+%   \begin{syntax}
+%     <attr>/wrapper = <control sequence>
+%   \end{syntax}
+%
+%   该选项只适用于类型为 |date| 的属性。\meta{control sequence} 只接收一个参数即
+%   日期，如果设置了此选项，则最后输出的日期为
+%   \meta{control sequence}\marg{date}。
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{before-code}
+%   \begin{syntax}
+%     before-code = <code>
+%   \end{syntax}
+%
+%   该选项用来设置在展示整个数据库之\zhbefore 需要执行的代码。
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{after-code}
+%   \begin{syntax}
+%     after-code = <code>
+%   \end{syntax}
+%
+%   该选项用来设置在展示整个数据库之\zhafter 需要执行的代码。
+% \end{option}
+%
+% \changes{1.2}{2022-01-08}{Add options}{\opt{record-before-code},
+% \opt{record-after-code}}
+% \begin{option}[added=2022-01-05, rEXP]{record-before-code}
+%   \begin{syntax}
+%     record-before-code = <code>
+%   \end{syntax}
+%
+%   该选项用来设置在展示当前记录之\zhbefore 需要执行的代码。
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{record-after-code}
+%   \begin{syntax}
+%     record-after-code = <code>
+%   \end{syntax}
+%
+%   该选项用来设置在展示当前记录之\zhafter 需要执行的代码。
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/before-code}
+%   \begin{syntax}
+%     <attr>/before-code = <code>
+%   \end{syntax}
+%
+%   该选项用来设置展示数据库中属性 \meta{attr} 对应数据之\zhbefore 需要执行的代
+%   码。\cs{dbuse} 会在展示属性数据\zhbefore 执行此代码。
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/after-code}
+%   \begin{syntax}
+%     <attr>/after-code = <code>
+%   \end{syntax}
+%
+%   该选项用来设置展示数据库中属性 \meta{attr} 对应数据之\zhafter 需要执行的代码。
+%   \cs{dbuse} 会在展示属性数据\zhafter 执行此代码。
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/item-before-code}
+%   \begin{syntax}
+%     <attr>/item-before-code = <code>
+%   \end{syntax}
+%
+%   该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素\zhbefore 需要
+%   执行的代码。
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/item-after-code}
+%   \begin{syntax}
+%     <attr>/item-after-code = <code>
+%   \end{syntax}
+%
+%   该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素\zhafter 需要执
+%   行的代码。
+% \end{option}
+%
+% \subsection{使用 \cs{dbNewReviewPoints} 定义复习点}
+%
+% \begin{function}[added=2022-01-05]{\dbNewReviewPoints}
+%   \begin{syntax}
+%     \cs{dbNewReviewPoints} \marg{name} \marg{points}
+%   \end{syntax}
+%
+%   定义名为 \meta{name} 的复习点。这是专门为错题本或复习所定制的功能，
+%   \meta{points}是一系列整数，现在假设每道错题你都将写错时的日期记录在了 |date|
+%   属性中，并且你希望每隔2，5，15天复习一次。下面的代码给出了一个实现示例。
+% \end{function}
+%
+% \begin{verbatim}
+%   \dbNewReviewPoints{review-point}{2, 5, 15}            % 定义复习点
+%   \begin{dbFilters}
+%     \dbNewConditional{cond1}{date}{review-point|\Today} % 定义复习条件
+%     \dbCombineConditionals{filter1}{cond1}              % 定义过滤器
+%   \end{dbFilters}
+%   \dbNewStyle{review-style}{ques}{filter=filter1}       % 定义展示样式
+% \end{verbatim}
+%
+% \subsection{在 \env{dbFilters} 环境中定义过滤器}
+%
+% \begin{environment}[added=2022-01-05]{dbFilters}
+%   \begin{syntax}
+%     |\begin{dbFilters}|\marg{database} \\
+%     ~~\meta{code}
+%     |\end{dbFilters}| \\
+%   \end{syntax}
+%
+%   \env{dbFilters}用来定义过滤器，此环境中定义了 \cs{dbNewConditional} 命令用来
+%   定义条件和 \cs{dbCombineConditionals} 命令用来组合条件定义过滤器。过滤器独立
+%   于每个 \meta{database}，这意味着你可以在不同数据库中定义名称相同的过滤条件和
+%   过滤器。
+% \end{environment}
+%
+% \begin{function}[added=2022-01-05, updated=2022-01-08]{\dbNewConditional, \dbNewConditional*}
+%   \begin{syntax}
+%     \cs{dbNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
+%     \cs{dbNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
+%     \cs{dbNewConditional}  \marg{name} \marg{int/fp attr} \marg{expr} \\
+%     \cs{dbNewConditional}* \marg{name} \marg{int/fp attr} \marg{expr} \\
+%     \cs{dbNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \\
+%     \cs{dbNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \\
+%     \cs{dbNewConditional}  \marg{name}  \marg{clist attr} \marg{val list} \\
+%     \cs{dbNewConditional}* \marg{name}  \marg{clist attr} \marg{val list} \\
+%     \cs{dbNewConditional}  \marg{name}   \marg{date attr} \marg{expr}
+%     \cs{dbNewConditional}* \marg{name}   \marg{date attr} \{\meta{review points}\orbar\meta{date}\} \\
+%   \end{syntax}
+%
+%   \cs{dbNewConditional} 用来定义名为 \meta{name} 的条件，\meta{attr} 指定条件
+%   所绑定的属性，在 \meta{cond spec} 中可以用 \cs{dbval} 指代属性的值。
+% \end{function}
+%
+%   \changes{1.3}{2022-01-10}{Update doc}{truncated division}
+%   对于类型为 |int| 和 |fp| 的属性，\meta{expr} 传递给 \cs{int_compare:nTF} 或
+%   \cs{fp_compare:nTF} 处理。
+%   \begin{note}
+%     |/| 为四舍五入除法，截断除法请用 \cs{dbIntDivTruncate}。
+%   \end{note}
+%
+%   对于类型为 |str| 和 |tl| 的属性，\meta{regex} 为正则表达式，
+%   \cs{dbNewConditional} 表示部分匹配，\cs{dbNewConditional*} 表示整体匹配。
+%
+% \begin{verbatim}
+%   \dbNewConditional {cond1}{str-attr}{abc} % 匹配 abc, abcd, 1abc, =abc= 等
+%   \dbNewConditional*{cond2}{str-attr}{abc} % 只匹配 abc
+% \end{verbatim}
+%
+%   对于类型为 |clist| 的属性，使用 \cs{dbNewConditional} 定义的条件只要
+%   \meta{val list} 中的任意一个元素在属性值（列表）中则条件成立；使用
+%   \cs{dbNewConditional*} 定义的条件只有 \meta{val list} 中每一个值都在属性值
+%   （列表）中条件才成立。
+%
+% \begin{verbatim}
+%   \dbNewConditional {cond1}{clist-attr}{a, b, c} % a, b, d 满足条件
+%   \dbNewConditional*{cond2}{clist-attr}{a, b, c} % a, b, d 不满足条件
+% \end{verbatim}
+%
+%   \changes{1.3}{2022-01-08}{Update logic}{swap definition of starred and
+%   unstarred conditionals of date}
+%   对于类型为 |date| 的属性，\cs{dbNewConditional} 定义的条件后续处理中会将
+%   \meta{expr} 中的所有日期转换成相对\textit{1971年1月1日}的一个整数值，然后将
+%   处理后的表达式传递给 \cs{int_compare:nTF} 做进一步处理；
+%   \cs{dbNewConditional*} 使用复习点来定义过滤条件，\meta{review points} 是
+%   \cs{dbNewReviewPoints} 定义的复习点，\meta{date} 是用来比较的日期。
+%
+% \begin{function}[added=2022-01-05]{\dbCombineConditionals}
+%   \begin{syntax}
+%     \cs{dbCombineConditionals} \marg{name} \marg{cond combination} \oarg{info}
+%   \end{syntax}
+%
+%   \cs{dbCombineConditionals} 定义名为 \marg{name} 的过滤器，并将
+%   \cs{dbNewConditional} 定义的条件组合起来，比如
+%   \verb=\dbCombineConditionals{filter}{(cond1 && cond2) || !cond3}=。
+%   \meta{cond combination} 中可以使用的关系操作符为 \verb=&&, ||, !=。
+%   可以将 \opt{filter} 选项设置为 \meta{name} 来应用过滤器。\meta{info} 为过滤
+%   器的相关信息，在展示数据库的时候可以用 \cs{dbFilterInfo} 指代。
+% \end{function}
+%
+% \subsection{使用 \env{dbitem} 环境存储数据}
+%
+% \begin{environment}[added=2022-01-05]{dbitem}
+%   \begin{syntax}
+%     |\begin{dbitem}|\marg{database}[ \\
+%     ~~\meta{attr1} = \meta{val1}, \\
+%     ~~\meta{attr2} = \meta{val2}, \\
+%     ~~\ldots{} \\
+%     ] \\
+%     ~~\meta{code} \\
+%     |\end{dbitem}|
+%   \end{syntax}
+%
+%   \env{dbitem} 环境用来存储数据。有两种存储数据的方法，较短的数据可以在选项列
+%   表中通过键值对设置值，较长的数据可以在 \meta{code} 中使用 \cs{dbsave} 存储。
+%   \cs{dbsave}会覆盖选项中设置的值。没有设置的值将会被设置为全局默认值，下面给
+%   出一个存储示例。
+% \end{environment}
+%
+% \begin{verbatim}
+%   \begin{dbitem}[date = 2022-01-01, info = 测试]
+%     \dbsave{question}{这是一个测试问题}
+%     \dbsave{answer}  {这是一个测试答案}
+%   \end{dbitem}
+% \end{verbatim}
+%
+% \subsection{\cs{dbsave} 和 \cs{dbuse}}
+%
+% \changes{1.3}{2022-01-08}{Add macro}{\cs{dbsave*}}
+% \begin{function}[added=2022-01-05, updated=2022-01-08]{\dbsave, \dbsave*}
+%   \begin{syntax}
+%     \cs{dbsave}  \marg{attr} \marg{data} \\
+%     \cs{dbsave}* \marg{attr} \marg{data}
+%   \end{syntax}
+%
+%   \cs{dbsave} 用来存储数据，只能在 \env{item} 环境中使用。使用 \cs{dbsave*} 存
+%   储的数据会被 \cs{exp_not:n} 包裹。
+% \end{function}
+%
+% \changes{1.2}{2022-01-08}{Update macro}{make \cs{dbuse} fully-expandable}
+% \begin{function}[added=2022-01-05, updated=2022-01-08, EXP]{\dbuse}
+%   \begin{syntax}
+%     \cs{dbuse} \marg{attr}
+%   \end{syntax}
+%
+%   \cs{dbuse} 用来展示数据，只能在 \opt{item-code} 选项中使用。\cs{dbuse} 是可
+%   展开的。
+% \end{function}
+%
+% \subsection{条件判别式}
+%
+% \begin{function}[added=2022-01-05, EXP]{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
+%   \begin{syntax}
+%     \cs{dbIfEmptyTF} \marg{true code} \marg{false code} \\
+%     \cs{dbIfEmptyT} \marg{true code} \\
+%     \cs{dbIfEmptyF} \marg{false code}
+%   \end{syntax}
+%
+%   该判别式用来判断当前数据库是否为空。下面的示例展示了如何预防空的列表环境。
+% \end{function}
+%
+% \begin{verbatim}
+%   \dbNewStyle{style-cond1}{database-test}{
+%     before-code = {\dbIfEmptyF{\begin{enumerate}}},
+%     after-code = {\dbIfEmptyF{\end{enumerate}}},
+%     item-code = {\item \dbuse{attr-test}}
+%   }
+% \end{verbatim}
+%
+% \changes{1.2}{2022-01-08}{Remove macros}{\cs{dbItemIfEmpty(TF)}, \cs{dbClistItemIfEmpty(TF)}}
+%
+% \subsection{表达式函数}
+%
+% \changes{1.3}{2022-01-10}{Add macros}{expression function aliases}
+% \begin{function}[added=2022-01-10, EXP]{
+%   \dbIntAbs, \dbIntSign, \dbIntDivRound, \dbIntDivTruncate, \dbIntMax,
+%   \dbIntMin, \dbIntMod, \dbFpSign,
+% }
+%   \begin{syntax}
+%     \cs{dbIntAbs} \Arg{intexpr}
+%     \cs{dbIntSign} \Arg{intexpr}
+%     \cs{dbIntDivRound} \Arg{intexpr_1} \marg{intexpr_2}
+%     \cs{dbIntDivTruncate} \Arg{intexpr_1} \marg{intexpr_2}
+%     \cs{dbIntMax} \Arg{intexpr_1} \marg{intexpr_2}
+%     \cs{dbIntMin} \Arg{intexpr_1} \marg{intexpr_2}
+%     \cs{dbIntMod} \Arg{intexpr_1} \marg{intexpr_2}
+%     \cs{dbFpSign} \Arg{fpexpr}
+%   \end{syntax}
+%   \cs{dbIntAbs} 等同于 \cs{int_abs:n} \\
+%   \cs{dbIntSign} 等同于 \cs{int_sign:n} \\
+%   \cs{dbIntDivRound} 等同于 \cs{int_div_round:nn} \\
+%   \cs{dbIntDivTruncate} 等同于 \cs{int_div_truncate:nn} \\
+%   \cs{dbIntMax} 等同于 \cs{int_max:nn} \\
+%   \cs{dbIntMin} 等同于 \cs{int_min:nn} \\
+%   \cs{dbIntMod} 等同于 \cs{int_mod:nn} \\
+%   \cs{dbFpSign} 等同于 \cs{fp_sign:n} \\
+%    详细的文档见 \pkg{interface3} \\
+% \end{function}
+%
+% \subsection{特殊命令}
+%
+% \pkg{dbshow} 定义了一些特殊的命令，会根据语境展开为不同的内容。
+%
+% \changes{1.1}{2022-01-05}{Add macro}{
+%   \cs{dbarabic}, \cs{dbalph}, \cs{dbAlph}, \cs{dbroman},
+%   \cs{dbRoman}
+% }
+% \changes{1.1}{2022-01-06}{Fix bug}{\cs{dbIndex} not defined}
+% \begin{function}[added=2022-01-05, EXP]{
+%   \dbval, \dbDatabase, \dbFilterName, \dbFilterInfo,
+%   \dbIndex, \dbarabic, \dbalph, \dbAlph, \dbroman, \dbRoman
+% }
+% \begin{tblr}{ll}
+%   \cs{dbval} & 当前属性的值 \\
+%   \cs{dbDatabase} & 数据库名称 \\
+%   \cs{dbFilterName} & 当前样式过滤器的名称 \\
+%   \cs{dbFilterInfo} & 当前样式过滤器的相关信息 \\
+%   \cs{dbIndex} & 数据索引，等同于 \cs{dbuse}|{id}| \\
+%   \cs{dbarabic} & 用数字表示的查询集数据计数 \\
+%   \cs{dbalph} & 用小写字母表示的查询集数据计数 \\
+%   \cs{dbAlph} & 用大写字母表示的查询集数据计数 \\
+%   \cs{dbroman} & 用小写罗马字母表示的查询集数据计数 \\
+%   \cs{dbroman} & 用大写罗马字母表示的查询集数据计数 \\
+%   \end{tblr}
+% \end{function}
+%
+% \section{错题本示例}
+% 见第 \ref{sec:example} 节。
+%
+% \changes{1.1}{2022-01-07}{Update doc}{improve example}
+%
+% \title{
+%   Package \pkg{dbshow} \fileversion%
+%   \protect\footnote{%
+%     Repository: \url{https://github.com/ZhiyuanLck/dbshow},
+%     Telegram Group: \url{https://t.me/latex_dbshow}}
+%   \rlap{\makebox[4cm][r]{
+%     \normalsize $\Longrightarrow$ \color{red}
+%     \linktarget{zh}{en}{中文版本}
+%   }}
+% }
+% \author{Li Changkai \protect\path{<lichangkai225@qq.com>}}
+% \date{\filedate}
+% \maketitle
+%
+% \section{Introduction}
+%
+% The initial motivation to write this package is that I want to write a
+% template, which can collect questions you gave the wrong answer and can
+% display those questions you would like to review by some conditionals, such as
+% questions with certain label, questions you have answered uncorrectly for
+% certain times or questions having not been reviewed for certain days. So this
+% package provides a database to do such thing.
+%
+% The package provides four core functions: data storage and display, data
+% filtering, data sorting and data display. All data is saved once and then you
+% can display these data with custom filters, orders and styles.
+%
+% \changes{1.4}{2022-01-10}{Add check}{version of \pkg{l3kernel}}
+% \pkg{dbshow} depends on \pkg{l3kernel} with version date after |2022-11-07|.
+%
+% \changes{1.3}{2022-01-09}{Add doc}{descripton for expansion}
+% \begin{itemize}
+%   \item Macros with a $\star$ are fully-expandable;
+%   \item Macros with a \ding{73} are restricted-expandable;
+%   \item Macros without appending a special symbol are nonexpandable;
+%   \item Options with a $\star$ \textit{do not} affect the expandability of
+%     related macros;
+%   \item Options with a \ding{73} affect the expandability of related macros
+%     according to its value;
+%   \item Options without appending a special symbol make the related macros
+%     nonexpandable.
+% \end{itemize}
+%
+% \subsection{Data Types}
+%
+% The package constructs 6 types based on the internal typed of \pkg{expl3}:
+% \begin{Description}[\texttt{clist}]
+%   \item[\texttt{date}]
+%     date saved in |yyyy/mm/dd| format, supports comparison, sorting
+%     (converting to string), default \cs{dbtoday}.
+%   \item[\texttt{str}]
+%     string，supports regex match and sorting, default empty.
+%   \item[\texttt{tl}]
+%     token list, supports regex match, default empty.
+%   \item[\texttt{int}]
+%     integer, supports comparison and sorting, default 0.
+%   \item[\texttt{fp}]
+%     floating point, supports comparison and sorting, default 0.
+%   \item[\texttt{clist}]
+%     comma list, default empty.
+% \end{Description}
+%
+% \changes{1.3}{2022-01-08}{Remove dependency}{\pkg{datatime2}}
+% All types are internal types of \pkg{expl3} except |date| type, which provides
+% by \pkg{dbshow} itself and supports converting to integer and printing with
+% style.
+%
+% \subsection{Comparison to \pkg{datatool}}
+%
+% \changes{1.2}{2022-01-07}{Add doc}{add comparison to \pkg{datatool}}
+%
+% \pkg{dbshow} and \pkg{datatool} implement the same core functions. But
+% \pkg{dbshow} is based on \pkg{expl3} and it supports string regex and
+% multi-level sorting. \pkg{dbshow} tries to divide style from the contents
+% (data in database): all styles are predefined and can be reused conveniently
+% so that there can be only codes to save data and one-line code to show the
+% database inside the \env{document} environment. You can hide the details in
+% the preamble and focus on the data you want to display. \pkg{dbshow} provides
+% a simple temporary runtime database, which means it can not input and output
+% data from/to extern files (they should be responsible by some professional
+% programming languages). When you need to delete or revise a record, just go to
+% where it is recorded in the source code rather than use a macro to manipulate
+% data after they are saved. In a sense, \TeX~file is also a kind of data
+% persistence.
+%
+% \section{Interfaces}
+%
+% \subsection{Create, Display and Clear Database}
+%
+% \changes{1.4}{2022-01-10}{Update macro}{change \orbar\ to \cs{dbshow_sep} in
+% weird argument of \cs{dbshow_process_default_value:w}}
+% \begin{function}[added=2022-01-05, updated=2022-01-10]{\dbNewDatabase, \dbNewDatabase*}
+%   \begin{syntax}
+%     \cs{dbNewDatabase} \oarg{base database} \marg{database} \{ \\
+%     ~~\meta{attr1} = \meta{type spec1}, \\
+%     ~~\meta{attr2} = \meta{type spec2}, \\
+%     ~~\ldots{} \\
+%     \} \\
+%     \cs{dbNewDatabase}* \marg{database} \{ \\
+%     ~~\meta{attr1} = \meta{type spec1}, \\
+%     ~~\meta{attr2} = \meta{type spec2}, \\
+%     ~~\ldots{} \\
+%     \} \\
+%   \end{syntax}
+%
+% \end{function}
+%
+% Create a new database named \meta{database}, unstarred form provides the optional
+% \meta{base database} from which current database inherit the attributes settings.
+% The unstarred form always replace the old definition, while starred form
+% appends the new options.
+%
+% \begin{syntax}
+%   \meta{attr} = \meta{type} \\
+%   \meta{attr} = \meta{type}\orbar\meta{default}
+% \end{syntax}
+%
+% The first form defines the \meta{attr} as \meta{type}, and the second also
+% sets the default value.
+%
+% \begin{note}
+%   Every database has a default attribute |id| to store the index of the item.
+% \end{note}
+%
+% The example below define a database named |ques|.
+% \begin{verbatim}
+%   \dbNewDatabase{ques}{
+%     question = tl, % store question
+%     answer = tl,   % store corresponding answer
+%     date = date,   % store the date when you were wrong
+%     info = tl,     % store extra info
+%     labels = clist % store question labels
+%   }
+% \end{verbatim}
+%
+% \begin{function}[added=2022-01-05]{\dbshow}
+%   \begin{syntax}
+%     \cs{dbshow} \marg{style} \marg{database}
+%   \end{syntax}
+%
+%   Show the \meta{database} with \meta{style}.
+% \end{function}
+%
+% \changes{1.2}{2022-01-07}{Add macro}{\cs{dbclear}}
+% \begin{function}[added=2022-01-07]{\dbclear}
+%   \begin{syntax}
+%     \cs{dbclear} \marg{database}
+%   \end{syntax}
+%
+%   Clear the content of \meta{database}.
+% \end{function}
+%
+% \subsection{\cs{dbNewStyle} and Style Options}
+%
+% \begin{function}[added=2022-01-05]{\dbNewStyle}
+%   \begin{syntax}
+%     \cs{dbNewStyle} \oarg{base styles} \marg{style} \marg{database} \marg{opts}
+%   \end{syntax}
+%
+%   Define a new \meta{style} that binds to \meta{database}. The style can
+%   inherit from a list of \meta{base styles} such as
+%   |\dbNewStyle[base1, base2]{new-style}{ques}{}|.
+% \end{function}
+%
+% \subsubsection{General Options}
+%
+% \begin{option}[added=2022-01-05]{filter}
+%   \begin{syntax}
+%     filter = <filter>
+%   \end{syntax}
+%
+%   Set the \meta{filter} defined by \cs{dbCombineFilters}.
+% \end{option}
+%
+% \changes{1.1}{2022-01-06}{Add option}{\opt{raw-filter}}
+% \begin{option}[added=2022-01-06]{raw-filter}
+%   \begin{syntax}
+%     raw-filter = <conditional expression>
+%   \end{syntax}
+%
+%   Set anonymous with conditionals defined by \cs{dbNewConditional}. Two
+%   filters shows in the code below have the same meaning.
+% \end{option}
+%
+% \begin{verbatim}
+%   % method 1
+%   \begin{dbFilters}{db}
+%     \dbNewConditional{cond1}{int-attr}{\rval > 1}
+%     \dbNewConditional*{cond2}{str-attr}{\d+}
+%   \end{dbFilters}
+%   \dbNewStyle{style}{db}{raw-filter={cond1 && cond2}}
+%   % method 2
+%   \begin{dbFilters}{db}
+%     \dbNewConditional{cond1}{int-attr}{\rval > 1}
+%     \dbNewConditional*{cond2}{str-attr}{\d+}
+%     \dbCombineFilters{filter}{cond1 && cond2}
+%   \end{dbFilters}
+%   \dbNewStyle{style}{db}{filter=filter}
+% \end{verbatim}
+%
+% \changes{1.2}{2022-01-08}{Fix bug}{string sorting bug}
+% \begin{option}[added=2022-01-05]{sort}
+%   \begin{syntax}
+%     sort = \{ <attr spec1>, <attr spec2>, \ldots{} \}
+%   \end{syntax}
+%
+%   Set sorting rules. Attributes of type |str, date, int, fp| is supported to
+%   sort.  Multi-level sort is allowed. \meta{attr} represents for ascending
+%   order, and \meta{attr}* represents for descending order. The example below
+%   use four fields to determine the order of the records. It sorts on |level|
+%   in descending order first and if two |levels| are same then sorts on |birth|
+%   in ascending order and so on.
+% \end{option}
+%
+% \begin{verbatim}
+%   \dbNewDatabase{sort-example}{
+%     name = str,
+%     birth = date,
+%     level = int,
+%     weight = fp,
+%   }
+%   \dbNewStyle{sort-style}{sort-example}{
+%     sort = { level*, birth, name, weight }
+%   }
+% \end{verbatim}
+%
+% \begin{option}[added=2022-01-05, rEXP]{item-code}
+%   \begin{syntax}
+%     item-code = <code>
+%   \end{syntax}
+%
+%   Set the code that show a single record. You can use \cs{dbuse} to display
+%   certian attribute.
+% \end{option}
+%
+% \changes{1.3}{2022-01-09}{Update option}{\opt{<attr>/sep}}
+% \begin{option}[added=2022-01-05, updated=2022-01-08, rEXP]{<attr>/sep}
+%   \begin{syntax}
+%     <attr>/sep = <separator> \\
+%     <attr>/sep = \{ \\
+%     ~~\meta{separator between two}, \\
+%     ~~\meta{separator between more than two}, \\
+%     ~~\meta{separator between final two} \\
+%     \} \\
+%     <attr>/sep = \{ \\
+%     ~~\meta{separator before year}, \\
+%     ~~\meta{separator between year and month}, \\
+%     ~~\meta{separator between month and day}, \\
+%     ~~\meta{separator after day} \\
+%     \} \\
+%   \end{syntax}
+%
+%   Only for attributes of type |clist| or |date|. Set the separator between
+%   items. If the argument is an one-item comma list, all separators are set to
+%   \meta{separator} but \meta{separator before year} and \meta{separator after
+%   day} is set empty.
+% \end{option}
+%
+%   If the argument is a comma list of 3 items, it is used to set the separator
+%   between items of the comma list. Following documentation is quoted from
+%   \pkg{interface3}:
+%   \begin{quote}
+%     If the comma list has more than two items, the \meta{separator between
+%     more than two} is placed between each pair of items except the last, for
+%     which the \meta{separator between final two} is used. If the comma list
+%     has exactly two items, then they are placed in the input stream separated
+%     by the \meta{separator between two}. If the comma list has a single item,
+%     it is placed in the input stream, and a comma list with no items produces
+%     no output.
+%   \end{quote}
+%   For attributes of type |clist|, incorrect number (numbers exclude 1 and 3)
+%   of items of the argument will raise an error.
+%
+% \begin{verbatim}
+%   % clist-attr is an attribute of database db
+%   % suppose the val of clist-attr is { 1, 2, 3 }
+%   \dbNewStyle{clist-sep}{db}{
+%     clist-attr/sep = { ,~ },                % print 1, 2, 3
+%     clist-attr/sep = { {,~}, {,~}, {and~} } % print 1, 2 and 3
+%   }
+% \end{verbatim}
+%
+%   If the argument is a comma list of 4 items, it is used to set the separators
+%   of the date. For attributes of type |date|, incorrect number (numbers
+%   exclude 1 and 4) will raise an error.
+%
+% \begin{verbatim}
+%   % date-attr is an attribute of database db
+%   % suppose the val of date-attr is 2022/01/01
+%   \dbNewStyle{date-sep}{db}{
+%     date-attr/sep = -,             % print 2022-01-01
+%     date-attr/sep = { |, -, -, | } % print |2022-01-01|
+%   }
+% \end{verbatim}
+%
+% \changes{1.3}{2022-01-08}{Add option}{\opt{<attr>/zfill}}
+% \begin{option}[added=2022-01-08, EXP]{<attr>/zfill}
+%   \begin{syntax}
+%     <attr>/zfill = <\TTF>
+%   \end{syntax}
+%
+%   Only for attributes of type |date|. Control whether to fill zero on the left
+%   of the month or day.
+% \end{option}
+%
+% \subsubsection{Decorators}
+%
+% The options below serves as decorators. In some cases, decorator can also be
+% encoded directly into |item-code| or some other places, which is convenient
+% sometimes. The benefit of defining decorators with options is that styles step
+% further to be divided with contents. In the examples below, \meta{style1} and
+% \meta{style2} is the same style, which wrap \meta{attr1} with *. When you want
+% another style which wrap \meta{attr1} with =, if you choose the way of
+% \meta{style1}, \meta{item code} are repeated, otherwise if you choose the way
+% of \meta{style2}, \meta{item code} is inherited and you only need define the
+% decorators.
+%
+% \begin{verbatim}
+%   \dbNewStyle{style1}{db}{
+%     item-code = {%
+%       *\rvuse{attr1}*\rvuse{attr2}
+%       % more code
+%     }
+%   }
+%   \dbNewStyle{base-style}{db}{
+%     item-code = {%
+%       \rvuse{attr1}\rvuse{attr2}
+%       % more code
+%     }
+%   }
+%   \dbNewStyle[base-style]{style2}{db}{
+%     attr1/before-code = { * },
+%     attr1/after-code = { * },
+%   }
+%   \dbNewStyle[base-style]{style3}{db}{
+%     attr1/before-code = { = },
+%     attr1/after-code = { = },
+%   }
+% \end{verbatim}
+%
+% \changes{1.3}{2022-01-08}{Add option}{\opt{<attr>/wrapper}}
+% \begin{option}[added=2022-01-08, rEXP]{<attr>/wrapper}
+%   \begin{syntax}
+%     <attr>/wrapper = <control sequence>
+%   \end{syntax}
+%
+%   Only for attributes of type |date|. Output of \cs{dbuse}\marg{date attr}
+%   will be \meta{control sequence}\marg{date}.
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{before-code}
+%   \begin{syntax}
+%     before-code = <code>
+%   \end{syntax}
+%
+%   Set the \meta{code} that is executed \enbefore displaying the database.
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{after-code}
+%   \begin{syntax}
+%     after-code = <code>
+%   \end{syntax}
+%
+%   Set the \meta{code} that is executed \enafter displaying the database.
+% \end{option}
+%
+% \changes{1.2}{2022-01-08}{Add options}{\opt{record-before-code},
+% \opt{record-after-code}}
+% \begin{option}[added=2022-01-05, rEXP]{record-before-code}
+%   \begin{syntax}
+%     record-before-code = <code>
+%   \end{syntax}
+%
+%   Set the \meta{code} that is executed \enbefore displaying a record.
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{record-after-code}
+%   \begin{syntax}
+%     record-after-code = <code>
+%   \end{syntax}
+%
+%   Set the \meta{code} that is executed \enafter displaying the record.
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/before-code}
+%   \begin{syntax}
+%     <attr>/before-code = <code>
+%   \end{syntax}
+%
+%   Set the \meta{code} that is executed by \cs{dbuse} \enbefore displaying
+%   certain attribute.
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/after-code}
+%   \begin{syntax}
+%     <attr>/after-code = <code>
+%   \end{syntax}
+%
+%   Set the \meta{code} that is executed by \cs{dbuse} \enafter displaying
+%   certain attribute.
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/item-before-code}
+%   \begin{syntax}
+%     <attr>/item-before-code = <code>
+%   \end{syntax}
+%
+%   Only for attributes of type |clist|. Set the \meta{code} that is excuted
+%   \enbefore displaying the item of the comma list.
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/item-after-code}
+%   \begin{syntax}
+%     <attr>/item-after-code = <code>
+%   \end{syntax}
+%
+%   Only for attributes of type |clist|. Set the \meta{code} that is excuted
+%   \enafter displaying the item of the comma list.
+% \end{option}
+%
+% \subsection{Use \cs{dbNewReviewPoints} to Define Review Points}
+%
+% \begin{function}[added=2022-01-05]{\dbNewReviewPoints}
+%   \begin{syntax}
+%     \cs{dbNewReviewPoints} \marg{name} \marg{points}
+%   \end{syntax}
+%
+%   Define the new \meta{points} that is specially designed for reviewing
+%   something. \meta{points} is a list of integers. Suppose you record the date
+%   when you did not answer correctly and you plan to review every 2, 5 and 15
+%   days. The following code give what you want.
+% \end{function}
+%
+% \begin{verbatim}
+%   \dbNewReviewPoints{review-point}{2, 5, 15}            % define points
+%   \begin{dbFilters}
+%     \dbNewConditional{cond1}{date}{review-point|\Today} % define conditional
+%     \dbCombineConditionals{filter1}{cond1}              % define filter
+%   \end{dbFilters}
+%   \dbNewStyle{review-style}{ques}{filter=filter1}       % define style
+% \end{verbatim}
+%
+% \subsection{Define Filters inside \env{dbFilters} Environment}
+%
+% \begin{environment}[added=2022-01-05]{dbFilters}
+%   \begin{syntax}
+%     |\begin{dbFilters}|\marg{database} \\
+%     ~~\meta{code}
+%     |\end{dbFilters}| \\
+%   \end{syntax}
+%
+%   Filters are defined inside \env{dbFilters} environment, inside which,
+%   \cs{dbNewConditional} is defined to declare conditionals and
+%   \cs{dbCombineConditionals} is defined to combine conditionals. Filters are
+%   independent in different databases, which means the same name of filters is
+%   allowed in different databases.
+% \end{environment}
+%
+% \begin{function}[added=2022-01-05, updated=2022-01-08]{\dbNewConditional, \dbNewConditional*}
+%   \begin{syntax}
+%     \cs{dbNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
+%     \cs{dbNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
+%     \cs{dbNewConditional}  \marg{name} \marg{int/fp attr} \marg{expr} \\
+%     \cs{dbNewConditional}* \marg{name} \marg{int/fp attr} \marg{expr} \\
+%     \cs{dbNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \\
+%     \cs{dbNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \\
+%     \cs{dbNewConditional}  \marg{name}  \marg{clist attr} \marg{val list} \\
+%     \cs{dbNewConditional}* \marg{name}  \marg{clist attr} \marg{val list} \\
+%     \cs{dbNewConditional}  \marg{name}   \marg{date attr} \marg{expr}
+%     \cs{dbNewConditional}* \marg{name}   \marg{date attr} \{\meta{review points}\orbar\meta{date}\} \\
+%   \end{syntax}
+%
+%   Define the conditional named \meta{name} that binds to \meta{attr}. \cs{dbval}
+%   is replaced with the real value of the attribute inside the \meta{cond spec}.
+% \end{function}
+%
+%   \changes{1.3}{2022-01-10}{Update doc}{truncated division}
+%   For attributes of type |int| and |fp|, \meta{expr} is passed to
+%   \cs{int_compare:nTF} or \cs{fp_compare:nTF}.
+%   \begin{note}
+%     Division using |/| rounds to the closest integer. Use \cs{dbIntDivTruncate} to rounds
+%     the result toward 0.
+%   \end{note}
+%
+%   For attribute of type |str| and |tl|, unstarred form matches any part while
+%   starred form matches the whole part with the \meta{regex expr}.
+%
+% \begin{verbatim}
+%   \dbNewConditional {cond1}{str-attr}{abc}  % match abc, abcd, 1abc, =abc=, etc
+%   \dbNewConditional*{cond2}{str-attr}{abc} % only match abc
+% \end{verbatim}
+%
+%   For attributes of type |clist|, the conditional defined by unstarred form is
+%   true if any item of \meta{val list} is in the comma list. While the
+%   conditional defined by starred form is true only if every item of \meta{val
+%   list} is in the comma list. As is showed below, for |cond1|, |a| is in
+%   |{a, b, d}| so |cond1| is true. While |c| is not in |{a, b, d}| so |cond2|
+%   is false.
+%
+% \begin{verbatim}
+%   \dbNewConditional {cond1}{clist-attr}{a, b, c}  % {a, b, d} -> true
+%   \dbNewConditional*{cond2}{clist-attr}{a, b, c} % {a, b, d} -> false
+% \end{verbatim}
+%
+%   \changes{1.3}{2022-01-08}{Update logic}{swap definition of starred and
+%   unstarred conditionals of date}
+%   For attributes of type |date|, unstarred form replace each date with a
+%   integer representing for the days between \meta{date} and
+%   \textit{1971/01/01}, and the result is passed to \cs{int_compare:nTF}.
+%   Starred form defines the conditional with review points defined by
+%   \cs{dbNewRdbNewReviewPoints} and \meta{date} is the date to be compared.
+%
+% \begin{function}[added=2022-01-05]{\dbCombineConditionals}
+%   \begin{syntax}
+%     \cs{dbCombineConditionals} \marg{name} \marg{cond combination} \oarg{info}
+%   \end{syntax}
+%
+%   Define the filter \meta{name}, which combine the conditionals and store the
+%   extra \meta{info} into \cs{dbFilterInfo}. So you can write something as\\
+%   \verb=\dbCombineConditionals{filter}{(cond1 && cond2) || !cond3}=.\\
+%   Supported operators are \verb=&&, ||, !=. You can set the option \opt{filter}
+%   to \meta{name} to apply the filter when you display the database.
+% \end{function}
+%
+% \subsection{Store Data with \env{dbitem} Environment}
+%
+% \begin{environment}[added=2022-01-05]{dbitem}
+%   \begin{syntax}
+%     |\begin{dbitem}|\marg{database}[ \\
+%     ~~\meta{attr1} = \meta{val1}, \\
+%     ~~\meta{attr2} = \meta{val2}, \\
+%     ~~\ldots{} \\
+%     ] \\
+%     ~~\meta{code} \\
+%     |\end{dbitem}|
+%   \end{syntax}
+%
+%   The data are stored with \env{dbitem} environment in two ways. Smaller data
+%   can be stored in the option list and the bigger data can be stored by
+%   \cs{dbsave}, which will suppress the value set by the option list. An
+%   example code is showned below.
+% \end{environment}
+%
+% \begin{verbatim}
+%   \begin{dbitem}[date=2022-01-01, info=test]
+%     \dbsave{question}{This is a test question.}
+%     \dbsave{answer}  {This is a test answer.}
+%   \end{dbitem}
+% \end{verbatim}
+%
+% \subsection{\cs{dbsave} and \cs{dbuse}}
+%
+% \changes{1.3}{2022-01-08}{Add macro}{\cs{dbsave*}}
+% \begin{function}[added=2022-01-05, updated=2022-01-08]{\dbsave, \dbsave*}
+%   \begin{syntax}
+%     \cs{dbsave}  \marg{attr} \marg{data} \\
+%     \cs{dbsave}* \marg{attr} \marg{data}
+%   \end{syntax}
+%
+%   \cs{dbsave} save the \meta{data} to \meta{attr} of current record.
+%   \cs{dbsave} can be used only inside the \env{dbitem} environment.
+%   \meta{data} stored by \cs{dbsave*} is wrapped with \cs{exp_not:n} while
+%   \meta{data} stored by \cs{dbsave} keeps the same.
+% \end{function}
+%
+% \changes{1.2}{2022-01-08}{Update macro}{make \cs{dbuse} fully-expandable}
+% \begin{function}[added=2022-01-05, updated=2022-01-08, EXP]{\dbuse}
+%   \begin{syntax}
+%     \cs{dbuse} \marg{attr}
+%   \end{syntax}
+%
+%   Display the value of \meta{attr} of current record. \cs{dbuse} is
+%   \textbf{expandable} and can be only used inside the option \opt{item-code}.
+% \end{function}
+%
+% \subsection{Conditionals}
+%
+% \begin{function}[added=2022-01-05, EXP]{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
+%   \begin{syntax}
+%     \cs{dbIfEmptyTF} \marg{true code} \marg{false code} \\
+%     \cs{dbIfEmptyT} \marg{true code} \\
+%     \cs{dbIfEmptyF} \marg{false code}
+%   \end{syntax}
+%
+%   Test if the database is empty. The example below shows how to avoid an empty
+%   list environment.
+% \end{function}
+%
+% \begin{verbatim}
+%   \dbNewStyle{style-cond1}{database-test}{
+%     before-code = {\dbIfEmptyF{\begin{enumerate}}},
+%     after-code = {\dbIfEmptyF{\end{enumerate}}},
+%     item-code = {\item \dbuse{attr-test}}
+%   }
+% \end{verbatim}
+%
+% \changes{1.2}{2022-01-08}{Remove macros}{\cs{dbItemIfEmpty(TF)}, \cs{dbClistItemIfEmpty(TF)}}
+%
+% \subsection{Expression Functions}
+%
+% \changes{1.3}{2022-01-10}{Add macros}{expression function aliases}
+% \begin{function}[added=2022-01-10, EXP]{
+%   \dbIntAbs, \dbIntSign, \dbIntDivRound, \dbIntDivTruncate, \dbIntMax,
+%   \dbIntMin, \dbIntMod, \dbFpSign,
+% }
+%   \begin{syntax}
+%     \cs{dbIntAbs} \Arg{intexpr}
+%     \cs{dbIntSign} \Arg{intexpr}
+%     \cs{dbIntDivRound} \Arg{intexpr_1} \marg{intexpr_2}
+%     \cs{dbIntDivTruncate} \Arg{intexpr_1} \marg{intexpr_2}
+%     \cs{dbIntMax} \Arg{intexpr_1} \marg{intexpr_2}
+%     \cs{dbIntMin} \Arg{intexpr_1} \marg{intexpr_2}
+%     \cs{dbIntMod} \Arg{intexpr_1} \marg{intexpr_2}
+%     \cs{dbFpSign} \Arg{fpexpr}
+%   \end{syntax}
+%   \cs{dbIntAbs} is identical to \cs{int_abs:n} \\
+%   \cs{dbIntSign} is identical to \cs{int_sign:n} \\
+%   \cs{dbIntDivRound} is identical to \cs{int_div_round:nn} \\
+%   \cs{dbIntDivTruncate} is identical to \cs{int_div_truncate:nn} \\
+%   \cs{dbIntMax} is identical to \cs{int_max:nn} \\
+%   \cs{dbIntMin} is identical to \cs{int_min:nn} \\
+%   \cs{dbIntMod} is identical to \cs{int_mod:nn} \\
+%   \cs{dbFpSign} is identical to \cs{fp_sign:n} \\
+%    Detailed documentation see \pkg{interface3} \\
+% \end{function}
+%
+% \subsection{Special Macros}
+%
+% Some special macros are defined to expand to different contents according to context.
+%
+% \changes{1.1}{2022-01-05}{Add macro}{
+%   \cs{dbarabic}, \cs{dbalph}, \cs{dbAlph}, \cs{dbroman},
+%   \cs{dbRoman}
+% }
+% \changes{1.1}{2022-01-06}{Fix bug}{\cs{dbIndex} not defined}
+% \begin{function}[added=2022-01-05, EXP]{
+%   \dbval, \dbDatabase, \dbFilterName, \dbFilterInfo,
+%   \dbIndex, \dbarabic, \dbalph, \dbAlph, \dbroman, \dbRoman
+% }
+% \begin{tblr}{ll}
+%   \cs{dbval} & Attribute value, only according in \cs{dbNewConditional}. \\
+%   \cs{dbDatabase} & Database name. \\
+%   \cs{dbFilterName} & Filter name. \\
+%   \cs{dbFilterInfo} & Filter information. \\
+%   \cs{dbIndex} & Record index, identical to \cs{dbuse}|{id}| \\
+%   \cs{dbarabic} & Show the counter of query set as digits. \\
+%   \cs{dbalph} & Show the counter of query set as lowercase letters. \\
+%   \cs{dbAlph} & Show the counter of query set as uppercase letters. \\
+%   \cs{dbroman} & Show the counter of query set as lowercase roman numerals. \\
+%   \cs{dbroman} & Show the counter of query set as uppercase roman numerals. \\
+%   \end{tblr}
+% \end{function}
+%
+% \section{Example of Flaw Sweeper Template}
+% \label{sec:example}
+%
+% \changes{1.1}{2022-01-07}{Update doc}{improve example}
+%
+% \begin{tcblisting}{enhanced jigsaw,lower separated=false,
+%   leftlower=0pt,rightlower=0pt,
+%   colframe=red!50!black,colback=yellow!10!white,
+%   listing options={style=tcblatex,texcsstyle=*\color{red!70!black}},
+%   listing and comment,
+%   pdf comment,freeze pdf,
+%   compilable listing,
+%   breakable,
+%   run pdflatex
+% }
+\documentclass{article}
+\usepackage{amsmath, physics}
+\usepackage{geometry}
+\usepackage{dbshow}
+\usepackage{tikz}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins}
+\usetikzlibrary{shadings}
+\usepackage[hidelinks]{hyperref}
+
+\geometry{
+  margin=2cm
+}
+
+% #1 link node #2 target node #3 text to show
+\NewDocumentCommand \linktarget { m m m } {%
+  \hyperlink{#1}{#3}%
+  \raisebox{1em}{\hypertarget{#2}{}}%
+}
+
+% question box
+\tcbset{
+  base/.style={
+    empty,
+    frame engine=path,
+    colframe=yellow!10,
+    coltitle=red!70,
+    fonttitle=\bfseries\sffamily,
+    sharp corners,
+    left=4pt,
+    right=4pt,
+    drop fuzzy shadow,
+    drop fuzzy shadow,
+    borderline west={3pt}{-3pt}{red!80},
+  }
+}
+
+\newtcolorbox{mybox}[1]{%
+  base, title = {#1}
+}
+
+\dbNewReviewPoints{review}{1, 3, 7, 15, 30, 60}
+
+\dbNewDatabase{ques-book}{
+  ques = tl,
+  answer = tl,
+  count = int|1,
+  labels = clist,
+  date = date,
+}
+
+\begin{dbFilters}{ques-book}
+  \dbNewConditional{hard}{labels}{hard}
+  \dbNewConditional{bad}{count}{\dbval > 1}
+  \dbNewConditional*{review}{date}{review|2022/01/07}
+  \dbNewConditional{after}{date}{\dbval > 2022/01/02}
+\end{dbFilters}
+
+% show all questions with hyperlink to answers
+\dbNewStyle{ques}{ques-book}{
+  before-code = {\section{Questions}},
+  item-code = {
+    \begin{mybox}{%
+      \linktarget{answer_\dbIndex}{ques_\dbIndex}{%
+        Question \dbarabic%
+        \hspace{2em}\dbuse{date}%
+        \hspace{2em}\dbuse{labels}%
+        \hfill\dbuse{count}%
+      }%
+    }
+      \dbuse{ques}%
+    \end{mybox}
+  },
+  labels/sep = /,
+}
+
+% show all questions and answers with hyperlink to questions
+\dbNewStyle{answer}{ques-book}{
+  before-code = {\section{Questions and Answers}},
+  item-code = {
+    \begin{mybox}{%
+      \linktarget{ques_\dbIndex}{answer_\dbIndex}{%
+        Question \dbarabic%
+        \hspace{2em}\dbuse{date}%
+        \hspace{2em}\dbuse{labels}%
+        \hfill\dbuse{count}%
+      }%
+    }
+      \dbuse{ques}\tcbsubtitle{Answer}\dbuse{answer}%
+    \end{mybox}
+  },
+  labels/sep = /,
+}
+
+% show all hard questions with hyperlink to answers
+\dbNewStyle{hard}{ques-book}{
+  before-code = {\section{Hard Questions}},
+  item-code = {
+    \begin{mybox}{%
+      \hyperlink{answer_\dbIndex}{%
+        Question \dbarabic%
+        \hspace{2em}\dbuse{date}%
+        \hspace{2em}\dbuse{labels}%
+        \hfill\dbuse{count}%
+      }%
+    }
+      \dbuse{ques}%
+    \end{mybox}
+  },
+  raw-filter = hard,
+  labels/sep = /,
+}
+
+% show all hard questions that have been answered incorrectly for more than
+% one time with hyperlink to answers
+\dbNewStyle[hard]{bad}{ques-book}{
+  before-code = {\section{Bad Questions}},
+  raw-filter = {bad && hard},
+}
+% show all questions that plan to be reviewed on 2022/01/07 with hyperlink to
+% answers
+\dbNewStyle[hard]{review}{ques-book}{
+  before-code = {\section{Questions to be Reviewed}},
+  raw-filter = {review},
+}
+% show all questions that is record after 2022/01/02 with hyperlink to answers
+\dbNewStyle[hard]{after}{ques-book}{
+  before-code = {\section{Questions after 2022/01/02}},
+  raw-filter = {after},
+}
+
+\AtEndDocument{
+  \dbshow{review}{ques-book}
+  \dbshow{hard}{ques-book}
+  \dbshow{bad}{ques-book}
+  \dbshow{after}{ques-book}
+  \dbshow{ques}{ques-book}
+  \dbshow{answer}{ques-book}
+}
+
+\begin{document}
+
+\begin{dbitem}{ques-book}[
+  date=2022/01/01,
+  labels={math, equation, easy},
+  count=2
+  ]
+  \dbsave{ques}{%
+    Solve the linear equation: $x + 16 = 31$.
+  }
+  \dbsave{answer}{%
+    $x = 31 - 16 = 15$
+  }
+\end{dbitem}
+
+\begin{dbitem}{ques-book}[
+  date=2022/01/01,
+  labels={math, equation, hard},
+  count=3
+  ]
+  \dbsave{ques}{%
+    Solve the linear equation: $2y = 16$.
+  }
+  \dbsave{answer}{%
+    $y = 16 / 2 = 8$
+  }
+\end{dbitem}
+
+\begin{dbitem}{ques-book}[
+  date=2022/01/04,
+  labels={math, integral, hard},
+  count=1
+  ]
+  \dbsave{ques}{%
+    Find the indefinite integral: $\int 2x \dd x$.
+  }
+  \dbsave{answer}{%
+    $\int 2x \dd x = x^2$
+  }
+\end{dbitem}
+
+\end{document}
+% \end{tcblisting}
+%
+% \end{documentation}
+%
+% \StopEventually{}
+%
+% \newgeometry{
+%   left=5.5cm,
+%   right=2cm,
+%   top=2cm,
+%   bottom=2cm
+% }
+%
+% \begin{implementation}
+%
+% \section{Implementation}
+%
+%    \begin{macrocode}
+%<*package>
+%<@@=dbshow>
+%    \end{macrocode}
+%
+% Check version of \pkg{l3kernel}.
+%    \begin{macrocode}
+% prop_concat, prop_gset_from_keyval
+\__kernel_dependency_version_check:nn { 2021-11-07 } { l3prop }
+% str_compare
+\__kernel_dependency_version_check:nn { 2021-05-17 } { l3str }
+% clist_map_tokens, clist_use
+\__kernel_dependency_version_check:nn { 2021-05-10 } { l3clist }
+%    \end{macrocode}
+%
+% \subsection{Variants and Variables}
+%
+%    \begin{macrocode}
+\cs_generate_variant:Nn \msg_warning:nnnn      { nnnx }
+\cs_generate_variant:Nn \keys_set:nn           { nv }
+\cs_generate_variant:Nn \clist_use:nn          { xx }
+\cs_generate_variant:Nn \clist_use:nnnn        { xxxx }
+\cs_generate_variant:Nn \clist_map_inline:nn   { Vn }
+\cs_generate_variant:Nn \prop_get:NnN          { cVN }
+\cs_generate_variant:Nn \regex_extract_all:nnN { nVN }
+\cs_generate_variant:Nn \regex_split:nnN       { nVN }
+\prg_generate_conditional_variant:Nnn \str_compare:nNn { VNV } { TF }
+\prg_generate_conditional_variant:Nnn \int_compare:nNn { VNV } { TF }
+\prg_generate_conditional_variant:Nnn \fp_compare:nNn  { VNV } { TF }
+\prg_generate_conditional_variant:Nnn \regex_match:nn  { VV }  { TF }
+\prg_generate_conditional_variant:Nnn \clist_if_in:Nn  { Nx }  { TF }
+%    \end{macrocode}
+%
+% \begin{variable}{\c_@@_default_value_prop}
+% Default default value of different types.
+%    \begin{macrocode}
+\prop_const_from_keyval:Nn \c_@@_default_value_prop {
+  date  = \dbtoday,
+  str   = ,
+  tl    = ,
+  clist = ,
+  int   = 0,
+  fp    = 0
+}
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{variable}{\@@_type_clist}
+% Supported types by \pkg{dbshow}.
+%    \begin{macrocode}
+\clist_const:Nn \@@_type_clist { date, str, tl, clist, int, fp }
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{variable}{\g_@@_raw_filter_int}
+% Counter of anonymous filter.
+%    \begin{macrocode}
+\int_gzero_new:N \g_@@_raw_filter_int
+%    \end{macrocode}
+% \end{variable}
+%
+% \subsection{Messages}
+%
+% \begin{arguments}
+%   \item \meta{database}
+% \end{arguments}
+%    \begin{macrocode}
+\msg_new:nnn { dbshow } { non-existent-database } {
+  Database~'#1'~does~not~exist~\msg_line_context:.
+}
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_check_database:n}
+% Check if the database is valid.
+% \begin{arguments}
+%   \item \meta{database}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_check_database:n {
+  \prop_if_exist:cF { g_@@_attr_type_prop_#1 }
+    { \msg_fatal:nnn { dbshow } { non-existent-database } {#1} }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{attr}
+% \end{arguments}
+%    \begin{macrocode}
+\msg_new:nnn { dbshow } { non-existent-attr } {
+  Attribute~'#2'~of~database~'#1'~does~not~exist~\msg_line_context:.
+}
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_check_attr:nn, \@@_check_attr:nV}
+% Check if the attribute is valid.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{attr}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_check_attr:nn {
+  \prop_if_in:cnF { g_@@_attr_type_prop_#1 } {#2}
+    { \msg_fatal:nnnn { dbshow } { non-existent-attr } {#1} {#2} }
+}
+\cs_generate_variant:Nn \@@_check_attr:nn { nV }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{arguments}
+%   \item \meta{style}
+%   \item \meta{database}
+% \end{arguments}
+%    \begin{macrocode}
+\msg_new:nnn { dbshow } { non-existent-style } {
+  Style~'#1'~of~database~'#2'~does~not~exist~\msg_line_context:.
+}
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_check_style:nn}
+% Check if the style is valid.
+% \begin{arguments}
+%   \item \meta{style}
+%   \item \meta{database}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_check_style:nn {
+  \tl_if_exist:cF { g_@@_style_opts_tl_#1_#2 }
+    { \msg_warning:nnnn { dbshow } { non-existent-style } {#1} {#2} }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{cond}
+% \end{arguments}
+%    \begin{macrocode}
+\msg_new:nnn { dbshow } { non-existent-cond } {
+  Conditional~'#2'~of~database~'#1'~does~not~exist~\msg_line_context:.
+}
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_check_cond:nnn}
+% Check if the conditional is valid.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{cond}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_check_cond:nnn {
+  \tl_if_exist:cF { g_@@_filter_attr_#1_#2 }
+    { \msg_fatal:nnnn { dbshow } { non-existent-cond } {#1} {#2} }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{filter}
+% \end{arguments}
+%    \begin{macrocode}
+\msg_new:nnn { dbshow } { non-existent-filter } {
+  Filter~'#2'~of~database~'#1'~does~not~exist~and~is~ignored~\msg_line_context:.
+}
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_check_filter:nn, \@@_check_filter:nv}
+% Check if the filter is valid. Ignore the default filter |-none-|.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{filter}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_check_filter:nn {
+  \seq_if_exist:cF { g_@@_filter_run_seq_#1_#2 } {
+    \str_if_eq:eeF {#2} { -none- } {
+      \msg_warning:nnnx { dbshow } { non-existent-filter } {#1} {#2}
+    }
+  }
+}
+\cs_generate_variant:Nn \@@_check_filter:nn { nv }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{arguments}
+%   \item \meta{type}
+% \end{arguments}
+%    \begin{macrocode}
+\msg_new:nnn { dbshow } { non-existent-type } {
+  Type~'#1'~does~not~exist,~the~type~of~attribute~should~be~one~of~
+  \{date,~str,~tl,~clist,~int,~fp\}~\msg_line_context:.
+}
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_check_type:n}
+% Check if the type is valid.
+% \begin{arguments}
+%   \item \meta{type}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_check_type:n {
+  \clist_if_in:NnF \@@_type_clist {#1}
+    { \msg_fatal:nnn { dbshow } { non-existent-type } {#1} }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{arguments}
+%   \item \meta{valid count}
+%   \item \meta{real count}
+%   \item \meta{value}
+% \end{arguments}
+%    \begin{macrocode}
+\msg_new:nnn { dbshow } { wrong-seperator } {
+  option~'sep'~should~contain~#1~items~but~only~#2~items~was~given,~
+  sep~=~\{#3\}~\msg_line_context:.
+}
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_sep_error:nnn, \@@_sep_error:xxx}
+% Check the value of \opt{<attr>/sep} is valid.
+% \begin{arguments}
+%   \item \meta{valid count}
+%   \item \meta{real count}
+%   \item \meta{value}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_sep_error:nnn {
+  \msg_error:nnnnn { dbshow } { wrong-seperator } {#1} {#2} {#3}
+}
+\cs_generate_variant:Nn \@@_sep_error:nnn { xxx }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{arguments}
+%   \item \meta{type}
+% \end{arguments}
+%    \begin{macrocode}
+\msg_new:nnn { dbshow } { unsupported-sort-type } {
+  unsupported~sort~type:~'#1'~\msg_line_context:.~The~type~should~be~one~of~
+  \{str,~date,~int,~fp\}.
+}
+%    \end{macrocode}
+%
+% \subsection{Create Database}
+%
+% \begin{macro}{\@@_process_default_value:w}
+% Create map from \meta{attr} to \meta{type} and map from \meta{attr} to
+% \meta{default value}.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{attr}
+%   \item \meta{type}
+%   \item \meta{default value}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Npn \@@_process_default_value:w
+#1\@@_sep#2\@@_sep#3|#4\@@_stop {
+  \@@_check_type:n {#3}
+  \prop_gput:cxx { g_@@_attr_type_prop_#1 } {#2} {#3}
+  \prop_gput:cxx { g_@@_default_map_#1 } {#2} {#4}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_process_attr_type_prop:n}
+% Parse default value from the value of the type map. If \meta{type spec} is
+% \meta{type\orbar default value} then set the default value to \meta{default
+% value}, otherwise if \meta{type spec} is \meta{type} then set the default
+% value to the default value of the type.
+% \begin{arguments}
+%   \item \meta{database}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_process_attr_type_prop:n {
+  \prop_gclear_new:c { g_@@_default_map_#1 }
+%    \end{macrocode}
+% \begin{arguments}[2]
+%   \item \meta{attr}
+%   \item \meta{type spec}
+% \end{arguments}
+%    \begin{macrocode}
+  \prop_map_inline:cn { g_@@_attr_type_prop_#1 } {
+    \str_if_in:nnTF {##2} { | } {
+      \@@_process_default_value:w
+        #1\@@_sep##1\@@_sep##2\@@_stop
+    } {
+      \prop_get:NnN \c_@@_default_value_prop {##2} \l_tmp_default
+      \@@_process_default_value:w
+        #1\@@_sep##1\@@_sep##2|\l_tmp_default\@@_stop
+    }
+  }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_database_new:nn}
+% Create a new \meta{database} with \meta{database spec}, which is a list of
+% \meta{attr} = \meta{type spec}. This function initialize the index counter
+% and save \meta{attr} = \meta{type spec} pairs to the type map. If
+% \meta{database} has existed, the old definition is discarded.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{database spec}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_database_new:nn {
+  \int_gzero_new:c { g_@@_counter_#1 }
+  \prop_gset_from_keyval:cn { g_@@_attr_type_prop_#1 } {#2}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_database_new_append:nn}
+% Create a new \meta{database} with \meta{database spec}, which is a list of
+% \meta{attr} = \meta{type spec}. This function initialize the index counter
+% and save \meta{attr} = \meta{type spec} pairs to the type map. If
+% \meta{database} has existed, the old definition is merged into the new
+% definition that has a higher priority.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{database spec}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_database_new_append:nn {
+  \int_gzero_new:c { g_@@_counter_#1 }
+  \prop_if_exist:cF { g_@@_attr_type_prop_#1 }
+    { \prop_new:c { g_@@_attr_type_prop_#1 } }
+  \prop_gset_from_keyval:Nn \l_tmpa_prop {#2}
+  \prop_concat:ccc { g_@@_attr_type_prop_#1 }
+    { g_@@_attr_type_prop_#1 } { l_tmpa_prop }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_database_new_inherit:nnn}
+% Create a new \meta{database} with \meta{database spec}, which is a list of
+% \meta{attr} = \meta{type spec}. The new \meta{database} is based on
+% \meta{base database}. If \meta{database} is equal to \meta{base database},
+% \cs{@@_database_new_append:nn} is called, otherwise the index counter is
+% initialized and the definition is merged with the definition of \meta{base
+% dadatabase}.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{base database}
+%   \item \meta{database spec}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_database_new_inherit:nnn {
+  \@@_check_database:n {#2}
+  \str_if_eq:nnTF {#1} {#2} {
+    \@@_database_new_append:nn {#1} {#3}
+  } {
+    \int_gzero_new:c { g_@@_counter_#1 }
+    \prop_gset_from_keyval:cn { g_@@_attr_type_prop_#1 } {#3}
+    \prop_concat:ccc { g_@@_attr_type_prop_#1 }
+      { g_@@_attr_type_prop_#2 } { g_@@_attr_type_prop_#1 }
+  }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\dbNewDatabase}
+% User interface to create a new \meta{database}. Internal attribute |id| is
+% added to \meta{database}. After attributes are settle down, default values
+% are parsed by \cs{@@_process_attr_type_prop:n}, and keys serving to save data of
+% \meta{database} are defined. At last, we define the |default| style as its
+% name implies.
+% \begin{arguments}
+%   \item \meta{star} that indicates append or not
+%   \item \meta{base database}
+%   \item \meta{database}
+%   \item \meta{database spec}
+% \end{arguments}
+%    \begin{macrocode}
+\NewDocumentCommand { \dbNewDatabase } { s o m m } {
+  \IfNoValueTF {#2} {
+    \IfBooleanTF {#1}
+      { \@@_database_new_append:nn {#3} {#4} }
+      { \@@_database_new:nn {#3} {#4} }
+  } { \@@_database_new_inherit:nnn {#3} {#2} {#4} }
+  \@@_database_new_append:nn {#3} { id=int }
+  \@@_process_attr_type_prop:n {#3}
+  \@@_set_database_keys:n {#3}
+  \dbNewStyle{default}{#3}{}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_set_database_keys:n}
+% Set keys of \meta{database} to make it able to save data with key-value
+% pairs.
+% \begin{arguments}
+%   \item \meta{database}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_set_database_keys:n {
+%    \end{macrocode}
+% \begin{arguments}[2]
+%   \item \meta{type}
+% \end{arguments}
+%    \begin{macrocode}
+  \prop_map_inline:cn { g_@@_attr_type_prop_#1 } {
+    \keys_define:nn { dbshow/database/#1 } {
+%    \end{macrocode}
+% \begin{arguments}[3]
+%   \item \meta{data}
+% \end{arguments}
+%    \begin{macrocode}
+      ##1 .code:n = \@@_save_data:nnn {#1} {##1} {####1},
+    }
+  }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_get_type:nn, \@@_get_type:nV}
+% Convenient function to get the \meta{type} of \meta{attr} of \meta{database}.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{attr}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_get_type:nn {
+  \prop_item:cn { g_@@_attr_type_prop_#1 } {#2}
+}
+\cs_generate_variant:Nn \@@_get_type:nn { nV }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_get_counter:n}
+% Convenient function to get the value of the index counter.
+% \begin{arguments}
+%   \item \meta{database}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_get_counter:n {
+  \int_use:c { g_@@_counter_#1 }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_step_counter:n}
+% Convenient function to step the index counter.
+% \begin{arguments}
+%   \item \meta{database}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_step_counter:n {
+  \int_gincr:c { g_@@_counter_#1 }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\dbclear}
+% User interface to clear the \meta{database}. The index counter is set to
+% zero and data is not really wiped.
+% \begin{arguments}
+%   \item \meta{database}
+% \end{arguments}
+%    \begin{macrocode}
+\NewDocumentCommand { \dbclear } { m } {
+  \int_gzero:c { g_@@_counter_#1 }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Store Data}
+%
+% \begin{macro}{\@@_save_data:nnn, \@@_save_data:nnx}
+% Internal function to store data into
+% \csnot{g_@@_data_\meta{database}_\meta{attr}_\meta{index}}.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{attr}
+%   \item \meta{data}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_save_data:nnn {
+  \@@_check_attr:nn {#1} {#2}
+  \str_case_e:nn { \@@_get_type:nn {#1} {#2} } {
+    { str }   { \str_clear_new:c }
+    { tl }    { \tl_gclear_new:c }
+    { clist } { \clist_gclear_new:c }
+    { int }   { \int_gzero_new:c }
+    { fp }    { \fp_gzero_new:c }
+    { date }  { \__dbdate_gclear_new:n }
+  } { g_@@_data_#1_#2_\@@_get_counter:n {#1} }
+  \str_case_e:nn { \@@_get_type:nn {#1} {#2} } {
+    { str }   { \str_gset:cn }
+    { tl }    { \tl_gset:cn }
+    { clist } { \clist_gset:cn }
+    { int }   { \int_gset:cn }
+    { fp }    { \fp_gset:cn }
+    { date }  { \__dbdate_gset:nx }
+  } { g_@@_data_#1_#2_\@@_get_counter:n {#1} } {#3}
+}
+\cs_generate_variant:Nn \@@_save_data:nnn { nnx }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{dbitem, \@@_set_default:nn, \dbsave, \dbsave*}
+% Environment \env{dbitem} is the user interface to save data with \meta{attr}
+% = \meta{data} pairs or using \cs{dbsave}. First we step the index counter
+% and set the default value for each attribute. Then we set the value by
+% \meta{attr-value list} and the index is also stored to default attribute
+% |id|.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{attr-value list}
+% \end{arguments}
+%    \begin{macrocode}
+\NewDocumentEnvironment { dbitem } { m O{} } {
+  \@@_check_database:n {#1}
+  \@@_step_counter:n {#1}
+%    \end{macrocode}
+% This function is used to set the default values of each attribute.
+% \begin{arguments}
+%   \item \meta{attr}
+% \end{arguments}
+%    \begin{macrocode}
+  \cs_set:Nn \@@_set_default:nn {
+    \@@_save_data:nnx {#1} {##1} {
+      \prop_item:cn { g_@@_default_map_#1 } {##1}
+    }
+  }
+  \prop_map_function:cN { g_@@_attr_type_prop_#1 } \@@_set_default:nn
+  \@@_save_data:nnx {#1} { id } { \@@_get_counter:n {#1} }
+  \keys_set:nn { dbshow/database/#1 } {#2}
+%    \end{macrocode}
+% \begin{arguments}
+%   \item \meta{star} that indicates whether to use \cs{exp_not:n}
+%   \item \meta{attr}
+%   \item \meta{data}
+% \end{arguments}
+%    \begin{macrocode}
+  \NewDocumentCommand { \dbsave } { s m m } {
+    \IfBooleanTF {##1} {
+      \@@_save_data:nnn {#1} {##2} { \exp_not:n {##3} }
+    } {
+      \@@_save_data:nnn {#1} {##2} {##3}
+    }
+  }
+} {}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Filter}
+%
+% Following functions have the same argument specifications:
+% \begin{arguments}
+%   \item \meta{star boolean}
+%   \item \meta{expr} specified by \cs{dbNewConditional}
+%   \item \meta{current value}, i.e. \cs{dbval}
+%   \item \meta{true code} to set filter boolean to true
+%   \item \meta{false code} to set filter boolean to false
+% \end{arguments}
+% These functions aim to filter \meta{attr} of certain type with \meta{expr}
+% in every epoch of iteration. The basic idea is to save the filter result
+% into a boolean variable corresponding to each conditional.
+%
+% \begin{macro}{\@@_filter_int:NNNnn, \@@_filter_int:cccnn}
+% Filter integers.
+% \begin{arguments}
+%   \item \meta{star boolean}
+%   \item \meta{expr} specified by \cs{dbNewConditional}
+%   \item \meta{current value}, i.e. \cs{dbval}
+%   \item \meta{true code} to set filter boolean to true
+%   \item \meta{false code} to set filter boolean to false
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_filter_int:NNNnn {
+  \int_compare:nTF {#2} {#4} {#5}
+}
+\cs_generate_variant:Nn \@@_filter_int:NNNnn { cccnn }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_filter_fp:NNNnn, \@@_filter_fp:cccnn}
+% Filter floating point values.
+% \begin{arguments}
+%   \item \meta{star boolean}
+%   \item \meta{expr} specified by \cs{dbNewConditional}
+%   \item \meta{current value}, i.e. \cs{dbval}
+%   \item \meta{true code} to set filter boolean to true
+%   \item \meta{false code} to set filter boolean to false
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_filter_fp:NNNnn {
+  \int_compare:nTF {#2} {#4} {#5}
+}
+\cs_generate_variant:Nn \@@_filter_fp:NNNnn { cccnn }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_filter_clist:NNNnn, \@@_filter_clist:cccnn}
+% Filter comma lists. If \meta{star bool} is true, all values specified by
+% \meta{conditional} should be contained in current list. Otherwise, condition
+% is met if any value specified by \meta{conditional} appears in current list.
+% \begin{arguments}
+%   \item \meta{star boolean}
+%   \item \meta{expr} specified by \cs{dbNewConditional}
+%   \item \meta{current value}, i.e. \cs{dbval}
+%   \item \meta{true code} to set filter boolean to true
+%   \item \meta{false code} to set filter boolean to false
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_filter_clist:NNNnn {
+%    \end{macrocode}
+% Initial filter boolean of starred conditional is true. And then we check
+% every value in \meta{conditional}. If there is some value that does not
+% appear in current list, the result is set to false and the loop is broken.
+%    \begin{macrocode}
+  \bool_if:NTF #1 {
+    #4 \clist_map_inline:Vn #2
+    { \clist_if_in:NnF #3 {##1} { #5 \clist_map_break: } }
+  } {
+%    \end{macrocode}
+% Initial filter boolean of unstarred conditional is false. And then we check
+% every value in \meta{conditional}. If there is some value that does appear
+% in current list, the result is set to true and the loop is broken.
+%    \begin{macrocode}
+    #5 \clist_map_inline:Vn #2
+    { \clist_if_in:NnT #3 {##1} { #4 \clist_map_break: } }
+  }
+}
+\cs_generate_variant:Nn \@@_filter_clist:NNNnn { cccnn }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_filter_str:NNNnn, \@@_filter_str:cccnn}
+% Filter strings with regex expression. Starred filter matches the whole
+% string while unstarred matches part of the string.
+% \begin{arguments}
+%   \item \meta{star boolean}
+%   \item \meta{expr} specified by \cs{dbNewConditional}
+%   \item \meta{current value}, i.e. \cs{dbval}
+%   \item \meta{true code} to set filter boolean to true
+%   \item \meta{false code} to set filter boolean to false
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_filter_str:NNNnn {
+  \bool_if:NT #1 {
+    \tl_put_left:Nn #2 { \A }
+    \tl_put_right:Nn #2 { \Z }
+  }
+  \regex_match:VVTF #2 #3 {#4} {#5}
+}
+\cs_generate_variant:Nn \@@_filter_str:NNNnn { cccnn }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_filter_tl:NNNnn, \@@_filter_tl:cccnn}
+% Filter token list with regex expression. It is the same with string.
+%    \begin{macrocode}
+\cs_set_eq:NN \@@_filter_tl:NNNnn \@@_filter_str:NNNnn
+\cs_generate_variant:Nn \@@_filter_tl:NNNnn { cccnn }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_parse_date_cond:NNw}
+% Help function to parse \meta{review points} and \meta{date} and store them
+% in \meta{clist var} and \meta{tl var}.
+% \begin{arguments}
+%   \item \meta{clist var} to store \meta{review points}
+%   \item \meta{tl var} to store \meta{date}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_parse_date_cond:NNw #1#2#3|#4\@@_stop {
+  \clist_set_eq:Nc #1 { g__review_points_#3 }
+  \tl_set:Nn #2 {#4}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_filter_date:NNNnn, \@@_filter_date:cccnn}
+% Filter dates by \meta{review points} or \meta{expr}.
+% \begin{arguments}
+%   \item \meta{star boolean}
+%   \item \meta{expr} specified by \cs{dbNewConditional}
+%   \item \meta{current value}, i.e. \cs{dbval}
+%   \item \meta{true code} to set filter boolean to true
+%   \item \meta{false code} to set filter boolean to false
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_filter_date:NNNnn {
+%    \end{macrocode}
+% For starred \meta{conditional}, calculate the days between current day, i.e.
+% \cs{dbval} and the date to be compared, i.e. \cs{l_@@_filter_tmp_tl} to see
+% if the result appears in the \meta{review points}.
+%    \begin{macrocode}
+  \bool_if:NTF #1 {
+    \int_zero_new:N \l_@@_filter_diff_int
+    \exp_last_unbraced:NNNV \@@_parse_date_cond:NNw
+      \l_@@_filter_tmp_clist \l_@@_filter_tmp_tl {#2} \@@_stop
+    \__dbdate_clear_new:n { tmp_day1 }
+    \__dbdate_clear_new:n { tmp_day2 }
+    \__dbdate_set:nx { tmp_day1 } { \l_@@_filter_tmp_tl }
+    \__dbdate_set:nx { tmp_day2 } {#3}
+    \__dbdate_sub:nnN { tmp_day1 } { tmp_day2 } \l_@@_filter_diff_int
+    \clist_if_in:NxTF \l_@@_filter_tmp_clist
+      { \int_use:N \l_@@_filter_diff_int } {#4} {#5}
+  } {
+%    \end{macrocode}
+% For unstarred \meta{conditional} which parses \meta{expr}. We first replace
+% each date to an absolute integer. We did not use \cs{regex_replace_all:nnN}
+% because \cs{_dbdate_to_int:nN} is nonexpandable. So the code seems a little
+% complicated and unsightly, but it worked. Note that \meta{expr} should be
+% updated locally.
+%    \begin{macrocode}
+    \int_zero_new:N \l_@@_filter_tmpa_int
+    \int_zero_new:N \l_@@_filter_tmpb_int
+    \tl_set:Nx \l_@@_expr_tl {#2}
+    \regex_extract_all:nVN { \d{4}/\d+/\d+ }
+      \l_@@_expr_tl \l_@@_filter_date_seq
+    \regex_split:nVN { \d{4}/\d+/\d+ }
+      \l_@@_expr_tl \l_@@_filter_other_seq
+    \tl_clear:N \l_@@_expr_tl
+    \int_set:Nn \l_@@_filter_tmpa_int
+      { \seq_count:N \l_@@_filter_date_seq }
+    \int_step_inline:nn { \l_@@_filter_tmpa_int } {
+      \tl_put_right:Nx \l_@@_expr_tl
+        { \seq_item:Nn \l_@@_filter_other_seq {##1} }
+      \__dbdate_clear_new:n { date-tmp }
+      \__dbdate_set:nx { date-tmp }
+        { \seq_item:Nn \l_@@_filter_date_seq {##1} }
+      \__dbdate_to_int:nN { date-tmp } \l_@@_filter_tmpb_int
+      \tl_put_right:Nx \l_@@_expr_tl
+        { \int_use:N \l_@@_filter_tmpb_int }
+    }
+    \tl_put_right:Nx \l_@@_expr_tl {
+      \seq_item:Nn \l_@@_filter_other_seq
+        { \l_@@_filter_tmpa_int + 1 }
+    }
+    \int_compare:nTF { \l_@@_expr_tl } {#4} {#5}
+  }
+}
+\cs_generate_variant:Nn \@@_filter_date:NNNnn { cccnn }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_filter:nnn}
+% Filter records with \meta{conditional}
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{conditional}
+%   \item \meta{index}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_set:Nn \@@_filter:nnn {
+  \tl_set_eq:Nc \l_@@_attr_tl { g_@@_filter_attr_tl_#1_#2 }
+  \cs_set_eq:Nc \dbval { g_@@_data_#1_\l_@@_attr_tl _#3 }
+  \use:c
+    { @@_filter_\@@_get_type:nV {#1} \l_@@_attr_tl :cccnn }
+    { g_@@_cond_star_bool_#1_#2 }
+    { g_@@_filter_expr_tl_#1_#2 }
+    { dbval }
+    { \bool_gset_true:c  { g_@@_filter_bool_#1_#2 } }
+    { \bool_gset_false:c { g_@@_filter_bool_#1_#2 } }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_new_conditional:nnnnn}
+% For a \meta{conditional} of \meta{attr}, map \meta{conditional} to
+% \meta{attr} and map \meta{conditional} to {expr}. The \meta{boolean var} is
+% created to store the filter result. An hook function is defined and the
+% \meta{conditional} is recorded in the sequence.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{conditional}
+%   \item \meta{attr}
+%   \item \meta{expr}
+%   \item \meta{star}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_new_conditional:nnnnn {
+  \tl_gset:cn { g_@@_filter_attr_tl_#1_#2 } {#3}
+  \tl_gset:cn { g_@@_filter_expr_tl_#1_#2 } {#4}
+  \bool_if_exist:cF { g_@@_filter_bool_#1_#2 }
+    { \bool_new:c { g_@@_filter_bool_#1_#2 } }
+  \bool_if_exist:cF { g_@@_cond_star_bool_#1_#2 }
+    { \bool_new:c { g_@@_cond_star_bool_#1_#2 } }
+  \IfBooleanTF {#5}
+    { \bool_gset_true:c { g_@@_cond_star_bool_#1_#2 } }
+    { \bool_gset_false:c { g_@@_cond_star_bool_#1_#2 } }
+%    \end{macrocode}
+% Filter hook function.
+% \begin{arguments}[2]
+%   \item \meta{index}
+% \end{arguments}
+%    \begin{macrocode}
+  \cs_gset:cn { g_@@_filter_hook_#1_#2:n } {
+    \@@_filter:nnn {#1} {#2} {##1}
+  }
+  \seq_gput_right:cn { g_@@_cond_seq_#1 } {#2}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_combine_conditional:nnn, \@@_combine_conditional:nVn}
+% First extract all the \meta{conditional} in \meta{conditional expr} and for
+% every \meta{conditional} in the record sequence, if it is in
+% \meta{conditional expr}, then add the corresponding hook function to running
+% sequence. Then replace all the \meta{conditional} in \meta{conditional expr}
+% with corresponding boolean variable and save the result in the filter
+% boolean variable.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{filter}
+%   \item \meta{conditional expr}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_combine_conditional:nnn {
+  \tl_gset_eq:cN { g_@@_filter_bool_tl_#1_#2 } \c_true_bool
+  \seq_gclear_new:c { g_@@_filter_run_seq_#1_#2 }
+  \regex_extract_all:nnN { \w+ } {#3} \l_@@_cond_seq
+%    \end{macrocode}
+% \begin{arguments}[2]
+%   \item \meta{conditional}
+% \end{arguments}
+%    \begin{macrocode}
+  \seq_map_inline:Nn \l_@@_cond_seq {
+    \seq_if_in:cnT { g_@@_cond_seq_#1 } {##1} {
+      \seq_gput_right:cn { g_@@_filter_run_seq_#1_#2 }
+        { g_@@_filter_hook_#1_##1:n }
+    }
+  }
+  \tl_set:Nn \l_@@_cond_expr_tl {#3}
+  \regex_replace_all:nnN
+    { \w+ } { \c{ g_@@_filter_bool_#1_\0 } }
+    \l_@@_cond_expr_tl
+  \tl_gset_eq:cN
+    { g_@@_filter_bool_tl_#1_#2 } \l_@@_cond_expr_tl
+}
+\cs_generate_variant:Nn \@@_combine_conditional:nnn { nVn }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{dbFilters, \dbNewConditional, \dbCombineConditionals}
+% Environment to define conditionals and filters.
+% \begin{arguments}
+%   \item \meta{database}
+% \end{arguments}
+%    \begin{macrocode}
+\NewDocumentEnvironment { dbFilters } { m } {
+  \seq_gclear_new:c { g_@@_cond_seq_#1 }
+%    \end{macrocode}
+% \begin{arguments}[2]
+%   \item \meta{star}
+%   \item \meta{conditional}
+%   \item \meta{attr}
+%   \item \meta{expr}
+% \end{arguments}
+%    \begin{macrocode}
+  \DeclareDocumentCommand { \dbNewConditional } { s m m m } {
+    \@@_new_conditional:nnnnn
+      {#1} {##2} {##3} {##4} {##1}
+  }
+%    \end{macrocode}
+% \begin{arguments}[2]
+%   \item \meta{filter}
+%   \item \meta{conditional expr}
+%   \item \meta{filter info}
+% \end{arguments}
+%    \begin{macrocode}
+  \DeclareDocumentCommand { \dbCombineConditionals } { m m O{} } {
+    \tl_gset:cn { g_@@_filter_info_tl_#1_##1 } {##3}
+    \@@_combine_conditional:nnn {#1} {##1} {##2}
+  }
+} {}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\dbNewReviewPoints}
+% User interface to define \meta{review points}.
+% \begin{arguments}
+%   \item \meta{name}
+%   \item \meta{points}
+% \end{arguments}
+%    \begin{macrocode}
+\NewDocumentCommand { \dbNewReviewPoints } { m m } {
+  \clist_set:cn { g__review_points_#1 } {#2}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\dbIntAbs, \dbIntSign, \dbIntDivRound, \dbIntDivTruncate,
+% \dbIntMax, \dbIntMin, \dbIntMod, \dbFpSign}
+% Function aliases to support more operations of integer and floating points.
+%    \begin{macrocode}
+\cs_set_eq:NN \dbIntAbs         \int_abs:n
+\cs_set_eq:NN \dbIntSign        \int_sign:n
+\cs_set_eq:NN \dbIntDivRound    \int_div_round:nn
+\cs_set_eq:NN \dbIntDivTruncate \int_div_truncate:nn
+\cs_set_eq:NN \dbIntMax         \int_max:nn
+\cs_set_eq:NN \dbIntMin         \int_min:nn
+\cs_set_eq:NN \dbIntMod         \int_mod:nn
+\cs_set_eq:NN \dbFpSign         \fp_sign:n
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Style and Options}
+%
+% \begin{macro}{\@@_identity:n}
+% Does nothing and keep things unchanged.
+%    \begin{macrocode}
+\cs_new:Nn \@@_identity:n {#1}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_new_attr_style:nnn}
+% Define style keys for each attribute.
+% \begin{arguments}
+%   \item \meta{style}
+%   \item \meta{database}
+%   \item \meta{attr}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_new_attr_style:nnn {
+  \@@_check_attr:nn {#2} {#3}
+  \keys_define:nn { dbshow/style/#1/#3 } {
+    before-code      .tl_gset:c    = {
+      g_@@_style_attr_before_tl_#1_#2_#3
+    },
+    before-code      .initial:n    = ,
+    after-code       .tl_gset:c    = {
+      g_@@_style_attr_after_tl_#1_#2_#3
+    },
+    after-code       .initial:n    = ,
+%    \end{macrocode}
+% For comma list and date.
+%    \begin{macrocode}
+    sep              .clist_gset:c = {
+      g_@@_style_attr_sep_#1_#2_#3
+    },
+%    \end{macrocode}
+% Only for comma list.
+%    \begin{macrocode}
+    item-before-code .tl_gset:c    = {
+      g_@@_style_attr_item_before_tl_#1_#2_#3
+    },
+    item-before-code .initial:n    = ,
+    item-after-code  .tl_gset:c    = {
+      g_@@_style_attr_item_after_tl_#1_#2_#3
+    },
+    item-after-code  .initial:n    = ,
+%    \end{macrocode}
+% Only for date.
+%    \begin{macrocode}
+    zfill            .bool_gset:c  = {
+      g_@@_style_attr_zfill_bool_#1_#2_#3
+    },
+    zfill            .initial:n    = true,
+    zfill            .default:n    = true,
+    wrapper          .tl_gset:c    = {
+      g_@@_style_attr_wrapper_#1_#2_#3
+    },
+    wrapper          .initial:n    = { \@@_identity:n },
+  }
+  \str_case_e:nn { \@@_get_type:nn {#2} {#3} } {
+    { clist }
+    { \keys_set:nn { dbshow/style/#1/#3 } { sep = { { ,~ } } } }
+    { date }
+    { \keys_set:nn { dbshow/style/#1/#3 } { sep = { { /  } } } }
+  }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_new_database_style:nn}
+% Define style keys.
+% \begin{arguments}
+%   \item \meta{style}
+%   \item \meta{database}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_new_database_style:nn {
+  \@@_check_database:n {#2}
+  \keys_define:nn { dbshow/style/#1 } {
+    raw-filter         .code:n       = {
+      \int_gincr:N  \g_@@_raw_filter_int
+      \str_set:Nx \l_@@_raw_filter_str
+        { -raw\int_use:N \g_@@_raw_filter_int - }
+      \tl_gset:cV { g_@@_filter_#1_#2 } \l_@@_raw_filter_str
+      \@@_combine_conditional:nnn {#2}  \l_@@_raw_filter_str {##1}
+    },
+    filter             .tl_gset:c    = { g_@@_filter_#1_#2 },
+    filter             .initial:n    = -none-,
+    sort               .clist_gset:c = { g_@@_sort_clist_#1_#2 },
+    before-code        .tl_gset:c    = { g_@@_style_before_tl_#1_#2 },
+    before-code        .initial:n    = ,
+    item-code          .tl_gset:c    = { g_@@_style_database_item_tl_#1_#2 },
+    item-code          .initial:n    = ,
+    after-code         .tl_gset:c    = { g_@@_style_after_tl_#1_#2 },
+    after-code         .initial:n    = ,
+    record-before-code .tl_gset:c    = { g_@@_style_record_before_tl_#1_#2 },
+    record-before-code .initial:n    = ,
+    record-after-code  .tl_gset:c    = { g_@@_style_record_after_tl_#1_#2 },
+    record-after-code  .initial:n    = ,
+  }
+  \prop_map_inline:cn { g_@@_attr_type_prop_#2 }
+    { \@@_new_attr_style:nnn {#1} {#2} {##1} }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\dbNewStyle}
+% Set style options based on \meta{base style}.
+% \begin{arguments}
+%   \item \meta{base style clist}
+%   \item \meta{style}
+%   \item \meta{database}
+%   \item \meta{options}
+% \end{arguments}
+%    \begin{macrocode}
+\NewDocumentCommand { \dbNewStyle } { o m m +m } {
+  \tl_gset:cn { g_@@_style_opts_tl_#2_#3 } { #4, }
+  \IfValueT {#1} {
+    \tl_clear_new:N \l_@@_style_tmp_tl
+%    \end{macrocode}
+% \begin{arguments}[2]
+%   \item \meta{base style}
+% \end{arguments}
+%    \begin{macrocode}
+    \clist_map_inline:nn {#1} {
+      \@@_check_style:nn {##1} {#3}
+      \tl_if_exist:cT { g_@@_style_opts_tl_##1_#3 } {
+        \tl_concat:ccc { l_@@_style_tmp_tl }
+          { l_@@_style_tmp_tl } { g_@@_style_opts_tl_##1_#3 }
+      }
+    }
+    \tl_gconcat:ccc { g_@@_style_opts_tl_#2_#3 }
+      { l_@@_style_tmp_tl } { g_@@_style_opts_tl_#2_#3 }
+  }
+  \@@_new_database_style:nn {#2} {#3}
+  \keys_set:nv { dbshow/style/#2 } { g_@@_style_opts_tl_#2_#3 }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Sort}
+%
+% \begin{macro}{\@@_sort_parse_star:NNNw}
+% Parse descending sorting rule.
+% \begin{arguments}
+%   \item \meta{tl var} representing for relation to keep order the same
+%   \item \meta{tl var} representing for relation to swap the order
+%   \item \meta{tl var} to store the \meta{attr}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_sort_parse_star:NNNw #1#2#3#4* {
+  \tl_set:Nn #1 { > }
+  \tl_set:Nn #2 { < }
+  \tl_set:Nn #3 {#4}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_sort:nNn}
+% Sort the records.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{index clist}
+%   \item \meta{style}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_sort:nNn {
+  \int_zero_new:N \l_@@_sort_len_int
+  \int_zero_new:N \l_@@_sort_tmp_int
+  \int_set:Nn \l_@@_sort_len_int
+    { \clist_count:c { g_@@_sort_clist_#3_#1 } }
+%    \end{macrocode}
+% Sort recursively.
+%    \begin{macrocode}
+  \clist_sort:Nn #2 {
+    \int_zero:N \l_@@_sort_tmp_int
+%    \end{macrocode}
+% Sort single attribute.
+%    \begin{macrocode}
+    \cs_set:Nn \@@_sort_single: {
+      \int_incr:N \l_@@_sort_tmp_int
+      \str_set:Nx \l_@@_sort_attr_str {
+        \clist_item:cn
+          { g_@@_sort_clist_#3_#1 }
+          { \l_@@_sort_tmp_int }
+      }
+%    \end{macrocode}
+% Parse \meta{attr} and corresponding \meta{type} and set compare operators.
+%    \begin{macrocode}
+      \str_if_in:NnTF \l_@@_sort_attr_str { * } {
+        \exp_after:wN \@@_sort_parse_star:NNNw
+          \exp_after:wN \l_@@_sort_same_op_tl
+          \exp_after:wN \l_@@_sort_swap_op_tl
+          \exp_after:wN \l_@@_sort_attr_str
+          \l_@@_sort_attr_str
+      } {
+        \tl_set:Nn \l_@@_sort_same_op_tl { < }
+        \tl_set:Nn \l_@@_sort_swap_op_tl { > }
+      }
+%    \end{macrocode}
+% Check if type is valid and transform date to string.
+%    \begin{macrocode}
+      \@@_check_attr:nV {#1} \l_@@_sort_attr_str
+      \tl_set:Nx \l_@@_sort_type_tl
+        { \@@_get_type:nV {#1} \l_@@_sort_attr_str }
+      \clist_if_in:nVF
+      { str, int, date, fp } { \l_@@_sort_type_tl } {
+        \msg_error:nnx { dbshow } { unsupported-sort-type }
+          { \l_@@_sort_type_tl }
+      }
+      \str_if_eq:eeT { \l_@@_sort_type_tl } { date }
+        { \tl_set:Nn \l_@@_sort_type_tl { str } }
+%    \end{macrocode}
+% Set operands and compare function.
+%    \begin{macrocode}
+      \cs_set_eq:Nc \l_@@_sort_tmpa_tl
+        { g_@@_data_#1_\l_@@_sort_attr_str _##1 }
+      \cs_set_eq:Nc \l_@@_sort_tmpb_tl
+        { g_@@_data_#1_\l_@@_sort_attr_str _##2 }
+      \cs_set_eq:Nc \@@_compare
+        { \l_@@_sort_type_tl _compare:VNVTF }
+%    \end{macrocode}
+% Compare two operands and if they are equal, compare the next attribute.
+%    \begin{macrocode}
+      \@@_compare \l_@@_sort_tmpa_tl
+        \l_@@_sort_same_op_tl \l_@@_sort_tmpb_tl
+        { \sort_return_same: }
+      {
+        \@@_compare \l_@@_sort_tmpa_tl
+          \l_@@_sort_swap_op_tl \l_@@_sort_tmpb_tl
+          { \sort_return_swapped: }
+        {
+          \int_compare:nTF
+            { \l_@@_sort_len_int = \l_@@_sort_tmp_int }
+            { \sort_return_same: }
+            { \@@_sort_single: }
+        }
+      }
+    }
+    \@@_sort_single:
+  }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Display Data}
+%
+% \begin{macro}{\@@_clist_wrapper:NNn}
+% Wrap the clist item with \meta{before code} and \meta{after code}.
+% \begin{arguments}
+%   \item \meta{before code tl}
+%   \item \meta{after code tl}
+%   \item \meta{item}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_clist_wrapper:NNn {
+  \exp_not:n { { #1#3#2 }, }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_clist_use:NNNN, \@@_clist_use:cccc}
+% Display a comma list.
+% \begin{arguments}
+%   \item \meta{data clist}
+%   \item \meta{separator clist}
+%   \item \meta{before code tl}
+%   \item \meta{after code tl}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_clist_use:NNNN {
+  \int_case:nnF { \clist_count:N #2 } {
+    { 1 } {
+      \clist_use:xx
+        { \clist_map_tokens:Nn #1 { \@@_clist_wrapper:NNn #3 #4 } }
+        { \clist_item:Nn #2 { 1 } }
+    }
+    { 3 } {
+      \clist_use:xxxx
+        { \clist_map_tokens:Nn #1 { \@@_clist_wrapper:NNn #3 #4 } }
+        { \clist_item:Nn #2 { 1 } }
+        { \clist_item:Nn #2 { 2 } }
+        { \clist_item:Nn #2 { 3 } }
+    }
+  } {
+    \@@_sep_error:xxx
+      { 1~or~3 }
+      { \clist_count:N #2 }
+      { \clist_use:Nn #2 { ,~ } }
+  }
+}
+\cs_generate_variant:Nn \@@_clist_use:NNNN { cccc }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_date_use:nNN, \@@_date_use:ncc}
+% Display date.
+% \begin{arguments}
+%   \item \meta{data}
+%   \item \meta{separator clist}
+%   \item \meta{zfill boolean}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_date_use:nNN {
+  \int_case:nnF { \clist_count:N #2 } {
+    { 1 } {
+      \bool_if:NTF {#3}
+        { \__dbdate_use_zfill:nf }
+        { \__dbdate_use:nf }
+        {#1}
+        { \clist_item:Nn #2 { 1 } }
+    }
+    { 4 } {
+      \bool_if:NTF {#3}
+        { \__dbdate_use_zfill:nffff }
+        { \__dbdate_use:nffff }
+        {#1}
+        { \clist_item:Nn #2 { 1 } }
+        { \clist_item:Nn #2 { 2 } }
+        { \clist_item:Nn #2 { 3 } }
+        { \clist_item:Nn #2 { 4 } }
+    }
+  } {
+    \@@_sep_error:xxx
+      { 1~or~4 }
+      { \clist_count:N #2 }
+      { \clist_use:Nn #2 { ,~ } }
+  }
+}
+\cs_generate_variant:Nn \@@_date_use:nNN { ncc }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_use_data:nnnn}
+% Display Data.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{attr}
+%   \item \meta{index}
+%   \item \meta{style}
+% \end{arguments}
+%    \begin{macrocode}
+% #1 database #2 attr #3 index #4 style
+\cs_new:Nn \@@_use_data:nnnn {
+  \str_case_e:nn
+  { \prop_item:cn { g_@@_attr_type_prop_#1 } {#2} } {
+    { str }   { \str_use:c { g_@@_data_#1_#2_#3 } }
+    { tl }    { \tl_use:c { g_@@_data_#1_#2_#3 } }
+    { int }   { \int_use:c { g_@@_data_#1_#2_#3 } }
+    { fp }    { \fp_use:c { g_@@_data_#1_#2_#3 } }
+    { clist } {
+      \@@_clist_use:cccc { g_@@_data_#1_#2_#3 }
+        { g_@@_style_attr_sep_#4_#1_#2 }
+        { g_@@_style_attr_item_before_tl_#4_#1_#2 }
+        { g_@@_style_attr_item_after_tl_#4_#1_#2 }
+    }
+    { date }  {
+      \exp_args:Nnx
+      \tl_use:c { g_@@_style_attr_wrapper_#4_#1_#2 } {
+        \@@_date_use:ncc { g_@@_data_#1_#2_#3 }
+          { g_@@_style_attr_sep_#4_#1_#2 }
+          { g_@@_style_attr_zfill_bool_#4_#1_#2 }
+      }
+    }
+  }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\dbDatabase, \dbFilterName, \dbFilterInfo}
+% Define context macros.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{filter}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_show_set_macro:nn {
+  \tl_set:Nn    \dbDatabase   {#1}
+  \tl_set:Nn    \dbFilterName {#2}
+  \tl_set_eq:Nc \dbFilterInfo { g_@@_filter_info_tl_#1_#2 }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_show_filter:nn}
+% Filter records by executing the hook function in the running sequence and
+% then testing the result boolean.
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{filter}
+%   \item \meta{index clist}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_show_filter:nnN {
+%    \end{macrocode}
+% \begin{arguments}[2]
+%   \item \meta{index}
+% \end{arguments}
+%    \begin{macrocode}
+  \int_step_inline:nn { \@@_get_counter:n {#1} } {
+    \seq_if_exist:cTF { g_@@_filter_run_seq_#1_#2 } {
+%    \end{macrocode}
+% \begin{arguments}[3]
+%   \item \meta{hook}
+% \end{arguments}
+%    \begin{macrocode}
+      \seq_map_inline:cn { g_@@_filter_run_seq_#1_#2 } {
+        \use:c {####1} {##1}
+      }
+      \exp_args:Nv
+      \bool_if:nT { g_@@_filter_bool_tl_#1_#2 }
+        { \clist_put_right:Nn #3 {##1} }
+    } { \clist_put_right:Nn #3 {##1} }
+  }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_show_set_counter:N, \dbalph, \dbAlph, \dbarabic, \dbroman,
+% \dbRoman}
+% Define macros to display counter.
+% \begin{arguments}
+%   \item \meta{int var}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_show_set_counter:N {
+  \tl_set:Nx \dbalph   { \int_to_alph:n {#1} }
+  \tl_set:Nx \dbAlph   { \int_to_Alph:n {#1} }
+  \tl_set:Nx \dbarabic { \int_to_arabic:n {#1} }
+  \tl_set:Nx \dbRoman  { \int_to_Roman:n {#1} }
+  \tl_set:Nx \dbroman  { \int_to_roman:n {#1} }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_show_item:nn, \dbIndex, \dbuse}
+% Display single record.
+% \begin{arguments}
+%   \item \meta{style}
+%   \item \meta{database}
+%   \item \meta{index clist}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_show_item:nnN {
+  \int_zero_new:N \l_@@_show_int
+%    \end{macrocode}
+% \begin{arguments}[2]
+%   \item \meta{index}
+% \end{arguments}
+%    \begin{macrocode}
+  \clist_map_inline:Nn #3 {
+    \int_incr:N \l_@@_show_int
+    \@@_show_set_counter:N \l_@@_show_int
+    \tl_set:Nn \dbIndex {##1}
+%    \end{macrocode}
+% \begin{arguments}[3]
+%   \item \meta{attr}
+% \end{arguments}
+%    \begin{macrocode}
+    \cs_set:Npn \dbuse ####1 {
+      \@@_check_attr:nn {#2} {####1}
+      \tl_use:c { g_@@_style_attr_before_tl_#1_#2_####1 }
+      \@@_use_data:nnnn {#2} {####1} {##1} {#1}
+      \tl_use:c { g_@@_style_attr_after_tl_#1_#2_####1 }
+    }
+    \tl_use:c { g_@@_style_record_before_tl_#1_#2 }
+    \tl_use:c { g_@@_style_database_item_tl_#1_#2 }
+    \tl_use:c { g_@@_style_record_after_tl_#1_#2 }
+  }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_show_set_cond:N, \dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
+% Define conditional to test if the number of records to show is zero.
+% \begin{arguments}
+%   \item \meta{index clist}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_show_set_cond:N {
+  \prg_set_conditional:Nnn \@@_if_empty: { T, F, TF } {
+    \clist_if_empty:NTF #1
+      { \prg_return_true: }
+      { \prg_return_false: }
+  }
+  \cs_set_eq:NN \dbIfEmptyT  \@@_if_empty:T
+  \cs_set_eq:NN \dbIfEmptyF  \@@_if_empty:F
+  \cs_set_eq:NN \dbIfEmptyTF \@@_if_empty:TF
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_show:nnn, \@@_show:nnv}
+% First filter records and sort them if needed and display at last.
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_show:nnn {
+  \@@_show_set_macro:nn {#2} {#3}
+  \clist_clear_new:N \l_@@_show_index_clist
+  \@@_show_filter:nnN {#2} {#3} \l_@@_show_index_clist
+  \clist_if_empty:cF { g_@@_sort_clist_#1_#2 }
+    { \@@_sort:nNn {#2} \l_@@_show_index_clist {#1} }
+  \tl_use:c { g_@@_style_before_tl_#1_#2 }
+  \@@_show_item:nnN {#1} {#2} \l_@@_show_index_clist
+  \tl_use:c { g_@@_style_after_tl_#1_#2 }
+}
+\cs_generate_variant:Nn \@@_show:nnn { nnv }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\dbshow}
+% User insterface to display the \meta{database} with \meta{style}.
+% \begin{arguments}
+%   \item \meta{style}
+%   \item \meta{database}
+% \end{arguments}
+%    \begin{macrocode}
+\NewDocumentCommand { \dbshow } { m m } {
+  \@@_check_database:n {#2}
+  \@@_check_filter:nv {#2} { g_@@_filter_#1_#2 }
+  \@@_show:nnv {#1} {#2} { g_@@_filter_#1_#2 }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Date Type}
+%
+%    \begin{macrocode}
+%<@@=dbdate>
+%    \end{macrocode}
+%
+% \begin{macro}[pTF]{\@@_if_leap:n}
+% Check if the year is leap.
+% \begin{arguments}
+%   \item \meta{year}
+% \end{arguments}
+%    \begin{macrocode}
+\prg_new_conditional:Nnn \@@_if_leap:n { T, F, TF, p } {
+  \bool_if:nTF {
+    \int_compare_p:nNn { \int_mod:nn {#1} { 400 } } = { 0 } ||
+    (!\int_compare_p:nNn { \int_mod:nn {#1} { 100 } } = { 0 } &&
+      \int_compare_p:nNn { \int_mod:nn {#1} { 4 } } = { 0 })
+  } { \prg_return_true: } { \prg_return_false: }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{variable}{\c_@@_month_clist}
+% Number of days of every month.
+%    \begin{macrocode}
+\clist_const:Nn \c_@@_month_clist
+  { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{macro}{\@@_to_int:nnnN}
+% Transform date to integer relative to |1971-01-01|.
+% \begin{arguments}
+%   \item \meta{year}
+%   \item \meta{month}
+%   \item \meta{day}
+%   \item \meta{int var} to store the result
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_to_int:nnnN {
+  \int_zero_new:N \l_@@_ans_int
+  \int_zero_new:N \l_@@_tmpa_int
+  \int_zero_new:N \l_@@_tmpb_int
+  \int_set:Nn \l_@@_ans_int { #3 - 1 }
+  \int_step_inline:nn { #2 - 1 } {
+    \int_add:Nn \l_@@_ans_int {
+      \clist_item:Nn \c_@@_month_clist {##1}
+    }
+    \bool_if:nT {
+      \int_compare_p:nNn {##1} = { 2 } &&
+      \@@_if_leap_p:n {#1}
+    } { \int_incr:N \l_@@_ans_int }
+  }
+  \int_add:Nn \l_@@_ans_int { 365 * (#1 - 1971) }
+  \int_add:Nn \l_@@_ans_int {
+    \int_div_truncate:nn { #1 - 1 } { 4 } -
+    \int_div_truncate:nn { 1971 } { 4 }
+  }
+  \int_sub:Nn \l_@@_ans_int {
+    \int_div_truncate:nn { #1 - 1 } { 100 } -
+    \int_div_truncate:nn { 1971 } { 100 }
+  }
+  \int_add:Nn \l_@@_ans_int {
+    \int_div_truncate:nn { #1 - 1 } { 400 } -
+    \int_div_truncate:nn { 1971 } { 400 }
+  }
+  \int_set_eq:NN #4 \l_@@_ans_int
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_to_int:NNNN, \@@_to_int:cccN}
+% Transform date to integer relative to |1971-01-01|.
+% \begin{arguments}
+%   \item \meta{year int var}
+%   \item \meta{month int var}
+%   \item \meta{day int var}
+%   \item \meta{int var} to store the result
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_to_int:NNNN {
+  \@@_to_int:nnnN {#1} {#2} {#3} #4
+}
+\cs_generate_variant:Nn \@@_to_int:NNNN { cccN }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_to_int:nN}
+% Transform date to integer relative to |1971-01-01|.
+% \begin{arguments}
+%   \item \meta{date var}
+%   \item \meta{int var} to store the result
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_to_int:nN {
+  \@@_to_int:cccN
+    { @@_year_#1 }
+    { @@_month_#1 }
+    { @@_day_#1 }
+    #2
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_set_val:n, \@@_gset_val:n}
+% Set the value of \meta{data var} to |yyyy/mm/dd|.
+% \begin{arguments}
+%   \item \meta{date var}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_set_val:n {
+  \tl_set:cx {#1} { \@@_use_zfill:nn {#1} { / } }
+}
+\cs_new_protected:Nn \@@_gset_val:n {
+  \tl_gset:cx {#1} { \@@_use_zfill:nn {#1} { / } }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_init:n, \@@_ginit:n}
+% Initialize \meta{date var}.
+% \begin{arguments}
+%   \item \meta{date var}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_init:n {
+  \@@_set:nnnn {#1} { 1971 } { 1 } { 1 }
+  \@@_set_val:n {#1}
+}
+\cs_new_protected:Nn \@@_ginit:n {
+  \@@_gset:nnnn {#1} { 1971 } { 1 } { 1 }
+  \@@_gset_val:n {#1}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_new:n}
+% Create a new date variable.
+% \begin{arguments}
+%   \item \meta{date var}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_new:n {
+  \int_new:c { @@_year_#1 }
+  \int_new:c { @@_month_#1 }
+  \int_new:c { @@_day_#1 }
+  \@@_ginit:n {#1}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_clear_new:n, \@@_gclear_new:n}
+% Clear or create a new date variable.
+% \begin{arguments}
+%   \item \meta{date var}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_clear_new:n {
+  \int_zero_new:c { @@_year_#1 }
+  \int_zero_new:c { @@_month_#1 }
+  \int_zero_new:c { @@_day_#1 }
+  \@@_init:n {#1}
+}
+\cs_new_protected:Nn \@@_gclear_new:n {
+  \int_gzero_new:c { @@_year_#1 }
+  \int_gzero_new:c { @@_month_#1 }
+  \int_gzero_new:c { @@_day_#1 }
+  \@@_ginit:n {#1}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_set:nnnn, \@@_gset:nnnn}
+% Set the value of \meta{date var}.
+% \begin{arguments}
+%   \item \meta{date var}
+%   \item \meta{year}
+%   \item \meta{month}
+%   \item \meta{day}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_set:nnnn {
+  \int_set:cn { @@_year_#1 }  {#2}
+  \int_set:cn { @@_month_#1 } {#3}
+  \int_set:cn { @@_day_#1 }   {#4}
+  \@@_set_val:n {#1}
+}
+\cs_new_protected:Nn \@@_gset:nnnn {
+  \int_gset:cn { @@_year_#1 }  {#2}
+  \int_gset:cn { @@_month_#1 } {#3}
+  \int_gset:cn { @@_day_#1 }   {#4}
+  \@@_gset_val:n {#1}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_set:w, \@@_gset:w}
+% Set the value of \meta{date var}.
+% \begin{arguments}
+%   \item \meta{date var}
+%   \item \meta{year}
+%   \item \meta{month}
+%   \item \meta{day}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_set:w #1\@@_sep#2/#3/#4\@@_stop {
+  \@@_clear_new:n {#1}
+  \@@_set:nnnn {#1} {#2} {#3} {#4}
+}
+\cs_new_protected:Npn \@@_gset:w #1\@@_sep#2/#3/#4\@@_stop {
+  \@@_gclear_new:n {#1}
+  \@@_gset:nnnn {#1} {#2} {#3} {#4}
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_set:nn, \@@_set:nx, \@@_gset:nn, \@@_gset:nx}
+% Set the value of \meta{date var}.
+% \begin{arguments}
+%   \item \meta{date var}
+%   \item \meta{date}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_set:nn {
+  \@@_set:w #1\@@_sep#2\@@_stop
+}
+\cs_generate_variant:Nn \@@_set:nn { nx }
+\cs_new_protected:Nn \@@_gset:nn {
+  \@@_gset:w #1\@@_sep#2\@@_stop
+}
+\cs_generate_variant:Nn \@@_gset:nn { nx }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_sub:nnN}
+% Calculate the number of days between \meta{date var2} and \meta{date var1}.
+% \begin{arguments}
+%   \item \meta{date var1}
+%   \item \meta{date var2}
+%   \item \meta{int var} to store the result
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_sub:nnN {
+  \int_zero_new:N \l_@@_tmpa_int
+  \int_zero_new:N \l_@@_tmpb_int
+  \@@_to_int:nN {#1} \l_@@_tmpa_int
+  \@@_to_int:nN {#2} \l_@@_tmpb_int
+  \int_set:Nn #3 { \l_@@_tmpa_int - \l_@@_tmpb_int }
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_show_two:N, \@@_show_two:c}
+% Prepend 0 to single digit.
+%    \begin{macrocode}
+\cs_new:Nn \@@_show_two:N {
+  \int_compare:nNnTF {#1} > { 9 }
+    { \int_use:N #1 } { 0\int_use:N #1 }
+}
+\cs_generate_variant:Nn \@@_show_two:N { c }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_use:nnnnn, \@@_use:nffff, \@@_use_zfill:nnnnn,
+% \@@_use_zfill:nffff}
+% Display date.
+% \begin{arguments}
+%   \item \meta{date var}
+%   \item \meta{separator 1}
+%   \item \meta{separator 2}
+%   \item \meta{separator 3}
+%   \item \meta{separator 4}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_use:nnnnn {
+  #2\int_use:c { @@_year_#1 }
+  #3\int_use:c { @@_month_#1 }
+  #4\int_use:c { @@_day_#1 }#5
+}
+\cs_generate_variant:Nn \@@_use:nnnnn { nffff }
+\cs_new:Nn \@@_use_zfill:nnnnn {
+  #2\int_use:c { @@_year_#1 }
+  #3\@@_show_two:c { @@_month_#1 }
+  #4\@@_show_two:c { @@_day_#1 }#5
+}
+\cs_generate_variant:Nn \@@_use_zfill:nnnnn { nffff }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_use:nn, \@@_use:nf, \@@_use_zfill:nn, \@@_use_zfill:nf}
+% Display date with the same separator.
+%    \begin{macrocode}
+\cs_new:Nn \@@_use:nn {
+  \@@_use:nnnnn {#1} {} {#2} {#2} {}
+}
+\cs_generate_variant:Nn \@@_use:nn { nf }
+\cs_new:Nn \@@_use_zfill:nn {
+  \@@_use_zfill:nnnnn {#1} {} {#2} {#2} {}
+}
+\cs_generate_variant:Nn \@@_use_zfill:nn { nf }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{variable}{\dbtoday}
+% Display date of today in |yyyy/mm/dd|.
+%    \begin{macrocode}
+\tl_set:Nx \dbtoday {
+  \int_use:N \c_sys_year_int/
+  \int_use:N \c_sys_month_int/
+  \int_use:N \c_sys_day_int
+}
+%    \end{macrocode}
+% \end{variable}
+%
+%    \begin{macrocode}
+\endinput
+%</package>
+%    \end{macrocode}
+%
+% \end{implementation}
+%
+% \Finale
+%
+\endinput
