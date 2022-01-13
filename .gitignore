@@ -281,12 +281,11 @@ TSWLatexianTemp*
 
 # custom
 *.zip
-dbshow/
-dbshow-doc-listing*
-
 *.tex
-!dbshow-doc.tex
+*.sty
 *.otf
+*.ins
 
+dbshow/
 tmp/
 backup/
