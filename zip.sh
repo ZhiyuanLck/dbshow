@@ -1,9 +1,9 @@
 # !/bin/bash
 
 rm -rf dbshow
+rm -rf dbshow.zip
 mkdir dbshow
-cp dbshow.sty dbshow/
-cp dbshow-doc.tex dbshow/
-cp dbshow-doc.pdf dbshow/
+cp dbshow.dtx dbshow/
+cp dbshow.pdf dbshow/
 cp README.md dbshow/
 zip -r dbshow.zip dbshow/

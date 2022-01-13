@@ -11,7 +11,7 @@ Introduction
 
 The package provides four core functions:
 
-1. data storage and display
+1. data storage
 2. data filtering
 3. data sorting
 4. data display
@@ -22,6 +22,30 @@ display something you'd like to review, maybe the question you always answered
 incorrectly or some forgettable knowledge. But obviously, the package is much
 more powerful and extensible for more interesting tasks depending on the
 individual.
+
+Install
+-------
+
+If you are using TeX Live, install `dbshow` by `tlmgr` package manager
+
+    tlmgr update --self --all
+    tlmgr install dbshow
+
+You can also download the zip file from
+[CTAN](https://ctan.org/pkg/dbshow) or
+[GitHub](https://github.com/ZhiyuanLck/dbshow/releases/latest).
+
+The zip file should contain the file `dbshow.dtx`, and you can extract
+`dbshow.sty` from it by `tex dbshow.dtx`.
+
+Compile Document
+----------------
+
+Use following commands to compile the document:
+
+    git clone https://github.com/ZhiyuanLck/dbshow.git
+    cd dbshow
+    latexmk dbshow.dtx
 
 Copyright and License
 ---------------------
@@ -117,7 +141,7 @@ Copyright and License
 \fi
 %</internal>
 %<package>\NeedsTeXFormat{LaTeX2e}
-%<+package|config>\GetIdInfo$Id: dbshow.dtx 73a05f9 2022-01-10 21:10:24 +0800 Changkai Li <lichangkai225@qq.com> $
+%<+package|config>\GetIdInfo$Id: dbshow.dtx 7dfe490 2022-01-13 22:20:24 +0800 Changkai Li <lichangkai225@qq.com> $
 %<package>  {Database to store and display data}
 %<package>\ProvidesExplPackage{\ExplFileName}
 %<package|config>  {\ExplFileDate}{1.4}{\ExplFileDescription}
@@ -125,7 +149,6 @@ Copyright and License
 \documentclass[full]{l3doc}
 \usepackage[scheme=plain, fontset=ubuntu]{ctex}
 \usepackage{dbshow}
-\usepackage{multicol}
 \usepackage{adjustbox}
 \usepackage{zhlineskip}
 \usepackage{enumitem}
@@ -134,8 +157,6 @@ Copyright and License
 \usepackage{geometry}
 \usepackage{tabularray}
 \usepackage{xcolor}
-\usepackage{tcolorbox}
-\tcbuselibrary{listings, skins, raster, breakable}
 \usepackage{tabularray}
 \usepackage{zhnumber}
 
@@ -379,7 +400,9 @@ Copyright and License
 %</driver>
 % \fi
 %
+% \CheckSum{882}
 % \GetFileId{dbshow.sty}
+%
 % \ExplSyntaxOn
 % \tl_set:Nx \cnfiledate{ \exp_args:NV \zhdate\filedate }
 % \ExplSyntaxOff
@@ -676,6 +699,15 @@ Copyright and License
 %   该选项只适用于类型为 |date| 的属性。控制输出月份和天时是否补零。
 % \end{option}
 %
+% \changes{1.4}{2022-01-13}{Add macro}{\cs{dbdatesep}}
+% \begin{function}[added=2022-01-13, EXP]{\dbdatesep}
+%   \begin{syntax}
+%     \cs{dbdatesep} \marg{separator}
+%   \end{syntax}
+%
+%   设置内部解析日期时的间隔符，默认为 |/|，即存储数据的格式为 |yyyy/mm/dd|。
+% \end{function}
+%
 % \subsubsection{装饰器}
 %
 % 下面这些选项在不同层次上装饰原有的展示代码，有些其实不必通过选项的形式来装饰，
@@ -891,21 +923,20 @@ Copyright and License
 %
 % \subsection{使用 \env{dbitem} 环境存储数据}
 %
-% \begin{environment}[added=2022-01-05]{dbitem}
+% \changes{1.4}{2022-01-13}{Update env}{dbitem}
+% \begin{environment}[added=2022-01-05, updated=2022-01-13]{dbitem}
 %   \begin{syntax}
-%     |\begin{dbitem}|\marg{database}[ \\
-%     ~~\meta{attr1} = \meta{val1}, \\
-%     ~~\meta{attr2} = \meta{val2}, \\
-%     ~~\ldots{} \\
-%     ] \\
+%     |\begin{dbitem}| \marg{database} \oarg{attr-val list}
 %     ~~\meta{code} \\
 %     |\end{dbitem}|
 %   \end{syntax}
 %
 %   \env{dbitem} 环境用来存储数据。有两种存储数据的方法，较短的数据可以在选项列
 %   表中通过键值对设置值，较长的数据可以在 \meta{code} 中使用 \cs{dbsave} 存储。
-%   \cs{dbsave}会覆盖选项中设置的值。没有设置的值将会被设置为全局默认值，下面给
-%   出一个存储示例。
+%   \meta{attr} = \meta{val} 等同于 \cs{dbsave}\marg{attr}\marg{val}，
+%   \meta{attr}* = \meta{val} 等同于 \cs{dbsave*}\marg{attr}\marg{val}，数据在
+%   |e| 或者 |x| 类型的参数中不可展开。\cs{dbsave}会覆盖选项中设置的值。没有设
+%   置的值将会被设置为全局默认值，下面给出一个存储示例。
 % \end{environment}
 %
 % \begin{verbatim}
@@ -914,6 +945,15 @@ Copyright and License
 %     \dbsave{answer}  {这是一个测试答案}
 %   \end{dbitem}
 % \end{verbatim}
+%
+% \changes{1.4}{2022-01-13}{Add macro}{\cs{dbitemkv}}
+% \begin{function}[added=2022-01-13]{\dbitemkv}
+%   \begin{syntax}
+%     \cs{dbitemkv} \marg{database} \oarg{attr-val list}
+%   \end{syntax}
+%
+%   只使用 \meta{attr-val list} 来存储数据。
+% \end{function}
 %
 % \subsection{\cs{dbsave} 和 \cs{dbuse}}
 %
@@ -1030,7 +1070,7 @@ Copyright and License
 %     \linktarget{zh}{en}{中文版本}
 %   }}
 % }
-% \author{Li Changkai \protect\path{<lichangkai225@qq.com>}}
+% \author{Changkai Li \protect\path{<lichangkai225@qq.com>}}
 % \date{\filedate}
 % \maketitle
 %
@@ -1325,6 +1365,16 @@ Copyright and License
 %   of the month or day.
 % \end{option}
 %
+% \changes{1.4}{2022-01-13}{Add macro}{\cs{dbdatesep}}
+% \begin{function}[added=2022-01-13, EXP]{\dbdatesep}
+%   \begin{syntax}
+%     \cs{dbdatesep} \marg{separator}
+%   \end{syntax}
+%
+%   Set the separator for internal date parsing. The default value is |/|,
+%   i.e. the date must be store in the format of |yyyy/mm/dd|.
+% \end{function}
+%
 % \subsubsection{Decorators}
 %
 % The options below serves as decorators. In some cases, decorator can also be
@@ -1546,21 +1596,21 @@ Copyright and License
 %
 % \subsection{Store Data with \env{dbitem} Environment}
 %
-% \begin{environment}[added=2022-01-05]{dbitem}
+% \changes{1.4}{2022-01-13}{Update env}{dbitem}
+% \begin{environment}[added=2022-01-05, updated=2022-01-13]{dbitem}
 %   \begin{syntax}
-%     |\begin{dbitem}|\marg{database}[ \\
-%     ~~\meta{attr1} = \meta{val1}, \\
-%     ~~\meta{attr2} = \meta{val2}, \\
-%     ~~\ldots{} \\
-%     ] \\
+%     |\begin{dbitem}| \marg{database} \oarg{attr-val list}
 %     ~~\meta{code} \\
 %     |\end{dbitem}|
 %   \end{syntax}
 %
-%   The data are stored with \env{dbitem} environment in two ways. Smaller data
-%   can be stored in the option list and the bigger data can be stored by
-%   \cs{dbsave}, which will suppress the value set by the option list. An
-%   example code is showned below.
+%   The data are stored with \env{dbitem} environment in two ways. Short data
+%   can be stored in \meta{attr-val list} and long data can be stored by
+%   \cs{dbsave}, which will suppress the value set by the option list.
+%   \meta{attr} = \meta{val} is equal to \cs{dbsave}\marg{attr}\marg{val}, and
+%   \meta{attr} = \meta{val} is equal to \cs{dbsave*}\marg{attr}\marg{val},
+%   in which case, data will not be expanded in an |e| or |x|-type argument.
+%   An example code is showned below.
 % \end{environment}
 %
 % \begin{verbatim}
@@ -1569,6 +1619,15 @@ Copyright and License
 %     \dbsave{answer}  {This is a test answer.}
 %   \end{dbitem}
 % \end{verbatim}
+%
+% \changes{1.4}{2022-01-13}{Add macro}{\cs{dbitemkv}}
+% \begin{function}[added=2022-01-13]{\dbitemkv}
+%   \begin{syntax}
+%     \cs{dbitemkv} \marg{database} \oarg{attr-val list}
+%   \end{syntax}
+%
+%   Store data with \meta{attr-val list}.
+% \end{function}
 %
 % \subsection{\cs{dbsave} and \cs{dbuse}}
 %
@@ -1678,199 +1737,190 @@ Copyright and License
 %
 % \changes{1.1}{2022-01-07}{Update doc}{improve example}
 %
-% \begin{tcblisting}{enhanced jigsaw,lower separated=false,
-%   leftlower=0pt,rightlower=0pt,
-%   colframe=red!50!black,colback=yellow!10!white,
-%   listing options={style=tcblatex,texcsstyle=*\color{red!70!black}},
-%   listing and comment,
-%   pdf comment,freeze pdf,
-%   compilable listing,
-%   breakable,
-%   run pdflatex
+% \begin{verbatim}
+% \documentclass{article}
+% \usepackage{amsmath, physics}
+% \usepackage{geometry}
+% \usepackage{dbshow}
+% \usepackage{tikz}
+% \usepackage{tcolorbox}
+% \tcbuselibrary{skins}
+% \usetikzlibrary{shadings}
+% \usepackage[hidelinks]{hyperref}
+%
+% \geometry{
+%   margin=2cm
 % }
-\documentclass{article}
-\usepackage{amsmath, physics}
-\usepackage{geometry}
-\usepackage{dbshow}
-\usepackage{tikz}
-\usepackage{tcolorbox}
-\tcbuselibrary{skins}
-\usetikzlibrary{shadings}
-\usepackage[hidelinks]{hyperref}
-
-\geometry{
-  margin=2cm
-}
-
-% #1 link node #2 target node #3 text to show
-\NewDocumentCommand \linktarget { m m m } {%
-  \hyperlink{#1}{#3}%
-  \raisebox{1em}{\hypertarget{#2}{}}%
-}
-
-% question box
-\tcbset{
-  base/.style={
-    empty,
-    frame engine=path,
-    colframe=yellow!10,
-    coltitle=red!70,
-    fonttitle=\bfseries\sffamily,
-    sharp corners,
-    left=4pt,
-    right=4pt,
-    drop fuzzy shadow,
-    drop fuzzy shadow,
-    borderline west={3pt}{-3pt}{red!80},
-  }
-}
-
-\newtcolorbox{mybox}[1]{%
-  base, title = {#1}
-}
-
-\dbNewReviewPoints{review}{1, 3, 7, 15, 30, 60}
-
-\dbNewDatabase{ques-book}{
-  ques = tl,
-  answer = tl,
-  count = int|1,
-  labels = clist,
-  date = date,
-}
-
-\begin{dbFilters}{ques-book}
-  \dbNewConditional{hard}{labels}{hard}
-  \dbNewConditional{bad}{count}{\dbval > 1}
-  \dbNewConditional*{review}{date}{review|2022/01/07}
-  \dbNewConditional{after}{date}{\dbval > 2022/01/02}
-\end{dbFilters}
-
-% show all questions with hyperlink to answers
-\dbNewStyle{ques}{ques-book}{
-  before-code = {\section{Questions}},
-  item-code = {
-    \begin{mybox}{%
-      \linktarget{answer_\dbIndex}{ques_\dbIndex}{%
-        Question \dbarabic%
-        \hspace{2em}\dbuse{date}%
-        \hspace{2em}\dbuse{labels}%
-        \hfill\dbuse{count}%
-      }%
-    }
-      \dbuse{ques}%
-    \end{mybox}
-  },
-  labels/sep = /,
-}
-
-% show all questions and answers with hyperlink to questions
-\dbNewStyle{answer}{ques-book}{
-  before-code = {\section{Questions and Answers}},
-  item-code = {
-    \begin{mybox}{%
-      \linktarget{ques_\dbIndex}{answer_\dbIndex}{%
-        Question \dbarabic%
-        \hspace{2em}\dbuse{date}%
-        \hspace{2em}\dbuse{labels}%
-        \hfill\dbuse{count}%
-      }%
-    }
-      \dbuse{ques}\tcbsubtitle{Answer}\dbuse{answer}%
-    \end{mybox}
-  },
-  labels/sep = /,
-}
-
-% show all hard questions with hyperlink to answers
-\dbNewStyle{hard}{ques-book}{
-  before-code = {\section{Hard Questions}},
-  item-code = {
-    \begin{mybox}{%
-      \hyperlink{answer_\dbIndex}{%
-        Question \dbarabic%
-        \hspace{2em}\dbuse{date}%
-        \hspace{2em}\dbuse{labels}%
-        \hfill\dbuse{count}%
-      }%
-    }
-      \dbuse{ques}%
-    \end{mybox}
-  },
-  raw-filter = hard,
-  labels/sep = /,
-}
-
-% show all hard questions that have been answered incorrectly for more than
-% one time with hyperlink to answers
-\dbNewStyle[hard]{bad}{ques-book}{
-  before-code = {\section{Bad Questions}},
-  raw-filter = {bad && hard},
-}
-% show all questions that plan to be reviewed on 2022/01/07 with hyperlink to
-% answers
-\dbNewStyle[hard]{review}{ques-book}{
-  before-code = {\section{Questions to be Reviewed}},
-  raw-filter = {review},
-}
-% show all questions that is record after 2022/01/02 with hyperlink to answers
-\dbNewStyle[hard]{after}{ques-book}{
-  before-code = {\section{Questions after 2022/01/02}},
-  raw-filter = {after},
-}
-
-\AtEndDocument{
-  \dbshow{review}{ques-book}
-  \dbshow{hard}{ques-book}
-  \dbshow{bad}{ques-book}
-  \dbshow{after}{ques-book}
-  \dbshow{ques}{ques-book}
-  \dbshow{answer}{ques-book}
-}
-
-\begin{document}
-
-\begin{dbitem}{ques-book}[
-  date=2022/01/01,
-  labels={math, equation, easy},
-  count=2
-  ]
-  \dbsave{ques}{%
-    Solve the linear equation: $x + 16 = 31$.
-  }
-  \dbsave{answer}{%
-    $x = 31 - 16 = 15$
-  }
-\end{dbitem}
-
-\begin{dbitem}{ques-book}[
-  date=2022/01/01,
-  labels={math, equation, hard},
-  count=3
-  ]
-  \dbsave{ques}{%
-    Solve the linear equation: $2y = 16$.
-  }
-  \dbsave{answer}{%
-    $y = 16 / 2 = 8$
-  }
-\end{dbitem}
-
-\begin{dbitem}{ques-book}[
-  date=2022/01/04,
-  labels={math, integral, hard},
-  count=1
-  ]
-  \dbsave{ques}{%
-    Find the indefinite integral: $\int 2x \dd x$.
-  }
-  \dbsave{answer}{%
-    $\int 2x \dd x = x^2$
-  }
-\end{dbitem}
-
-\end{document}
-% \end{tcblisting}
+%
+% % #1 link node #2 target node #3 text to show
+% \NewDocumentCommand \linktarget { m m m } {%
+%   \hyperlink{#1}{#3}%
+%   \raisebox{1em}{\hypertarget{#2}{}}%
+% }
+%
+% % question box
+% \tcbset{
+%   base/.style={
+%     empty,
+%     frame engine=path,
+%     colframe=yellow!10,
+%     coltitle=red!70,
+%     fonttitle=\bfseries\sffamily,
+%     sharp corners,
+%     left=4pt,
+%     right=4pt,
+%     drop fuzzy shadow,
+%     drop fuzzy shadow,
+%     borderline west={3pt}{-3pt}{red!80},
+%   }
+% }
+%
+% \newtcolorbox{mybox}[1]{%
+%   base, title = {#1}
+% }
+%
+% \dbNewReviewPoints{review}{1, 3, 7, 15, 30, 60}
+%
+% \dbNewDatabase{ques-book}{
+%   ques = tl,
+%   answer = tl,
+%   count = int|1,
+%   labels = clist,
+%   date = date,
+% }
+%
+% \begin{dbFilters}{ques-book}
+%   \dbNewConditional{hard}{labels}{hard}
+%   \dbNewConditional{bad}{count}{\dbval > 1}
+%   \dbNewConditional*{review}{date}{review|2022/01/07}
+%   \dbNewConditional{after}{date}{\dbval > 2022/01/02}
+% \end{dbFilters}
+%
+% % show all questions with hyperlink to answers
+% \dbNewStyle{ques}{ques-book}{
+%   before-code = {\section{Questions}},
+%   item-code = {
+%     \begin{mybox}{%
+%       \linktarget{answer_\dbIndex}{ques_\dbIndex}{%
+%         Question \dbarabic%
+%         \hspace{2em}\dbuse{date}%
+%         \hspace{2em}\dbuse{labels}%
+%         \hfill\dbuse{count}%
+%       }%
+%     }
+%       \dbuse{ques}%
+%     \end{mybox}
+%   },
+%   labels/sep = /,
+% }
+%
+% % show all questions and answers with hyperlink to questions
+% \dbNewStyle{answer}{ques-book}{
+%   before-code = {\section{Questions and Answers}},
+%   item-code = {
+%     \begin{mybox}{%
+%       \linktarget{ques_\dbIndex}{answer_\dbIndex}{%
+%         Question \dbarabic%
+%         \hspace{2em}\dbuse{date}%
+%         \hspace{2em}\dbuse{labels}%
+%         \hfill\dbuse{count}%
+%       }%
+%     }
+%       \dbuse{ques}\tcbsubtitle{Answer}\dbuse{answer}%
+%     \end{mybox}
+%   },
+%   labels/sep = /,
+% }
+%
+% % show all hard questions with hyperlink to answers
+% \dbNewStyle{hard}{ques-book}{
+%   before-code = {\section{Hard Questions}},
+%   item-code = {
+%     \begin{mybox}{%
+%       \hyperlink{answer_\dbIndex}{%
+%         Question \dbarabic%
+%         \hspace{2em}\dbuse{date}%
+%         \hspace{2em}\dbuse{labels}%
+%         \hfill\dbuse{count}%
+%       }%
+%     }
+%       \dbuse{ques}%
+%     \end{mybox}
+%   },
+%   raw-filter = hard,
+%   labels/sep = /,
+% }
+%
+% % show all hard questions that have been answered incorrectly for more than
+% % one time with hyperlink to answers
+% \dbNewStyle[hard]{bad}{ques-book}{
+%   before-code = {\section{Bad Questions}},
+%   raw-filter = {bad && hard},
+% }
+% % show all questions that plan to be reviewed on 2022/01/07 with hyperlink to
+% % answers
+% \dbNewStyle[hard]{review}{ques-book}{
+%   before-code = {\section{Questions to be Reviewed}},
+%   raw-filter = {review},
+% }
+% % show all questions that is record after 2022/01/02 with hyperlink to answers
+% \dbNewStyle[hard]{after}{ques-book}{
+%   before-code = {\section{Questions after 2022/01/02}},
+%   raw-filter = {after},
+% }
+%
+% \AtEndDocument{
+%   \dbshow{review}{ques-book}
+%   \dbshow{hard}{ques-book}
+%   \dbshow{bad}{ques-book}
+%   \dbshow{after}{ques-book}
+%   \dbshow{ques}{ques-book}
+%   \dbshow{answer}{ques-book}
+% }
+%
+% \begin{document}
+%
+% \begin{dbitem}{ques-book}[
+%   date=2022/01/01,
+%   labels={math, equation, easy},
+%   count=2
+%   ]
+%   \dbsave{ques}{%
+%     Solve the linear equation: $x + 16 = 31$.
+%   }
+%   \dbsave{answer}{%
+%     $x = 31 - 16 = 15$
+%   }
+% \end{dbitem}
+%
+% \begin{dbitem}{ques-book}[
+%   date=2022/01/01,
+%   labels={math, equation, hard},
+%   count=3
+%   ]
+%   \dbsave{ques}{%
+%     Solve the linear equation: $2y = 16$.
+%   }
+%   \dbsave{answer}{%
+%     $y = 16 / 2 = 8$
+%   }
+% \end{dbitem}
+%
+% \begin{dbitem}{ques-book}[
+%   date=2022/01/04,
+%   labels={math, integral, hard},
+%   count=1
+%   ]
+%   \dbsave{ques}{%
+%     Find the indefinite integral: $\int 2x \dd x$.
+%   }
+%   \dbsave{answer}{%
+%     $\int 2x \dd x = x^2$
+%   }
+% \end{dbitem}
+%
+% \end{document}
+% \end{verbatim}
 %
 % \end{documentation}
 %
@@ -1886,6 +1936,9 @@ Copyright and License
 % \begin{implementation}
 %
 % \section{Implementation}
+%
+% \changes{1.4}{2022-01-13}{Update code}{merge code and doc into
+% \pkg{dbshow.dtx}}
 %
 %    \begin{macrocode}
 %<*package>
@@ -2176,9 +2229,9 @@ Copyright and License
       \@@_process_default_value:w
         #1\@@_sep##1\@@_sep##2\@@_stop
     } {
-      \prop_get:NnN \c_@@_default_value_prop {##2} \l_tmp_default
+      \prop_get:NnN \c_@@_default_value_prop {##2} \l_@@_tmp_default
       \@@_process_default_value:w
-        #1\@@_sep##1\@@_sep##2|\l_tmp_default\@@_stop
+        #1\@@_sep##1\@@_sep##2|\l_@@_tmp_default\@@_stop
     }
   }
 }
@@ -2299,6 +2352,9 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
       ##1 .code:n = \@@_save_data:nnn {#1} {##1} {####1},
+      ##1* .code:n = {
+        \@@_save_data:nnn {#1} {##1} { \exp_not:n {####1} },
+      },
     }
   }
 }
@@ -2375,7 +2431,7 @@ Copyright and License
     { clist } { \clist_gclear_new:c }
     { int }   { \int_gzero_new:c }
     { fp }    { \fp_gzero_new:c }
-    { date }  { \__dbdate_gclear_new:n }
+    { date }  { \__dbdate_gclear_new:x }
   } { g_@@_data_#1_#2_\@@_get_counter:n {#1} }
   \str_case_e:nn { \@@_get_type:nn {#1} {#2} } {
     { str }   { \str_gset:cn }
@@ -2383,7 +2439,7 @@ Copyright and License
     { clist } { \clist_gset:cn }
     { int }   { \int_gset:cn }
     { fp }    { \fp_gset:cn }
-    { date }  { \__dbdate_gset:nx }
+    { date }  { \__dbdate_gset:xx }
   } { g_@@_data_#1_#2_\@@_get_counter:n {#1} } {#3}
 }
 \cs_generate_variant:Nn \@@_save_data:nnn { nnx }
@@ -2433,6 +2489,20 @@ Copyright and License
     }
   }
 } {}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\dbitemkv}
+% Store data with \meta{attr-value list}
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{attr-value list}
+% \end{arguments}
+%    \begin{macrocode}
+\NewDocumentCommand { \dbitemkv } { m m } {
+  \begin{dbitem}{#1}[#2]
+  \end{dbitem}
+}
 %    \end{macrocode}
 % \end{macro}
 %
@@ -2586,8 +2656,8 @@ Copyright and License
       \l_@@_filter_tmp_clist \l_@@_filter_tmp_tl {#2} \@@_stop
     \__dbdate_clear_new:n { tmp_day1 }
     \__dbdate_clear_new:n { tmp_day2 }
-    \__dbdate_set:nx { tmp_day1 } { \l_@@_filter_tmp_tl }
-    \__dbdate_set:nx { tmp_day2 } {#3}
+    \__dbdate_set:xx { tmp_day1 } { \l_@@_filter_tmp_tl }
+    \__dbdate_set:xx { tmp_day2 } {#3}
     \__dbdate_sub:nnN { tmp_day1 } { tmp_day2 } \l_@@_filter_diff_int
     \clist_if_in:NxTF \l_@@_filter_tmp_clist
       { \int_use:N \l_@@_filter_diff_int } {#4} {#5}
@@ -2613,7 +2683,7 @@ Copyright and License
       \tl_put_right:Nx \l_@@_expr_tl
         { \seq_item:Nn \l_@@_filter_other_seq {##1} }
       \__dbdate_clear_new:n { date-tmp }
-      \__dbdate_set:nx { date-tmp }
+      \__dbdate_set:xx { date-tmp }
         { \seq_item:Nn \l_@@_filter_date_seq {##1} }
       \__dbdate_to_int:nN { date-tmp } \l_@@_filter_tmpb_int
       \tl_put_right:Nx \l_@@_expr_tl
@@ -3425,10 +3495,10 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \cs_new_protected:Nn \@@_set_val:n {
-  \tl_set:cx {#1} { \@@_use_zfill:nn {#1} { / } }
+  \tl_set:cx {#1} { \@@_use_zfill:nn {#1} { \g_@@_sep_tl } }
 }
 \cs_new_protected:Nn \@@_gset_val:n {
-  \tl_gset:cx {#1} { \@@_use_zfill:nn {#1} { / } }
+  \tl_gset:cx {#1} { \@@_use_zfill:nn {#1} { \g_@@_sep_tl } }
 }
 %    \end{macrocode}
 % \end{macro}
@@ -3450,7 +3520,7 @@ Copyright and License
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{\@@_new:n}
+% \begin{macro}{\@@_new:n, \@@_new:x}
 % Create a new date variable.
 % \begin{arguments}
 %   \item \meta{date var}
@@ -3462,10 +3532,12 @@ Copyright and License
   \int_new:c { @@_day_#1 }
   \@@_ginit:n {#1}
 }
+\cs_generate_variant:Nn \@@_new:n { x }
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{\@@_clear_new:n, \@@_gclear_new:n}
+% \begin{macro}{\@@_clear_new:n, \@@_gclear_new:n, \@@_clear_new:x,
+% \@@_gclear_new:x}
 % Clear or create a new date variable.
 % \begin{arguments}
 %   \item \meta{date var}
@@ -3477,12 +3549,14 @@ Copyright and License
   \int_zero_new:c { @@_day_#1 }
   \@@_init:n {#1}
 }
+\cs_generate_variant:Nn \@@_clear_new:n { x }
 \cs_new_protected:Nn \@@_gclear_new:n {
   \int_gzero_new:c { @@_year_#1 }
   \int_gzero_new:c { @@_month_#1 }
   \int_gzero_new:c { @@_day_#1 }
   \@@_ginit:n {#1}
 }
+\cs_generate_variant:Nn \@@_gclear_new:n { x }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -3510,27 +3584,38 @@ Copyright and License
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{\@@_set:w, \@@_gset:w}
-% Set the value of \meta{date var}.
+% \begin{macro}{\@@_set_sep:n, \@@_set:w, \@@_gset:w, \dbdatesep}
+% Set internal date separator. Default is |/|.
 % \begin{arguments}
+%   \item \meta{separator}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_set_sep:n {
+  \tl_gset:Nn \g_@@_sep_tl { #1 }
+%    \end{macrocode}
+% Set the value of \meta{date var}.
+% \begin{arguments}[2]
 %   \item \meta{date var}
 %   \item \meta{year}
 %   \item \meta{month}
 %   \item \meta{day}
 % \end{arguments}
 %    \begin{macrocode}
-\cs_new_protected:Npn \@@_set:w #1\@@_sep#2/#3/#4\@@_stop {
-  \@@_clear_new:n {#1}
-  \@@_set:nnnn {#1} {#2} {#3} {#4}
+  \cs_gset_protected:Npn \@@_set:w ##1\@@_sep##2#1##3#1##4\@@_stop {
+    \@@_clear_new:n {##1}
+    \@@_set:nnnn {##1} {##2} {##3} {##4}
+  }
+  \cs_gset_protected:Npn \@@_gset:w ##1\@@_sep##2#1##3#1##4\@@_stop {
+    \@@_gclear_new:n {##1}
+    \@@_gset:nnnn {##1} {##2} {##3} {##4}
+  }
 }
-\cs_new_protected:Npn \@@_gset:w #1\@@_sep#2/#3/#4\@@_stop {
-  \@@_gclear_new:n {#1}
-  \@@_gset:nnnn {#1} {#2} {#3} {#4}
-}
+\cs_gset_eq:NN \dbdatesep \@@_set_sep:n
+\dbdatesep{/}
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{\@@_set:nn, \@@_set:nx, \@@_gset:nn, \@@_gset:nx}
+% \begin{macro}{\@@_set:nn, \@@_set:xx, \@@_gset:nn, \@@_gset:xx}
 % Set the value of \meta{date var}.
 % \begin{arguments}
 %   \item \meta{date var}
@@ -3540,11 +3625,11 @@ Copyright and License
 \cs_new_protected:Nn \@@_set:nn {
   \@@_set:w #1\@@_sep#2\@@_stop
 }
-\cs_generate_variant:Nn \@@_set:nn { nx }
+\cs_generate_variant:Nn \@@_set:nn { xx }
 \cs_new_protected:Nn \@@_gset:nn {
   \@@_gset:w #1\@@_sep#2\@@_stop
 }
-\cs_generate_variant:Nn \@@_gset:nn { nx }
+\cs_generate_variant:Nn \@@_gset:nn { xx }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -3557,11 +3642,11 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \cs_new_protected:Nn \@@_sub:nnN {
-  \int_zero_new:N \l_@@_tmpa_int
-  \int_zero_new:N \l_@@_tmpb_int
-  \@@_to_int:nN {#1} \l_@@_tmpa_int
-  \@@_to_int:nN {#2} \l_@@_tmpb_int
-  \int_set:Nn #3 { \l_@@_tmpa_int - \l_@@_tmpb_int }
+  \int_zero_new:N \l_@@_sub_tmpa_int
+  \int_zero_new:N \l_@@_sub_tmpb_int
+  \@@_to_int:nN {#1} \l_@@_sub_tmpa_int
+  \@@_to_int:nN {#2} \l_@@_sub_tmpb_int
+  \int_set:Nn #3 { \l_@@_sub_tmpa_int - \l_@@_sub_tmpb_int }
 }
 %    \end{macrocode}
 % \end{macro}
@@ -3617,12 +3702,24 @@ Copyright and License
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}{\@@_show:n}
+% Show date in terminal.
+% \begin{arguments}
+%   \item \meta{date var}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_show:n {
+  \exp_args:Nx \tl_show:n { >#1~=~\@@_use:nn {#1} { - } }
+}
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{variable}{\dbtoday}
 % Display date of today in |yyyy/mm/dd|.
 %    \begin{macrocode}
-\tl_set:Nx \dbtoday {
-  \int_use:N \c_sys_year_int/
-  \int_use:N \c_sys_month_int/
+\tl_set:Nn \dbtoday {
+  \int_use:N \c_sys_year_int  \g_@@_sep_tl
+  \int_use:N \c_sys_month_int \g_@@_sep_tl
   \int_use:N \c_sys_day_int
 }
 %    \end{macrocode}
