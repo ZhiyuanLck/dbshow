@@ -1,0 +1,15 @@
+\documentclass{dbtest}
+
+\begin{document}
+\ExplSyntaxOn
+\begin{dbtest}{test}
+  \int_set:Nn \l_tmpa_int {1}
+  \str_set:Nn \l_tmpa_str {abc}
+  \dbeq{int}{\l_tmpa_int}{1}
+  \dbeq{int}{\l_tmpa_int}{2}
+  \dbeq{str}{\l_tmpa_str}{abc}
+  \dbeq{str}{\l_tmpa_str}{a}
+\end{dbtest}
+\ExplSyntaxOff
+
+\end{document}

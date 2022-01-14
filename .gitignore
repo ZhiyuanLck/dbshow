@@ -285,6 +285,7 @@ TSWLatexianTemp*
 *.sty
 *.otf
 *.ins
+!test/*.tex
 
 dbshow/
 tmp/
