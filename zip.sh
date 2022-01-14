@@ -3,6 +3,7 @@
 rm -rf dbshow
 rm -rf dbshow.zip
 mkdir dbshow
+tex dbshow.dtx
 cp README.md dbshow/
 cp dbshow.ins dbshow/
 cp dbshow.dtx dbshow/
