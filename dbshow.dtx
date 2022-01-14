@@ -2892,6 +2892,15 @@ Copyright and License
       g_@@_style_attr_after_tl_#1_#2_#3
     },
     after-code       .initial:n    = ,
+    item-code        .code:n       = {
+      \bool_gset_false:c { g_@@_style_attr_item_exp_bool_#1_#2_#3 }
+      \cs_gset:cn { @@_style_attr_item_code_#1_#2_#3:n } {##1}
+    },
+    item-code        .initial:n    = {##1},
+    item-code*       .code:n       = {
+      \bool_gset_true:c  { g_@@_style_attr_item_exp_bool_#1_#2_#3 }
+      \cs_gset:cn { @@_style_attr_item_code_#1_#2_#3:n } {##1}
+    },
 %    \end{macrocode}
 % For comma list and date.
 %    \begin{macrocode}
@@ -2913,14 +2922,15 @@ Copyright and License
 % Only for date.
 %    \begin{macrocode}
     zfill            .bool_gset:c  = {
-      g_@@_style_attr_zfill_bool_#1_#2_#3
+      g_@@_style_date_zfill_bool_#1_#2_#3
     },
     zfill            .initial:n    = true,
     zfill            .default:n    = true,
-    wrapper          .tl_gset:c    = {
-      g_@@_style_attr_wrapper_#1_#2_#3
+    format-code      .code:n       = {
+      \cs_gset:cn { @@_style_date_format_code_#1_#2_#3:nnn } {##1}
+      \cs_generate_variant:cn
+        { @@_style_date_format_code_#1_#2_#3:nnn } { xxx }
     },
-    wrapper          .initial:n    = { \@@_identity:n },
   }
   \str_case_e:nn { \@@_get_type:nn {#2} {#3} } {
     { clist }
@@ -2949,19 +2959,19 @@ Copyright and License
       \tl_gset:cV { g_@@_filter_#1_#2 } \l_@@_raw_filter_str
       \@@_combine_conditional:nnn {#2}  \l_@@_raw_filter_str {##1}
     },
-    filter             .tl_gset:c    = { g_@@_filter_#1_#2 },
-    filter             .initial:n    = -none-,
-    sort               .clist_gset:c = { g_@@_sort_clist_#1_#2 },
-    before-code        .tl_gset:c    = { g_@@_style_before_tl_#1_#2 },
-    before-code        .initial:n    = ,
-    item-code          .tl_gset:c    = { g_@@_style_database_item_tl_#1_#2 },
-    item-code          .initial:n    = ,
-    after-code         .tl_gset:c    = { g_@@_style_after_tl_#1_#2 },
-    after-code         .initial:n    = ,
-    record-before-code .tl_gset:c    = { g_@@_style_record_before_tl_#1_#2 },
-    record-before-code .initial:n    = ,
-    record-after-code  .tl_gset:c    = { g_@@_style_record_after_tl_#1_#2 },
-    record-after-code  .initial:n    = ,
+    filter           .tl_gset:c    = { g_@@_filter_#1_#2 },
+    filter           .initial:n    = -none-,
+    sort             .clist_gset:c = { g_@@_sort_clist_#1_#2 },
+    before-code      .tl_gset:c    = { g_@@_style_before_tl_#1_#2 },
+    before-code      .initial:n    = ,
+    after-code       .tl_gset:c    = { g_@@_style_after_tl_#1_#2 },
+    after-code       .initial:n    = ,
+    item-before-code .tl_gset:c    = { g_@@_style_item_before_tl_#1_#2 },
+    item-before-code .initial:n    = ,
+    item-after-code  .tl_gset:c    = { g_@@_style_item_after_tl_#1_#2 },
+    item-after-code  .initial:n    = ,
+    item-code        .tl_gset:c    = { g_@@_style_item_tl_#1_#2 },
+    item-code        .initial:n    = ,
   }
   \prop_map_inline:cn { g_@@_attr_type_prop_#2 }
     { \@@_new_attr_style:nnn {#1} {#2} {##1} }
@@ -3196,8 +3206,9 @@ Copyright and License
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{\@@_use_data:nnnn}
-% Display Data.
+% \begin{macro}{\@@_use_data:nnnn, \@@_use_data_raw:nnnn}
+% Display Data. \cs{@@_use_data:nnnn} wrap the \meta{attr} data and
+% \cs{@@_use_data_raw:nnnn} display the underlying data.
 % \begin{arguments}
 %   \item \meta{database}
 %   \item \meta{attr}
@@ -3205,26 +3216,34 @@ Copyright and License
 %   \item \meta{style}
 % \end{arguments}
 %    \begin{macrocode}
-% #1 database #2 attr #3 index #4 style
 \cs_new:Nn \@@_use_data:nnnn {
+  \bool_if:cT { g_@@_style_attr_item_exp_bool_#4_#1_#2 }
+    { \exp_args:Nnx }
+  \use:c { @@_style_attr_item_code_#4_#1_#2:n }
+  { \@@_use_data_raw:nnnn {#1} {#2} {#3} {#4} }
+}
+\cs_new:Nn \@@_use_data_raw:nnnn {
   \str_case_e:nn
   { \prop_item:cn { g_@@_attr_type_prop_#1 } {#2} } {
     { str }   { \str_use:c { g_@@_data_#1_#2_#3 } }
-    { tl }    { \tl_use:c { g_@@_data_#1_#2_#3 } }
+    { tl }    { \tl_use:c  { g_@@_data_#1_#2_#3 } }
     { int }   { \int_use:c { g_@@_data_#1_#2_#3 } }
-    { fp }    { \fp_use:c { g_@@_data_#1_#2_#3 } }
+    { fp }    { \fp_use:c  { g_@@_data_#1_#2_#3 } }
     { clist } {
       \@@_clist_use:cccc { g_@@_data_#1_#2_#3 }
         { g_@@_style_attr_sep_#4_#1_#2 }
         { g_@@_style_attr_item_before_tl_#4_#1_#2 }
-        { g_@@_style_attr_item_after_tl_#4_#1_#2 }
+        { g_@@_style_attr_item_after_ tl_#4_#1_#2 }
     }
     { date }  {
-      \exp_args:Nnx
-      \tl_use:c { g_@@_style_attr_wrapper_#4_#1_#2 } {
+      \cs_if_exist_use:cTF { @@_style_date_format_code_#4_#1_#2:xxx } {
+        { \__dbdate_get_year:n  { g_@@_data_#1_#2_#3 } }
+        { \__dbdate_get_month:n { g_@@_data_#1_#2_#3 } }
+        { \__dbdate_get_day:n   { g_@@_data_#1_#2_#3 } }
+      } {
         \@@_date_use:ncc { g_@@_data_#1_#2_#3 }
           { g_@@_style_attr_sep_#4_#1_#2 }
-          { g_@@_style_attr_zfill_bool_#4_#1_#2 }
+          { g_@@_style_date_zfill_bool_#4_#1_#2 }
       }
     }
   }
@@ -3326,11 +3345,11 @@ Copyright and License
       \@@_check_attr:nn {#2} {####1}
       \tl_use:c { g_@@_style_attr_before_tl_#1_#2_####1 }
       \@@_use_data:nnnn {#2} {####1} {##1} {#1}
-      \tl_use:c { g_@@_style_attr_after_tl_#1_#2_####1 }
+      \tl_use:c { g_@@_style_attr_after_ tl_#1_#2_####1 }
     }
-    \tl_use:c { g_@@_style_record_before_tl_#1_#2 }
-    \tl_use:c { g_@@_style_database_item_tl_#1_#2 }
-    \tl_use:c { g_@@_style_record_after_tl_#1_#2 }
+    \tl_use:c { g_@@_style_item_before_tl_#1_#2 }
+    \tl_use:c { g_@@_style_item_       tl_#1_#2 }
+    \tl_use:c { g_@@_style_item_after_ tl_#1_#2 }
   }
 }
 %    \end{macrocode}
@@ -3560,6 +3579,28 @@ Copyright and License
   \@@_ginit:n {#1}
 }
 \cs_generate_variant:Nn \@@_gclear_new:n { x }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_get_year:n, \@@_get_year:x, \@@_get_month:n,
+% \@@_get_month:x, \@@_get_day:n, \@@_get_day:x}
+% Extract year, month or day from \meta{date var}.
+% \begin{arguments}
+%   \item \meta{date var}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_get_year:n {
+  \int_use:c { @@_year_#1 }
+}
+\cs_new:Nn \@@_get_month:n {
+  \int_use:c { @@_month_#1 }
+}
+\cs_new:Nn \@@_get_day:n {
+  \int_use:c { @@_day_#1 }
+}
+\cs_generate_variant:Nn \@@_get_year:n  { x }
+\cs_generate_variant:Nn \@@_get_month:n { x }
+\cs_generate_variant:Nn \@@_get_day:n   { x }
 %    \end{macrocode}
 % \end{macro}
 %
