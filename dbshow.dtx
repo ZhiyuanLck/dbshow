@@ -162,7 +162,7 @@ Copyright and License
 \usepackage{tabularray}
 \usepackage{zhnumber}
 \usepackage{tcolorbox}
-\tcbuselibrary{skins, minted, breakable}
+\tcbuselibrary{skins, minted, breakable, xparse}
 
 \geometry{
   left=4.5cm,
@@ -224,7 +224,7 @@ Copyright and License
 \tcbset{
   exam-base/.style={
     listing engine=minted, listing and text,
-    minted style=xcode,
+    minted style=xcode, breakable,
     minted options={fontsize=\small,breaklines,linenos,numbersep=3mm},
     colback=exambg, colframe=examframe,
     left=5mm, enhanced,
@@ -237,17 +237,12 @@ Copyright and License
     }
   }
 }
-\newtcblisting[auto counter]{example}[2][]{%
-  exam-base,
-  title={示例 \thetcbcounter：#2\label{cn-#1}},
+\DeclareTCBListing[auto counter]{example}{ O{} D(){} m }{%
+  exam-base, title={示例 \thetcbcounter：#3}, label={cn-#2}, #1
 }
-\newtcblisting[auto counter]{example*}[2][]{%
-  exam-base,
-  title={Example \thetcbcounter: #2\label{en-#1}},
+\DeclareTCBListing[auto counter]{example*}{ O{} D(){} m }{%
+  exam-base, title={Example \thetcbcounter: #3}, label={en-#2}, #1
 }
-\renewcommand{\theFancyVerbLine}{%
-  \ttfamily\textcolor{examno}{
-    \scriptsize\oldstylenums{\arabic{FancyVerbLine}}}}
 
 \ExplSyntaxOn
 \makeatletter
@@ -623,13 +618,15 @@ Copyright and License
 %     \opt{filter} = <filter>
 %   \end{syntax}
 %
-%   为当前样式设置由 \cs{dbCombineFilters} 所定义的过滤器
+%   为当前样式设置由 \cs{dbCombineFilters} 所定义的过滤器。示例 \ref{cn-filter}
+%   演示了如何定义条件，将条件组合成过滤器以及使用过滤器。
 % \end{option}
+%
 % \DeleteShortVerb{\|}
 % \iffalse
 %<*verb>
 % \fi
-\begin{example}[filter]{使用过滤器筛选数据}
+\begin{example}(filter){使用过滤器筛选数据}
   \dbNewDatabase{filter-db}{name=str, count=int}
   \begin{dbFilters}{filter-db}
     \dbNewCond {cond1}{count}{\dbval > 3}
@@ -639,7 +636,7 @@ Copyright and License
   \end{dbFilters}
   \dbitemkv{filter-db}{name=123, count=4}
   \dbitemkv{filter-db}{name=ab3, count=2}
-  \dbitemkv{filter-db}{name=bag, count=1}
+  \dbitemkv{filter-db}{name=bag, count=5}
   \dbNewStyle{filter-and-style}{filter-db}{
     filter      = filter-and,
     before-code = \par Filter And\par,
@@ -658,32 +655,47 @@ Copyright and License
 % \fi
 % \MakeShortVerb{\|}
 %
+% \changes{1.1}{2022-01-06}{Add option}{\opt{raw-filter}}
 % \begin{option}[added=2022-01-06]{raw-filter}
 %   \begin{syntax}
 %     raw-filter = <conditional expression>
 %   \end{syntax}
 %
 %   使用条件表达式设置匿名过滤器，这里的条件指通过 \cs{dbNewConditional} 定义的
-%   条件。下面代码中两个示例的过滤器具有相同的功能。
+%   条件。示例 \ref{cn-raw-filter} 使用 \opt{raw-filter} 选项，直接组合筛选条
+%   件，达到与示例 \ref{cn-filter} 相同的效果。
 % \end{option}
 %
-% \changes{1.1}{2022-01-06}{Add option}{\opt{raw-filter}}
-%
-% \begin{verbatim}
-%   % method 1
-%   \begin{dbFilters}{db}
-%     \dbNewConditional{cond1}{int-attr}{\rval > 1}
-%     \dbNewConditional*{cond2}{str-attr}{\d+}
-%   \end{dbFilters}
-%   \dbNewStyle{style}{db}{raw-filter={cond1 && cond2}}
-%   % method 2
-%   \begin{dbFilters}{db}
-%     \dbNewConditional{cond1}{int-attr}{\rval > 1}
-%     \dbNewConditional*{cond2}{str-attr}{\d+}
-%     \dbCombineFilters{filter}{cond1 && cond2}
-%   \end{dbFilters}
-%   \dbNewStyle{style}{db}{filter=filter}
-% \end{verbatim}
+% \DeleteShortVerb{\|}
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(raw-filter){使用匿名过滤器筛选数据}
+  \dbNewDatabase{filter-db}{name=str, count=int}
+  \begin{dbFilters}{filter-db}
+    \dbNewCond {cond1}{count}{\dbval > 3}
+    \dbNewCond*{cond2}{name} {\d+}
+  \end{dbFilters}
+  \dbitemkv{filter-db}{name=123, count=4}
+  \dbitemkv{filter-db}{name=ab3, count=2}
+  \dbitemkv{filter-db}{name=bag, count=5}
+  \dbNewStyle{filter-and-style}{filter-db}{
+    raw-filter  = {cond1 && cond2},
+    before-code = \par Filter And\par,
+    item-code   = {\dbuse{name}: \dbuse{count}\quad},
+  }
+  \dbNewStyle{filter-or-style}{filter-db}{
+    raw-filter  = {cond1 || cond2},
+    before-code = \par Filter Or\par,
+    item-code   = {\dbuse{name}: \dbuse{count}\quad},
+  }
+  \dbshow{filter-and-style}{filter-db}
+  \dbshow{filter-or-style} {filter-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
+% \MakeShortVerb{\|}
 %
 % \changes{1.2}{2022-01-08}{Fix bug}{string sorting bug}
 % \begin{option}[added=2022-01-05]{sort}
@@ -700,7 +712,7 @@ Copyright and License
 % \iffalse
 %<*verb>
 % \fi
-\begin{example}[sort]{多级排序}
+\begin{example}(sort){多级排序}
   \dbNewDatabase{sort-db}{name=str, count=int}
   \dbNewStyle{sort-style}{sort-db}{
     sort = {count*, name},
@@ -729,7 +741,7 @@ Copyright and License
 % \iffalse
 %<*verb>
 % \fi
-\begin{example}[item-code]{展示数据库条目}
+\begin{example}(item-code){展示数据库条目}
   \dbNewDatabase{item-db}{acronym=str, desc=tl}
   \dbNewStyle{item-style}{item-db}{
     before-code = {\dbIfEmptyF{\begin{description}}},
@@ -737,9 +749,9 @@ Copyright and License
     item-code   = {\item[\dbuse{acronym}] \dbuse{desc}},
     sort        = acronym,
   }
-  \dbitemkv{item-db}{acronym=PM, desc={Prime Minister}}
+  \dbitemkv{item-db}{acronym=PM,  desc={Prime Minister}}
   \dbitemkv{item-db}{acronym=CBD, desc={Central Business District}}
-  \dbitemkv{item-db}{acronym=DL, desc={Deep Learning}}
+  \dbitemkv{item-db}{acronym=DL,  desc={Deep Learning}}
   \dbshow{item-style}{item-db}
 \end{example}
 % \iffalse
@@ -1352,42 +1364,93 @@ Copyright and License
 %
 % \begin{option}[added=2022-01-05]{filter}
 %   \begin{syntax}
-%     filter = <filter>
+%     \opt{filter} = <filter>
 %   \end{syntax}
 %
-%   Set the \meta{filter} defined by \cs{dbCombineFilters}.
+%   Set the \meta{filter} defined by \cs{dbCombineFilters}. Example
+%   \ref{en-filter} shows how to define conditionals and combine them into
+%   a filter.
 % \end{option}
+%
+% \DeleteShortVerb{\|}
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(filter){Filter Items}
+  \dbNewDatabase{filter-db}{name=str, count=int}
+  \begin{dbFilters}{filter-db}
+    \dbNewCond {cond1}{count}{\dbval > 3}
+    \dbNewCond*{cond2}{name} {\d+}
+    \dbCombCond{filter-and}{cond1 && cond2}
+    \dbCombCond{filter-or} {cond1 || cond2}
+  \end{dbFilters}
+  \dbitemkv{filter-db}{name=123, count=4}
+  \dbitemkv{filter-db}{name=ab3, count=2}
+  \dbitemkv{filter-db}{name=bag, count=5}
+  \dbNewStyle{filter-and-style}{filter-db}{
+    filter      = filter-and,
+    before-code = \par Filter And\par,
+    item-code   = {\dbuse{name}: \dbuse{count}\quad},
+  }
+  \dbNewStyle{filter-or-style}{filter-db}{
+    filter      = filter-or,
+    before-code = \par Filter Or\par,
+    item-code   = {\dbuse{name}: \dbuse{count}\quad},
+  }
+  \dbshow{filter-and-style}{filter-db}
+  \dbshow{filter-or-style} {filter-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
+% \MakeShortVerb{\|}
 %
 % \changes{1.1}{2022-01-06}{Add option}{\opt{raw-filter}}
 % \begin{option}[added=2022-01-06]{raw-filter}
 %   \begin{syntax}
-%     raw-filter = <conditional expression>
+%     \opt{raw-filter} = <conditional expression>
 %   \end{syntax}
 %
-%   Set anonymous with conditionals defined by \cs{dbNewConditional}. Two
-%   filters shows in the code below have the same meaning.
+%   Set anonymous filter with conditionals defined by \cs{dbNewConditional}.
+%   Example \ref{en-raw-filter} shows how to simplify the code of example
+%   \ref{en-filter} with \opt{raw-filter} option.
 % \end{option}
 %
-% \begin{verbatim}
-%   % method 1
-%   \begin{dbFilters}{db}
-%     \dbNewConditional{cond1}{int-attr}{\rval > 1}
-%     \dbNewConditional*{cond2}{str-attr}{\d+}
-%   \end{dbFilters}
-%   \dbNewStyle{style}{db}{raw-filter={cond1 && cond2}}
-%   % method 2
-%   \begin{dbFilters}{db}
-%     \dbNewConditional{cond1}{int-attr}{\rval > 1}
-%     \dbNewConditional*{cond2}{str-attr}{\d+}
-%     \dbCombineFilters{filter}{cond1 && cond2}
-%   \end{dbFilters}
-%   \dbNewStyle{style}{db}{filter=filter}
-% \end{verbatim}
+% \DeleteShortVerb{\|}
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(raw-filter){Using Anonymous Filter}
+  \dbNewDatabase{filter-db}{name=str, count=int}
+  \begin{dbFilters}{filter-db}
+    \dbNewCond {cond1}{count}{\dbval > 3}
+    \dbNewCond*{cond2}{name} {\d+}
+  \end{dbFilters}
+  \dbitemkv{filter-db}{name=123, count=4}
+  \dbitemkv{filter-db}{name=ab3, count=2}
+  \dbitemkv{filter-db}{name=bag, count=5}
+  \dbNewStyle{filter-and-style}{filter-db}{
+    raw-filter  = {cond1 && cond2},
+    before-code = \par Filter And\par,
+    item-code   = {\dbuse{name}: \dbuse{count}\quad},
+  }
+  \dbNewStyle{filter-or-style}{filter-db}{
+    raw-filter  = {cond1 || cond2},
+    before-code = \par Filter Or\par,
+    item-code   = {\dbuse{name}: \dbuse{count}\quad},
+  }
+  \dbshow{filter-and-style}{filter-db}
+  \dbshow{filter-or-style} {filter-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
+% \MakeShortVerb{\|}
 %
 % \changes{1.2}{2022-01-08}{Fix bug}{string sorting bug}
 % \begin{option}[added=2022-01-05]{sort}
 %   \begin{syntax}
-%     sort = \{ <attr spec1>, <attr spec2>, \ldots{} \}
+%     \opt{sort} = \{ <attr spec1>, <attr spec2>, \ldots{} \}
 %   \end{syntax}
 %
 %   Set sorting rules. Attributes of type |str, date, int, fp| is supported to
@@ -1400,7 +1463,7 @@ Copyright and License
 % \iffalse
 %<*verb>
 % \fi
-\begin{example*}[sort]{Multi-level Sorting}
+\begin{example*}(sort){Multi-level Sorting}
   \dbNewDatabase{sort-db}{name=str, count=int}
   \dbNewStyle{sort-style}{sort-db}{
     sort = {count*, name},
@@ -1418,12 +1481,32 @@ Copyright and License
 %
 % \begin{option}[added=2022-01-05, rEXP]{item-code}
 %   \begin{syntax}
-%     item-code = <code>
+%     \opt{item-code} = <item code>
 %   \end{syntax}
 %
-%   Set the code that show a single record. You can use \cs{dbuse} to display
-%   certian attribute.
+%   Set the code that show a single record. You can use \cs{dbuse} to denote
+%   the value of attribute.
 % \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(item-code){Display Database Items}
+  \dbNewDatabase{item-db}{acronym=str, desc=tl}
+  \dbNewStyle{item-style}{item-db}{
+    before-code = {\dbIfEmptyF{\begin{description}}},
+    after-code  = {\dbIfEmptyF{\end{description}}},
+    item-code   = {\item[\dbuse{acronym}] \dbuse{desc}},
+    sort        = acronym,
+  }
+  \dbitemkv{item-db}{acronym=PM,  desc={Prime Minister}}
+  \dbitemkv{item-db}{acronym=CBD, desc={Central Business District}}
+  \dbitemkv{item-db}{acronym=DL,  desc={Deep Learning}}
+  \dbshow{item-style}{item-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
 %
 % \changes{1.3}{2022-01-09}{Update option}{\opt{<attr>/sep}}
 % \begin{option}[added=2022-01-05, updated=2022-01-08, rEXP]{<attr>/sep}
