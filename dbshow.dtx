@@ -2199,7 +2199,7 @@ Copyright and License
 %    \begin{macrocode}
 \cs_new:Nn \@@_check_style:nn {
   \tl_if_exist:cF { g_@@_style_opts_tl_#1_#2 }
-    { \msg_warning:nnnn { dbshow } { non-existent-style } {#1} {#2} }
+    { \msg_error:nnnn { dbshow } { non-existent-style } {#1} {#2} }
 }
 %    \end{macrocode}
 % \end{macro}
@@ -3540,6 +3540,7 @@ Copyright and License
 %    \begin{macrocode}
 \NewDocumentCommand { \dbshow } { m m } {
   \@@_check_database:n {#2}
+  \@@_check_style:nn   {#1} {#2}
   \@@_check_filter:nv  {#2} { g_@@_filter_#1_#2 }
   \@@_show:nnv {#1}    {#2} { g_@@_filter_#1_#2 }
 }
