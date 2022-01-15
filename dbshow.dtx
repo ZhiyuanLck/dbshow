@@ -161,6 +161,8 @@ Copyright and License
 \usepackage{xcolor}
 \usepackage{tabularray}
 \usepackage{zhnumber}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, minted, breakable}
 
 \geometry{
   left=4.5cm,
@@ -197,8 +199,6 @@ Copyright and License
   \addcontentsline{toc}{part}{Change~History}
 }
 
-\let\subsubitem\subitem
-
 \DoNotIndex{\begin, \end}
 \setlength{\parskip}{\medskipamount}
 
@@ -216,6 +216,38 @@ Copyright and License
 \DeclareDocumentEnvironment { note } { +b } {
   \par\textbf{\textsf{NOTE:~}}#1\par
 } {}
+
+\definecolor{exambg}{RGB}{248, 241, 224}
+\definecolor{examno}{RGB}{176, 101, 90}
+\definecolor{examnobg}{RGB}{241, 225, 208}
+\definecolor{examframe}{RGB}{156, 129, 110}
+\tcbset{
+  exam-base/.style={
+    listing engine=minted, listing and text,
+    minted style=xcode,
+    minted options={fontsize=\small,breaklines,linenos,numbersep=3mm},
+    colback=exambg, colframe=examframe,
+    left=5mm, enhanced,
+    fonttitle=\small\sffamily\bfseries, fontlower=\small,
+    overlay={
+      \begin{tcbclipinterior}
+        \fill[examnobg]
+        (frame.south west) rectangle ([xshift=5mm]frame.north west);
+      \end{tcbclipinterior}
+    }
+  }
+}
+\newtcblisting[auto counter]{example}[2][]{%
+  exam-base,
+  title={示例 \thetcbcounter：#2\label{cn-#1}},
+}
+\newtcblisting[auto counter]{example*}[2][]{%
+  exam-base,
+  title={Example \thetcbcounter: #2\label{en-#1}},
+}
+\renewcommand{\theFancyVerbLine}{%
+  \ttfamily\textcolor{examno}{
+    \scriptsize\oldstylenums{\arabic{FancyVerbLine}}}}
 
 \ExplSyntaxOn
 \makeatletter
@@ -336,13 +368,23 @@ Copyright and License
   \end{itemize}
 } {}
 
-\cs_new_protected:Nn \dbshowdoc_function_begin:N {
+\definecolor{option}{HTML}{009933}
+\definecolor{env}{HTML}{FF6600}
+\definecolor{cs}{HTML}{A80C91}
+\cs_set_eq:NN \__codedoc_old_cs:nN \__codedoc_typeset_function_block:nN
+\cs_gset_protected:Npn \__codedoc_typeset_function_block:nN #1#2 {
+  \color{cs}
+  \__codedoc_old_cs:nN {#1} #2
+}
+\cs_new_protected:Nn \dbshowdoc_function_begin:Nn {
   \cs_set_eq:NN \__codedoc_tmp_cs:nN \__codedoc_typeset_function_block:nN
   \cs_set_protected:Npn \__codedoc_typeset_function_block:nN ##1##2 {
     \__codedoc_function_label:xN {##1} ##2
     \hbox_set:Nn \l_tmpa_box {##1}
+    \group_begin: \color{#2}
     \int_compare:nTF { \str_count:n {##1} <= 22 }
       {##1} { \adjustbox{width=.7\marginparwidth, height=\box_ht:N \l_tmpa_box}{##1} }
+    \group_end:
     #1{##1}
     \__codedoc_typeset_expandability: \\
   }
@@ -352,7 +394,7 @@ Copyright and License
 }
 \DeclareDocumentEnvironment { option } { O{} +v }
   {
-    \dbshowdoc_function_begin:N \SpecialOptionIndex
+    \dbshowdoc_function_begin:Nn \SpecialOptionIndex { option }
     \__codedoc_function:nnw {#1} {#2}
   }
   {
@@ -361,7 +403,7 @@ Copyright and License
   }
 \DeclareDocumentEnvironment { environment } { O{} +v }
   {
-    \dbshowdoc_function_begin:N \SpecialEnvIndex
+    \dbshowdoc_function_begin:Nn \SpecialEnvIndex { env }
     \__codedoc_function:nnw {#1} {#2}
   }
   {
@@ -370,7 +412,11 @@ Copyright and License
   }
 
 \DeclareDocumentCommand \opt { O{} m }
-  { \__codedoc_cmd:no {#1} {#2} }
+  { \textcolor{option}{ \__codedoc_cmd:no {#1} {#2} } }
+\DeclareDocumentCommand \env { O{} m }
+  { \textcolor{env}{ \__codedoc_cmd:no {#1} {#2} } }
+\DeclareDocumentCommand \cs  { O{} m }
+  { \textcolor{cs}{ \__codedoc_cmd:no {#1} { \c_backslash_str #2 } } }
 
 \NewDocumentCommand \linktarget { m m m } {%
   \hyperlink{#1}{#3}%
@@ -402,7 +448,7 @@ Copyright and License
 %</driver>
 % \fi
 %
-% \CheckSum{882}
+% \CheckSum{0}
 % \GetFileId{dbshow.sty}
 %
 % \ExplSyntaxOn
@@ -574,11 +620,43 @@ Copyright and License
 %
 % \begin{option}[added=2022-01-05]{filter}
 %   \begin{syntax}
-%     filter = <filter>
+%     \opt{filter} = <filter>
 %   \end{syntax}
 %
 %   为当前样式设置由 \cs{dbCombineFilters} 所定义的过滤器
 % \end{option}
+% \DeleteShortVerb{\|}
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}[filter]{使用过滤器筛选数据}
+  \dbNewDatabase{filter-db}{name=str, count=int}
+  \begin{dbFilters}{filter-db}
+    \dbNewCond {cond1}{count}{\dbval > 3}
+    \dbNewCond*{cond2}{name} {\d+}
+    \dbCombCond{filter-and}{cond1 && cond2}
+    \dbCombCond{filter-or} {cond1 || cond2}
+  \end{dbFilters}
+  \dbitemkv{filter-db}{name=123, count=4}
+  \dbitemkv{filter-db}{name=ab3, count=2}
+  \dbitemkv{filter-db}{name=bag, count=1}
+  \dbNewStyle{filter-and-style}{filter-db}{
+    filter      = filter-and,
+    before-code = \par Filter And\par,
+    item-code   = {\dbuse{name}: \dbuse{count}\quad},
+  }
+  \dbNewStyle{filter-or-style}{filter-db}{
+    filter      = filter-or,
+    before-code = \par Filter Or\par,
+    item-code   = {\dbuse{name}: \dbuse{count}\quad},
+  }
+  \dbshow{filter-and-style}{filter-db}
+  \dbshow{filter-or-style} {filter-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
+% \MakeShortVerb{\|}
 %
 % \begin{option}[added=2022-01-06]{raw-filter}
 %   \begin{syntax}
@@ -613,31 +691,75 @@ Copyright and License
 %     sort = \{ <attr spec1>, <attr spec2>, \ldots{} \}
 %   \end{syntax}
 %
-%   为当前样式设置排序规则。支持根据 |str|，|date|，|int|，|fp| 类型的数据进行排
-%   序，支持多级排序。\meta{attr} 表示增序，\meta{attr}* 表示降序。下面例子中，
-%   使用 |sort-style| 展示数据时的顺序为先按 |level| 降序，|level| 相同的再按出
-%   生日期 |birth| 增序，以此类推。
+%   为当前样式设置排序规则。支持对 |str|，|date|，|int|，|fp| 类型的数据进行排
+%   序，支持多级排序。\meta{attr} 表示增序，\meta{attr}* 表示降序。示例
+%   \ref{cn-sort} 的排序规则为先按 |count| 降序排序，|count| 相同的再按 |name|
+%   增序排序。
 % \end{option}
 %
-% \begin{verbatim}
-%   \dbNewDatabase{sort-example}{
-%     name = str,
-%     birth = date,
-%     level = int,
-%     weight = fp,
-%   }
-%   \dbNewStyle{sort-style}{sort-example}{
-%     sort = { level*, birth, name, weight }
-%   }
-% \end{verbatim}
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}[sort]{多级排序}
+  \dbNewDatabase{sort-db}{name=str, count=int}
+  \dbNewStyle{sort-style}{sort-db}{
+    sort = {count*, name},
+    item-code = {\dbuse{name}: \dbuse{count}\quad}
+  }
+  \dbitemkv{sort-db}{name=bag, count=1}
+  \dbitemkv{sort-db}{name=box, count=1}
+  \dbitemkv{sort-db}{name=tag, count=2}
+  \dbitemkv{sort-db}{name=pen, count=3}
+  \dbshow{sort-style}{sort-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
 %
 % \begin{option}[added=2022-01-05, rEXP]{item-code}
 %   \begin{syntax}
-%     item-code = <code>
+%     item-code = <item code>
 %   \end{syntax}
 %
-%   该选项用来设置展示数据库中每条记录的代码。你可以使用 \cs{dbuse} 来展示属性的
-%   值。
+%   该选项用来设置展示数据库中每条记录的代码。你可以使用 \cs{dbuse}\marg{attr}
+%   来指代属性 \meta{attr} 的值。示例 \ref{cn-item-code} 演示了如何展示一个首
+%   字母缩写词表。
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}[item-code]{展示数据库条目}
+  \dbNewDatabase{item-db}{acronym=str, desc=tl}
+  \dbNewStyle{item-style}{item-db}{
+    before-code = {\dbIfEmptyF{\begin{description}}},
+    after-code  = {\dbIfEmptyF{\end{description}}},
+    item-code   = {\item[\dbuse{acronym}] \dbuse{desc}},
+    sort        = acronym,
+  }
+  \dbitemkv{item-db}{acronym=PM, desc={Prime Minister}}
+  \dbitemkv{item-db}{acronym=CBD, desc={Central Business District}}
+  \dbitemkv{item-db}{acronym=DL, desc={Deep Learning}}
+  \dbshow{item-style}{item-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
+%
+% \begin{option}[added=2022-01-14, rEXP]{item-before-code}
+%   \begin{syntax}
+%     item-before-code = <before-code>
+%   \end{syntax}
+%
+%   在 \meta{item code} 之\zhbefore 执行的代码。
+% \end{option}
+%
+% \begin{option}[added=2022-01-14, rEXP]{item-after-code}
+%   \begin{syntax}
+%     item-after-code = <after-code>
+%   \end{syntax}
+%
+%   在 \meta{item code} 之\zhafter 执行的代码。
 % \end{option}
 %
 % \changes{1.3}{2022-01-09}{Update option}{\opt{<attr>/sep}}
@@ -1269,24 +1391,30 @@ Copyright and License
 %   \end{syntax}
 %
 %   Set sorting rules. Attributes of type |str, date, int, fp| is supported to
-%   sort.  Multi-level sort is allowed. \meta{attr} represents for ascending
-%   order, and \meta{attr}* represents for descending order. The example below
-%   use four fields to determine the order of the records. It sorts on |level|
-%   in descending order first and if two |levels| are same then sorts on |birth|
-%   in ascending order and so on.
+%   sort. Multi-level sort is allowed. \meta{attr} represents for ascending
+%   order, and \meta{attr}* represents for descending order. Example
+%   \ref{en-sort} shows how to sort items by |count| in descending order and
+%   for the same |count|, sort by |name| in ascending order.
 % \end{option}
 %
-% \begin{verbatim}
-%   \dbNewDatabase{sort-example}{
-%     name = str,
-%     birth = date,
-%     level = int,
-%     weight = fp,
-%   }
-%   \dbNewStyle{sort-style}{sort-example}{
-%     sort = { level*, birth, name, weight }
-%   }
-% \end{verbatim}
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}[sort]{Multi-level Sorting}
+  \dbNewDatabase{sort-db}{name=str, count=int}
+  \dbNewStyle{sort-style}{sort-db}{
+    sort = {count*, name},
+    item-code = {\dbuse{name}: \dbuse{count}\quad}
+  }
+  \dbitemkv{sort-db}{name=bag, count=1}
+  \dbitemkv{sort-db}{name=box, count=1}
+  \dbitemkv{sort-db}{name=tag, count=2}
+  \dbitemkv{sort-db}{name=pen, count=3}
+  \dbshow{sort-style}{sort-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
 %
 % \begin{option}[added=2022-01-05, rEXP]{item-code}
 %   \begin{syntax}
@@ -2714,8 +2842,9 @@ Copyright and License
 \cs_set:Nn \@@_filter:nnn {
   \tl_set_eq:Nc \l_@@_attr_tl { g_@@_filter_attr_tl_#1_#2 }
   \cs_set_eq:Nc \dbval { g_@@_data_#1_\l_@@_attr_tl _#3 }
+  \tl_set:Nx \l_@@_type_tl { \@@_get_type:nV {#1} \l_@@_attr_tl }
   \use:c
-    { @@_filter_\@@_get_type:nV {#1} \l_@@_attr_tl :cccnn }
+    { @@_filter_\l_@@_type_tl :cccnn }
     { g_@@_cond_star_bool_#1_#2 }
     { g_@@_filter_expr_tl_#1_#2 }
     { dbval }
@@ -2792,7 +2921,8 @@ Copyright and License
   }
   \tl_set:Nn \l_@@_cond_expr_tl {#3}
   \regex_replace_all:nnN
-    { \w+ } { \c{ g_@@_filter_bool_#1_\0 } }
+    { (\w|-|\d|\_)+ }
+    { \c{ g_@@_filter_bool_#1_\0 } }
     \l_@@_cond_expr_tl
   \tl_gset_eq:cN
     { g_@@_filter_bool_tl_#1_#2 } \l_@@_cond_expr_tl
@@ -2801,7 +2931,8 @@ Copyright and License
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{dbFilters, \dbNewConditional, \dbCombineConditionals}
+% \begin{macro}{dbFilters, \dbNewConditional, \dbNewCond,
+% \dbCombineConditionals, \dbCombCond}
 % Environment to define conditionals and filters.
 % \begin{arguments}
 %   \item \meta{database}
@@ -2832,6 +2963,8 @@ Copyright and License
     \tl_gset:cn { g_@@_filter_info_tl_#1_##1 } {##3}
     \@@_combine_conditional:nnn {#1} {##1} {##2}
   }
+  \cs_set_eq:NN \dbNewCond  \dbNewConditional
+  \cs_set_eq:NN \dbCombCond \dbCombineConditionals
 } {}
 %    \end{macrocode}
 % \end{macro}
@@ -3266,7 +3399,7 @@ Copyright and License
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{\@@_show_filter:nn}
+% \begin{macro}{\@@_show_filter:nnN}
 % Filter records by executing the hook function in the running sequence and
 % then testing the result boolean.
 % \begin{arguments}
@@ -3374,8 +3507,14 @@ Copyright and License
 %    \end{macrocode}
 % \end{macro}
 %
+% \changes{1.5}{2022-01-15}{Fix bug}{\cs{dbIfEmptyF} undefined}
 % \begin{macro}{\@@_show:nnn, \@@_show:nnv}
 % First filter records and sort them if needed and display at last.
+% \begin{arguments}
+%   \item \meta{style}
+%   \item \meta{database}
+%   \item \meta{filter}
+% \end{arguments}
 %    \begin{macrocode}
 \cs_new_protected:Nn \@@_show:nnn {
   \@@_show_set_macro:nn {#2} {#3}
@@ -3383,6 +3522,7 @@ Copyright and License
   \@@_show_filter:nnN {#2} {#3} \l_@@_show_index_clist
   \clist_if_empty:cF { g_@@_sort_clist_#1_#2 }
     { \@@_sort:nNn {#2} \l_@@_show_index_clist {#1} }
+  \@@_show_set_cond:N \l_@@_show_index_clist
   \tl_use:c { g_@@_style_before_tl_#1_#2 }
   \@@_show_item:nnN {#1} {#2} \l_@@_show_index_clist
   \tl_use:c { g_@@_style_after_tl_#1_#2 }
@@ -3400,8 +3540,8 @@ Copyright and License
 %    \begin{macrocode}
 \NewDocumentCommand { \dbshow } { m m } {
   \@@_check_database:n {#2}
-  \@@_check_filter:nv {#2} { g_@@_filter_#1_#2 }
-  \@@_show:nnv {#1} {#2} { g_@@_filter_#1_#2 }
+  \@@_check_filter:nv  {#2} { g_@@_filter_#1_#2 }
+  \@@_show:nnv {#1}    {#2} { g_@@_filter_#1_#2 }
 }
 %    \end{macrocode}
 % \end{macro}
