@@ -163,6 +163,7 @@ Copyright and License
 \usepackage{zhnumber}
 \usepackage{tcolorbox}
 \tcbuselibrary{skins, minted, breakable, xparse}
+\usepackage{accsupp}
 
 \geometry{
   left=4.5cm,
@@ -242,6 +243,15 @@ Copyright and License
 }
 \DeclareTCBListing[auto counter]{example*}{ O{} D(){} m }{%
   exam-base, title={Example \thetcbcounter: #3}, label={en-#2}, #1
+}
+\renewcommand{\theFancyVerbLine}{%
+  \ttfamily\textcolor{examno}{%
+    \scriptsize\oldstylenums{%
+      \protect\BeginAccSupp{ActualText={}}%
+      \arabic{FancyVerbLine}%
+      \protect\EndAccSupp{}%
+    }%
+  }%
 }
 
 \ExplSyntaxOn
@@ -602,7 +612,7 @@ Copyright and License
 %
 % \subsection{\cs{dbNewStyle} 和样式选项}
 %
-% \begin{function}[added=2022-01-05]{\dbNewStyle}
+% \begin{function}[added=2022-01-05, updated=2022-01-15]{\dbNewStyle}
 %   \begin{syntax}
 %     \cs{dbNewStyle} \oarg{base styles} \marg{style} \marg{database} \marg{opts}
 %   \end{syntax}
@@ -658,7 +668,7 @@ Copyright and License
 % \changes{1.1}{2022-01-06}{Add option}{\opt{raw-filter}}
 % \begin{option}[added=2022-01-06]{raw-filter}
 %   \begin{syntax}
-%     raw-filter = <conditional expression>
+%     \opt{raw-filter} = <conditional expression>
 %   \end{syntax}
 %
 %   使用条件表达式设置匿名过滤器，这里的条件指通过 \cs{dbNewConditional} 定义的
@@ -700,7 +710,7 @@ Copyright and License
 % \changes{1.2}{2022-01-08}{Fix bug}{string sorting bug}
 % \begin{option}[added=2022-01-05]{sort}
 %   \begin{syntax}
-%     sort = \{ <attr spec1>, <attr spec2>, \ldots{} \}
+%     \opt{sort} = \{ <attr spec1>, <attr spec2>, \ldots{} \}
 %   \end{syntax}
 %
 %   为当前样式设置排序规则。支持对 |str|，|date|，|int|，|fp| 类型的数据进行排
@@ -730,7 +740,7 @@ Copyright and License
 %
 % \begin{option}[added=2022-01-05, rEXP]{item-code}
 %   \begin{syntax}
-%     item-code = <item code>
+%     \opt{item-code} = <item code>
 %   \end{syntax}
 %
 %   该选项用来设置展示数据库中每条记录的代码。你可以使用 \cs{dbuse}\marg{attr}
@@ -760,30 +770,75 @@ Copyright and License
 %
 % \begin{option}[added=2022-01-14, rEXP]{item-before-code}
 %   \begin{syntax}
-%     item-before-code = <before-code>
+%     \opt{item-before-code} = <before code>
 %   \end{syntax}
 %
-%   在 \meta{item code} 之\zhbefore 执行的代码。
+%   在 \meta{item code} 之\zhbefore 执行的代码（见示例 \ref{cn-item-wrapper}）。
 % \end{option}
 %
 % \begin{option}[added=2022-01-14, rEXP]{item-after-code}
 %   \begin{syntax}
-%     item-after-code = <after-code>
+%     \opt{item-after-code} = <after code>
 %   \end{syntax}
 %
-%   在 \meta{item code} 之\zhafter 执行的代码。
+%   在 \meta{item code} 之\zhafter 执行的代码（见示例 \ref{cn-item-wrapper}）。
 % \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(item-wrapper){设置展示条目之前和之后的代码}
+  \dbNewDatabase{item-wrap-db}{text=tl}
+  \dbNewStyle{item-wrap-style}{item-wrap-db}{
+    item-before-code = \begingroup\ttfamily<,
+    item-after-code  = >\endgroup,
+    item-code        = \dbuse{text},
+  }
+  \dbitemkv{item-wrap-db}{text=example}
+  \dbshow{item-wrap-style}{item-wrap-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
+%
+% \subsubsection{属性选项}
+%
+% \changes{1.4}{2022-01-13}{Add macro}{\cs{dbdatesep}}
+% \begin{function}[added=2022-01-13, EXP]{\dbdatesep}
+%   \begin{syntax}
+%     \cs{dbdatesep} \marg{separator}
+%   \end{syntax}
+%
+%   设置内部解析日期时的间隔符，默认为 |/|，即存储数据的格式为 |yyyy/mm/dd|。
+% \end{function}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(inner-date-sep){设置日期解析格式}
+  \dbNewDatabase{inner-date-db}{date=date}
+  \dbNewStyle{inner-date-style}{inner-date-db}{
+    item-code = \dbuse{date}\quad,
+  }
+  \dbitemkv{inner-date-db}{date=2020/01/20}
+  \dbdatesep{-}
+  \dbitemkv{inner-date-db}{date=2022-01-10}
+  \dbshow{inner-date-style}{inner-date-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
 %
 % \changes{1.3}{2022-01-09}{Update option}{\opt{<attr>/sep}}
 % \begin{option}[added=2022-01-05, updated=2022-01-08, rEXP]{<attr>/sep}
 %   \begin{syntax}
-%     <attr>/sep = <separator> \\
-%     <attr>/sep = \{ \\
+%     \opt{<attr>/sep} = <separator> \\
+%     \opt{<attr>/sep} = \{ \\
 %     ~~\meta{separator between two}, \\
 %     ~~\meta{separator between more than two}, \\
 %     ~~\meta{separator between final two} \\
 %     \} \\
-%     <attr>/sep = \{ \\
+%     \opt{<attr>/sep} = \{ \\
 %     ~~\meta{separator before year}, \\
 %     ~~\meta{separator between year and month}, \\
 %     ~~\meta{separator between month and day}, \\
@@ -801,6 +856,31 @@ Copyright and License
 %   符 \meta{separator between more than two}，和最后两个元素之间的分隔符
 %   \meta{separator between final two}。对于类型为 |clist| 的属性，设置此选项时
 %   如果参数列表数量不是1或者3会触发报错。
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(clist-sep){设置列表元素间隔}
+  \dbNewDatabase{clist-db}{label=clist}
+  \dbNewStyle{clist-base}{clist-db}{
+    before-code = {\dbIfEmptyF{\begin{enumerate}}},
+    after-code  = {\dbIfEmptyF{\end{enumerate}}},
+    item-code   = \item \dbuse{label},
+  }
+  \dbNewStyle[clist-base]{clist-style1}{clist-db}{
+    label/sep = {,~}
+  }
+  \dbNewStyle[clist-base]{clist-style2}{clist-db}{
+    label/sep = {,~, ,~, ~and~}
+  }
+  \dbitemkv{clist-db}{label={a, b, c}}
+  \dbitemkv{clist-db}{label={1, 2, 3}}
+  \dbshow{clist-style1}{clist-db}
+  \dbshow{clist-style2}{clist-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
 %
 % \begin{verbatim}
 %   % clist-attr is an attribute of database db
@@ -834,17 +914,6 @@ Copyright and License
 %
 %   该选项只适用于类型为 |date| 的属性。控制输出月份和天时是否补零。
 % \end{option}
-%
-% \changes{1.4}{2022-01-13}{Add macro}{\cs{dbdatesep}}
-% \begin{function}[added=2022-01-13, EXP]{\dbdatesep}
-%   \begin{syntax}
-%     \cs{dbdatesep} \marg{separator}
-%   \end{syntax}
-%
-%   设置内部解析日期时的间隔符，默认为 |/|，即存储数据的格式为 |yyyy/mm/dd|。
-% \end{function}
-%
-% \subsubsection{装饰器}
 %
 % 下面这些选项在不同层次上装饰原有的展示代码，有些其实不必通过选项的形式来装饰，
 % 但这样做的好处是可以进一步使样式与内容分离。下面的例子中，\meta{style1} 和
@@ -1350,7 +1419,7 @@ Copyright and License
 %
 % \subsection{\cs{dbNewStyle} and Style Options}
 %
-% \begin{function}[added=2022-01-05]{\dbNewStyle}
+% \begin{function}[added=2022-01-05, updated=2022-01-15]{\dbNewStyle}
 %   \begin{syntax}
 %     \cs{dbNewStyle} \oarg{base styles} \marg{style} \marg{database} \marg{opts}
 %   \end{syntax}
@@ -1484,8 +1553,9 @@ Copyright and License
 %     \opt{item-code} = <item code>
 %   \end{syntax}
 %
-%   Set the code that show a single record. You can use \cs{dbuse} to denote
-%   the value of attribute.
+%   Set the code that display a record. You can use \cs{dbuse} to denote the
+%   value of attribute. Example \ref{en-item-code} shows how to display an
+%   acronym glossary table.
 % \end{option}
 %
 % \iffalse
@@ -1503,6 +1573,41 @@ Copyright and License
   \dbitemkv{item-db}{acronym=CBD, desc={Central Business District}}
   \dbitemkv{item-db}{acronym=DL,  desc={Deep Learning}}
   \dbshow{item-style}{item-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
+%
+% \begin{option}[added=2022-01-14, rEXP]{item-before-code}
+%   \begin{syntax}
+%     \opt{item-before-code} = <before code>
+%   \end{syntax}
+%
+%   Set the \meta{code} that is executed \enbefore displaying a item. See
+%   Example \ref{en-item-wrapper}.
+% \end{option}
+%
+% \begin{option}[added=2022-01-14, rEXP]{item-after-code}
+%   \begin{syntax}
+%     \opt{item-after-code} = <after code>
+%   \end{syntax}
+%
+%   Set the \meta{code} that is executed \enafter displaying the item. See
+%   Example \ref{en-item-wrapper}.
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(item-wrapper){Set the Before and After Code of the Item}
+  \dbNewDatabase{item-wrap-db}{text=tl}
+  \dbNewStyle{item-wrap-style}{item-wrap-db}{
+    item-before-code = \begingroup\ttfamily<,
+    item-after-code  = >\endgroup,
+    item-code        = \dbuse{text},
+  }
+  \dbitemkv{item-wrap-db}{text=example}
+  \dbshow{item-wrap-style}{item-wrap-db}
 \end{example*}
 % \iffalse
 %</verb>
@@ -2225,6 +2330,8 @@ Copyright and License
 }
 %    \end{macrocode}
 %
+% \changes{1.5}{2022-01-15}{Update check code}{transform arguments to string
+% before check}
 % \begin{macro}{\@@_check_database:n}
 % Check if the database is valid.
 % \begin{arguments}
@@ -2232,7 +2339,7 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \cs_new:Nn \@@_check_database:n {
-  \prop_if_exist:cF { g_@@_attr_type_prop_#1 }
+  \prop_if_exist:cF { g_@@_attr_type_prop_\tl_to_str:n {#1} }
     { \msg_fatal:nnn { dbshow } { non-existent-database } {#1} }
 }
 %    \end{macrocode}
@@ -2256,7 +2363,7 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \cs_new:Nn \@@_check_attr:nn {
-  \prop_if_in:cnF { g_@@_attr_type_prop_#1 } {#2}
+  \prop_if_in:cnF { g_@@_attr_type_prop_\tl_to_str:n {#1} } {#2}
     { \msg_fatal:nnnn { dbshow } { non-existent-attr } {#1} {#2} }
 }
 \cs_generate_variant:Nn \@@_check_attr:nn { nV }
@@ -2281,7 +2388,7 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \cs_new:Nn \@@_check_style:nn {
-  \tl_if_exist:cF { g_@@_style_opts_tl_#1_#2 }
+  \tl_if_exist:cF { g_@@_style_opts_tl_\tl_to_str:n {#1}_\tl_to_str:n {#2} }
     { \msg_error:nnnn { dbshow } { non-existent-style } {#1} {#2} }
 }
 %    \end{macrocode}
@@ -2305,7 +2412,7 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \cs_new:Nn \@@_check_cond:nnn {
-  \tl_if_exist:cF { g_@@_filter_attr_#1_#2 }
+  \tl_if_exist:cF { g_@@_filter_attr_\tl_to_str:n {#1}_\tl_to_str:n {#2} }
     { \msg_fatal:nnnn { dbshow } { non-existent-cond } {#1} {#2} }
 }
 %    \end{macrocode}
@@ -2329,7 +2436,8 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \cs_new:Nn \@@_check_filter:nn {
-  \seq_if_exist:cF { g_@@_filter_run_seq_#1_#2 } {
+  \seq_if_exist:cF
+  { g_@@_filter_run_seq_\tl_to_str:n {#1}_\tl_to_str:n {#2} } {
     \str_if_eq:eeF {#2} { -none- } {
       \msg_warning:nnnx { dbshow } { non-existent-filter } {#1} {#2}
     }
@@ -2401,9 +2509,11 @@ Copyright and License
 %
 % \subsection{Create Database}
 %
+% \changes{1.5}{2022-01-15}{Fix bug}{can not use \cs{dbdatesep} midway}
 % \begin{macro}{\@@_process_default_value:w}
 % Create map from \meta{attr} to \meta{type} and map from \meta{attr} to
-% \meta{default value}.
+% \meta{default value}. Note that only one expansion is needed to get the
+% correct default value from \cs{l_@@_tmp_default}.
 % \begin{arguments}
 %   \item \meta{database}
 %   \item \meta{attr}
@@ -2415,7 +2525,7 @@ Copyright and License
 #1\@@_sep#2\@@_sep#3|#4\@@_stop {
   \@@_check_type:n {#3}
   \prop_gput:cxx { g_@@_attr_type_prop_#1 } {#2} {#3}
-  \prop_gput:cxx { g_@@_default_map_#1 } {#2} {#4}
+  \prop_gput:cno { g_@@_default_map_#1 } {#2} {#4}
 }
 %    \end{macrocode}
 % \end{macro}
@@ -3195,6 +3305,8 @@ Copyright and License
 %    \end{macrocode}
 % \end{macro}
 %
+% \changes{1.5}{2022-01-15}{Add check}{check if database is valid in
+% \cs{dbNewStyle}}
 % \begin{macro}{\dbNewStyle}
 % Set style options based on \meta{base style}.
 % \begin{arguments}
@@ -3205,6 +3317,7 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \NewDocumentCommand { \dbNewStyle } { o m m +m } {
+  \@@_check_database:n {#3}
   \tl_gset:cn { g_@@_style_opts_tl_#2_#3 } { #4, }
   \IfValueT {#1} {
     \tl_clear_new:N \l_@@_style_tmp_tl
