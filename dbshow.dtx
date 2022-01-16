@@ -416,8 +416,9 @@ Copyright and License
     \dbshowdoc_function_end:
   }
 
-\DeclareDocumentCommand \opt { O{} m }
+\DeclareDocumentCommand \opt { O{} m } {
   { \textcolor{option}{ \__codedoc_cmd:no {#1} {#2} } }
+}
 \DeclareDocumentCommand \env { O{} m }
   { \textcolor{env}{ \__codedoc_cmd:no {#1} {#2} } }
 \DeclareDocumentCommand \cs  { O{} m }
@@ -435,6 +436,19 @@ Copyright and License
     { \exp_after:wN \GetIdInfo \l__ctxdoc_tmp_tl }
     { \GetIdInfo $Id$ }
     { \fileinfo }
+}
+
+\DeclareDocumentCommand \inidef { s d() s o } {
+  \group_begin:
+  \hfill\normalfont(
+  initially~
+  \IfBooleanTF {#1} {empty}
+    { \IfValueTF {#2} { \texttt{#2} } { unset } }
+  ,~
+  \IfBooleanTF {#3} {default empty}
+    { \IfValueTF {#4} { default~\texttt{#4} } { no~default } }
+  )
+  \group_end:
 }
 \ExplSyntaxOff
 
@@ -625,7 +639,7 @@ Copyright and License
 %
 % \begin{option}[added=2022-01-05]{filter}
 %   \begin{syntax}
-%     \opt{filter} = <filter>
+%     \opt{filter} = <filter> \inidef(-none-)
 %   \end{syntax}
 %
 %   为当前样式设置由 \cs{dbCombineFilters} 所定义的过滤器。示例 \ref{cn-filter}
@@ -668,7 +682,7 @@ Copyright and License
 % \changes{1.1}{2022-01-06}{Add option}{\opt{raw-filter}}
 % \begin{option}[added=2022-01-06]{raw-filter}
 %   \begin{syntax}
-%     \opt{raw-filter} = <conditional expression>
+%     \opt{raw-filter} = <conditional expression> \inidef
 %   \end{syntax}
 %
 %   使用条件表达式设置匿名过滤器，这里的条件指通过 \cs{dbNewConditional} 定义的
@@ -710,7 +724,7 @@ Copyright and License
 % \changes{1.2}{2022-01-08}{Fix bug}{string sorting bug}
 % \begin{option}[added=2022-01-05]{sort}
 %   \begin{syntax}
-%     \opt{sort} = \{ <attr spec1>, <attr spec2>, \ldots{} \}
+%     \opt{sort} = \{ <attr spec1>, <attr spec2>, \ldots{} \} \inidef
 %   \end{syntax}
 %
 %   为当前样式设置排序规则。支持对 |str|，|date|，|int|，|fp| 类型的数据进行排
@@ -738,9 +752,46 @@ Copyright and License
 %</verb>
 % \fi
 %
+% \begin{option}[added=2022-01-05, rEXP]{before-code}
+%   \begin{syntax}
+%     \opt{before-code} = <before code> \inidef*
+%   \end{syntax}
+%
+%   该选项用来设置在展示整个数据库之\zhbefore 需要执行的代码（见示例
+%   \ref{cn-db-wrap}）。
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{after-code}
+%   \begin{syntax}
+%     \opt{after-code} = <after code> \inidef*
+%   \end{syntax}
+%
+%   该选项用来设置在展示整个数据库之\zhafter 需要执行的代码（见示例
+%   \ref{cn-db-wrap}）。
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(db-wrap){设置展示数据库前后的代码}
+  \dbNewDatabase{wrap-db}{text=tl}
+  \dbNewStyle{wrap-style}{wrap-db}{
+    before-code = \textit{before code}\quad,
+    after-code  = \textit{after code},
+    item-code   = \dbarabic.~\dbuse{text}\quad
+  }
+  \dbitemkv{wrap-db}{text=text1}
+  \dbitemkv{wrap-db}{text=text2}
+  \dbitemkv{wrap-db}{text=text3}
+  \dbshow{wrap-style}{wrap-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
+%
 % \begin{option}[added=2022-01-05, rEXP]{item-code}
 %   \begin{syntax}
-%     \opt{item-code} = <item code>
+%     \opt{item-code} = <item code> \inidef(\#1)
 %   \end{syntax}
 %
 %   该选项用来设置展示数据库中每条记录的代码。你可以使用 \cs{dbuse}\marg{attr}
@@ -768,17 +819,22 @@ Copyright and License
 %</verb>
 % \fi
 %
-% \begin{option}[added=2022-01-14, rEXP]{item-before-code}
+% \changes{1.2}{2022-01-08}{Add options}{\opt{record-before-code},
+% \opt{record-after-code}}
+% \changes{1.5}{2022-01-14}{Update options}{Rename \opt{record-before-code}
+% and \opt{record-after-code} to \opt{item-before-code} and
+% \opt{item-after-code}}
+% \begin{option}[added=2022-01-08, updated=2022-01-14, rEXP]{item-before-code}
 %   \begin{syntax}
-%     \opt{item-before-code} = <before code>
+%     \opt{item-before-code} = <before code> \inidef*
 %   \end{syntax}
 %
 %   在 \meta{item code} 之\zhbefore 执行的代码（见示例 \ref{cn-item-wrapper}）。
 % \end{option}
 %
-% \begin{option}[added=2022-01-14, rEXP]{item-after-code}
+% \begin{option}[added=2022-01-08, updated=2022-01-14, rEXP]{item-after-code}
 %   \begin{syntax}
-%     \opt{item-after-code} = <after code>
+%     \opt{item-after-code} = <after code> \inidef*
 %   \end{syntax}
 %
 %   在 \meta{item code} 之\zhafter 执行的代码（见示例 \ref{cn-item-wrapper}）。
@@ -788,13 +844,13 @@ Copyright and License
 %<*verb>
 % \fi
 \begin{example}(item-wrapper){设置展示条目之前和之后的代码}
-  \dbNewDatabase{item-wrap-db}{text=tl}
+  \dbNewDatabase{item-wrap-db}{text=tl, hint=tl}
   \dbNewStyle{item-wrap-style}{item-wrap-db}{
     item-before-code = \begingroup\ttfamily<,
     item-after-code  = >\endgroup,
-    item-code        = \dbuse{text},
+    item-code        = \dbuse{text}~(\dbuse{hint}),
   }
-  \dbitemkv{item-wrap-db}{text=example}
+  \dbitemkv{item-wrap-db}{text=example, hint={this is an example}}
   \dbshow{item-wrap-style}{item-wrap-db}
 \end{example}
 % \iffalse
@@ -803,13 +859,111 @@ Copyright and License
 %
 % \subsubsection{属性选项}
 %
+% \changes{1.5}{2022-01-14}{Remove option}{\opt{<attr>/wrapper}}
+%
+% \changes{1.5}{2022-01-14}{Add options}{\opt{<attr>/code},
+% \opt{<attr>/code*}}
+% \begin{option}[added=2022-01-14, rEXP]{<attr>/code}
+%   \begin{syntax}
+%     \textcolor{option}{<attr>/code} = <code> \inidef(\#1)
+%   \end{syntax}
+%
+%     设置 \meta{attr} 的样式代码。在 \meta{code} 中用 |#1| 指代属性的值。示例
+%     \ref{cn-attr-code} 将数量超过10个的物品打印为红色，少于10个的则打印为青色。
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(attr-code){设置单个属性样式}
+  \dbNewDatabase{attr-code-db}{name=str, count=int}
+  \begin{dbFilters}{attr-code-db}
+    \dbNewCond{large}{count}{\dbval >= 10}
+  \end{dbFilters}
+  \dbNewStyle{base-style}{attr-code-db}{
+    item-code  = \dbuse{name}:~\dbuse{count}\quad,
+  }
+  \dbNewStyle[base-style]{large-style}{attr-code-db}{
+    raw-filter = large,
+    name/code  = \textcolor{red}{#1},
+  }
+  \dbNewStyle[base-style]{small-style}{attr-code-db}{
+    raw-filter = !large,
+    name/code  = \textcolor{teal}{#1},
+  }
+  \dbitemkv{attr-code-db}{name=bag, count=1}
+  \dbitemkv{attr-code-db}{name=pen, count=12}
+  \dbitemkv{attr-code-db}{name=pig, count=5}
+  \dbitemkv{attr-code-db}{name=egg, count=50}
+  \dbshow{large-style}{attr-code-db}
+  \dbshow{small-style}{attr-code-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
+%
+% \begin{option}[added=2022-01-14, rEXP]{<attr>/code*}
+%   \begin{syntax}
+%     \textcolor{option}{<attr>/code*} = <code> \inidef
+%   \end{syntax}
+%
+%     设置 \meta{attr} 的样式代码。在 \meta{code} 中用 |#1| 指代属性的值。属性的
+%     值是完全展开的，对某些需要以特定格式解析参数的命令比较有用。
+% \end{option}
+%
+%     示例 \ref{cn-exp-db} 中 \pkg{zhnumber} 宏包的 \cs{zhdate} 命令接收
+%     |yyyy/mm/dd| 格式的时期并输出中文日期，本宏包默认的日期输出格式是
+%     |yyyy/mm/dd|，因此可以通过 \opt{date/code*} 选项，将日期完全展开后然后传递
+%     给 \cs{zhdate} 命令，如果不展开，\cs{zhdate} 接收到的是若干个用来展示日期
+%     的控制序列，而不是 |yyyy/mm/dd| 格式的时期，进而触发报错。
+%
+% \iffalse
+%<*verb>
+% \fi
+\MakePercentComment
+\begin{example}(exp-code){中文日期}
+  % \usepackage{zhnumber}
+  \dbNewDatabase{exp-db}{date=date, event=tl}
+  \dbNewStyle{exp-style}{exp-db}{
+    item-code  = \par\makebox[4cm][l]{\dbuse{date}}\dbuse{event},
+    date/code* = \zhdate{#1},
+  }
+  \dbitemkv{exp-db}{date=2020/12/31, event=eat}
+  \dbitemkv{exp-db}{date=2021/01/01, event=sleep}
+  \dbshow{exp-style}{exp-db}
+\end{example}
+\MakePercentIgnore
+% \iffalse
+%</verb>
+% \fi
+%
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/before-code}
+%   \begin{syntax}
+%     \textcolor{option}{<attr>/before-code} = <before code> \inidef*
+%   \end{syntax}
+%
+%   该选项用来设置展示数据库中属性 \meta{attr} 对应数据之\zhbefore 需要执行的代
+%   码。\cs{dbuse} 会在展示属性数据\zhbefore 执行此代码。
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/after-code}
+%   \begin{syntax}
+%     <attr>/after-code = <code>
+%   \end{syntax}
+%
+%   该选项用来设置展示数据库中属性 \meta{attr} 对应数据之\zhafter 需要执行的代码。
+%   \cs{dbuse} 会在展示属性数据\zhafter 执行此代码。
+% \end{option}
+%
 % \changes{1.4}{2022-01-13}{Add macro}{\cs{dbdatesep}}
-% \begin{function}[added=2022-01-13, EXP]{\dbdatesep}
+% \begin{function}[added=2022-01-13]{\dbdatesep}
 %   \begin{syntax}
 %     \cs{dbdatesep} \marg{separator}
 %   \end{syntax}
 %
-%   设置内部解析日期时的间隔符，默认为 |/|，即存储数据的格式为 |yyyy/mm/dd|。
+%   设置内部解析日期时的分隔符，默认为 |/|，即存储数据的格式为 |yyyy/mm/dd|。
+%   示例 \ref{cn-inner-date-sep} 演示了使用两种格式存储数据，但实际上分隔符并
+%   没有被存储，而是被内部用来解析年、月和日然后存储为三个整数。
 % \end{function}
 %
 % \iffalse
@@ -828,17 +982,18 @@ Copyright and License
 % \iffalse
 %</verb>
 % \fi
+% \dbdatesep{/}
 %
 % \changes{1.3}{2022-01-09}{Update option}{\opt{<attr>/sep}}
 % \begin{option}[added=2022-01-05, updated=2022-01-08, rEXP]{<attr>/sep}
 %   \begin{syntax}
-%     \opt{<attr>/sep} = <separator> \\
-%     \opt{<attr>/sep} = \{ \\
+%     \textcolor{option}{<attr>/sep} = <separator> \\
+%     \textcolor{option}{<attr>/sep} = \{ \\
 %     ~~\meta{separator between two}, \\
 %     ~~\meta{separator between more than two}, \\
 %     ~~\meta{separator between final two} \\
 %     \} \\
-%     \opt{<attr>/sep} = \{ \\
+%     \textcolor{option}{<attr>/sep} = \{ \\
 %     ~~\meta{separator before year}, \\
 %     ~~\meta{separator between year and month}, \\
 %     ~~\meta{separator between month and day}, \\
@@ -944,69 +1099,6 @@ Copyright and License
 %     attr1/after-code = { = },
 %   }
 % \end{verbatim}
-%
-% \changes{1.3}{2022-01-08}{Add option}{\opt{<attr>/wrapper}}
-% \begin{option}[added=2022-01-08, rEXP]{<attr>/wrapper}
-%   \begin{syntax}
-%     <attr>/wrapper = <control sequence>
-%   \end{syntax}
-%
-%   该选项只适用于类型为 |date| 的属性。\meta{control sequence} 只接收一个参数即
-%   日期，如果设置了此选项，则最后输出的日期为
-%   \meta{control sequence}\marg{date}。
-% \end{option}
-%
-% \begin{option}[added=2022-01-05, rEXP]{before-code}
-%   \begin{syntax}
-%     before-code = <code>
-%   \end{syntax}
-%
-%   该选项用来设置在展示整个数据库之\zhbefore 需要执行的代码。
-% \end{option}
-%
-% \begin{option}[added=2022-01-05, rEXP]{after-code}
-%   \begin{syntax}
-%     after-code = <code>
-%   \end{syntax}
-%
-%   该选项用来设置在展示整个数据库之\zhafter 需要执行的代码。
-% \end{option}
-%
-% \changes{1.2}{2022-01-08}{Add options}{\opt{record-before-code},
-% \opt{record-after-code}}
-% \begin{option}[added=2022-01-05, rEXP]{record-before-code}
-%   \begin{syntax}
-%     record-before-code = <code>
-%   \end{syntax}
-%
-%   该选项用来设置在展示当前记录之\zhbefore 需要执行的代码。
-% \end{option}
-%
-% \begin{option}[added=2022-01-05, rEXP]{record-after-code}
-%   \begin{syntax}
-%     record-after-code = <code>
-%   \end{syntax}
-%
-%   该选项用来设置在展示当前记录之\zhafter 需要执行的代码。
-% \end{option}
-%
-% \begin{option}[added=2022-01-05, rEXP]{<attr>/before-code}
-%   \begin{syntax}
-%     <attr>/before-code = <code>
-%   \end{syntax}
-%
-%   该选项用来设置展示数据库中属性 \meta{attr} 对应数据之\zhbefore 需要执行的代
-%   码。\cs{dbuse} 会在展示属性数据\zhbefore 执行此代码。
-% \end{option}
-%
-% \begin{option}[added=2022-01-05, rEXP]{<attr>/after-code}
-%   \begin{syntax}
-%     <attr>/after-code = <code>
-%   \end{syntax}
-%
-%   该选项用来设置展示数据库中属性 \meta{attr} 对应数据之\zhafter 需要执行的代码。
-%   \cs{dbuse} 会在展示属性数据\zhafter 执行此代码。
-% \end{option}
 %
 % \begin{option}[added=2022-01-05, rEXP]{<attr>/item-before-code}
 %   \begin{syntax}
@@ -1433,7 +1525,7 @@ Copyright and License
 %
 % \begin{option}[added=2022-01-05]{filter}
 %   \begin{syntax}
-%     \opt{filter} = <filter>
+%     \opt{filter} = <filter> \inidef(-none-)
 %   \end{syntax}
 %
 %   Set the \meta{filter} defined by \cs{dbCombineFilters}. Example
@@ -1477,7 +1569,7 @@ Copyright and License
 % \changes{1.1}{2022-01-06}{Add option}{\opt{raw-filter}}
 % \begin{option}[added=2022-01-06]{raw-filter}
 %   \begin{syntax}
-%     \opt{raw-filter} = <conditional expression>
+%     \opt{raw-filter} = <conditional expression> \inidef
 %   \end{syntax}
 %
 %   Set anonymous filter with conditionals defined by \cs{dbNewConditional}.
@@ -1519,7 +1611,7 @@ Copyright and License
 % \changes{1.2}{2022-01-08}{Fix bug}{string sorting bug}
 % \begin{option}[added=2022-01-05]{sort}
 %   \begin{syntax}
-%     \opt{sort} = \{ <attr spec1>, <attr spec2>, \ldots{} \}
+%     \opt{sort} = \{ <attr spec1>, <attr spec2>, \ldots{} \} \inidef
 %   \end{syntax}
 %
 %   Set sorting rules. Attributes of type |str, date, int, fp| is supported to
@@ -1548,9 +1640,46 @@ Copyright and License
 %</verb>
 % \fi
 %
+% \begin{option}[added=2022-01-05, rEXP]{before-code}
+%   \begin{syntax}
+%     \opt{before-code} = <before code> \inidef*
+%   \end{syntax}
+%
+%   Set the \meta{code} that is executed \enbefore displaying the database.
+%   See Example \ref{en-db-wrap}.
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{after-code}
+%   \begin{syntax}
+%     \opt{after-code} = <after code> \inidef*
+%   \end{syntax}
+%
+%   Set the \meta{code} that is executed \enafter displaying the database.
+%   See Example \ref{en-db-wrap}.
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(db-wrap){Set the Before and After Code of the Database}
+  \dbNewDatabase{wrap-db}{text=tl}
+  \dbNewStyle{wrap-style}{wrap-db}{
+    before-code = \textit{before code}\quad,
+    after-code  = \textit{after code},
+    item-code   = \dbarabic.~\dbuse{text}\quad
+  }
+  \dbitemkv{wrap-db}{text=text1}
+  \dbitemkv{wrap-db}{text=text2}
+  \dbitemkv{wrap-db}{text=text3}
+  \dbshow{wrap-style}{wrap-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
+%
 % \begin{option}[added=2022-01-05, rEXP]{item-code}
 %   \begin{syntax}
-%     \opt{item-code} = <item code>
+%     \opt{item-code} = <item code> \inidef(\#1)
 %   \end{syntax}
 %
 %   Set the code that display a record. You can use \cs{dbuse} to denote the
@@ -1578,18 +1707,23 @@ Copyright and License
 %</verb>
 % \fi
 %
-% \begin{option}[added=2022-01-14, rEXP]{item-before-code}
+% \changes{1.2}{2022-01-08}{Add options}{\opt{record-before-code},
+% \opt{record-after-code}}
+% \changes{1.5}{2022-01-14}{Update options}{Rename \opt{record-before-code}
+% and \opt{record-after-code} to \opt{item-before-code} and
+% \opt{item-after-code}}
+% \begin{option}[added=2022-01-08, updated=2022-01-14, rEXP]{item-before-code}
 %   \begin{syntax}
-%     \opt{item-before-code} = <before code>
+%     \opt{item-before-code} = <before code> \inidef*
 %   \end{syntax}
 %
 %   Set the \meta{code} that is executed \enbefore displaying a item. See
 %   Example \ref{en-item-wrapper}.
 % \end{option}
 %
-% \begin{option}[added=2022-01-14, rEXP]{item-after-code}
+% \begin{option}[added=2022-01-08, updated=2022-01-14, rEXP]{item-after-code}
 %   \begin{syntax}
-%     \opt{item-after-code} = <after code>
+%     \opt{item-after-code} = <after code> \inidef*
 %   \end{syntax}
 %
 %   Set the \meta{code} that is executed \enafter displaying the item. See
@@ -1608,6 +1742,117 @@ Copyright and License
   }
   \dbitemkv{item-wrap-db}{text=example}
   \dbshow{item-wrap-style}{item-wrap-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
+%
+% \subsubsection{Attribute Options}
+%
+% \changes{1.5}{2022-01-14}{Remove option}{\opt{<attr>/wrapper}}
+%
+% \changes{1.5}{2022-01-14}{Add options}{\opt{<attr>/code},
+% \opt{<attr>/code*}}
+% \begin{option}[added=2022-01-14, rEXP]{<attr>/code}
+%   \begin{syntax}
+%     \textcolor{option}{<attr>/code} = <code> \inidef(\#1)
+%   \end{syntax}
+%
+%     Set the style code of \meta{attr}. The value of \meta{attr} is replaced
+%     with |#1| in \meta{code}. Example \ref{en-attr-code} prints |name| whose
+%     |count| is less than 10 in red color, otherwise in teal color.
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(attr-code){Set Style Code of Attribute}
+  \dbNewDatabase{attr-code-db}{name=str, count=int}
+  \begin{dbFilters}{attr-code-db}
+    \dbNewCond{large}{count}{\dbval >= 10}
+  \end{dbFilters}
+  \dbNewStyle{base-style}{attr-code-db}{
+    item-code  = \dbuse{name}:~\dbuse{count}\quad,
+  }
+  \dbNewStyle[base-style]{large-style}{attr-code-db}{
+    raw-filter = large,
+    name/code  = \textcolor{red}{#1},
+  }
+  \dbNewStyle[base-style]{small-style}{attr-code-db}{
+    raw-filter = !large,
+    name/code  = \textcolor{teal}{#1},
+  }
+  \dbitemkv{attr-code-db}{name=bag, count=1}
+  \dbitemkv{attr-code-db}{name=pen, count=12}
+  \dbitemkv{attr-code-db}{name=pig, count=5}
+  \dbitemkv{attr-code-db}{name=egg, count=50}
+  \dbshow{large-style}{attr-code-db}
+  \dbshow{small-style}{attr-code-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
+%
+% \begin{option}[added=2022-01-14, rEXP]{<attr>/code*}
+%   \begin{syntax}
+%     \textcolor{option}{<attr>/code*} = <code> \inidef
+%   \end{syntax}
+
+%     Set the style code of \meta{attr}. In \meta{code}, |#1| is replaced with
+%     the \textbf{expanded} value of \meta{attr}. This is useful to commands
+%     that require special format of the arguments. Example \ref{en-exp-code}
+%     shows how to print Chinese date with \cs{zhdate} of package \pkg{zhnumber}.
+%     \cs{zhdate} require argument to be the date of |yyyy/mm/dd|, which is the
+%     default date format of \pkg{dbshow}. But we need to expand the date
+%     through \opt{date/code*} first because \cs{zhdate} cannot parse the
+%     token list other than |yyyy/mm/dd|.
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\MakePercentComment
+\begin{example*}(exp-code){Show Chinese Date}
+  % \usepackage{zhnumber}
+  \dbNewDatabase{exp-db}{date=date, event=tl}
+  \dbNewStyle{exp-style}{exp-db}{
+    item-code  = \par\makebox[4cm][l]{\dbuse{date}}\dbuse{event},
+    date/code* = \zhdate{#1},
+  }
+  \dbitemkv{exp-db}{date=2020/12/31, event=eat}
+  \dbitemkv{exp-db}{date=2021/01/01, event=sleep}
+  \dbshow{exp-style}{exp-db}
+\end{example*}
+\MakePercentIgnore
+% \iffalse
+%</verb>
+% \fi
+%
+% \changes{1.4}{2022-01-13}{Add macro}{\cs{dbdatesep}}
+% \begin{function}[added=2022-01-13]{\dbdatesep}
+%   \begin{syntax}
+%     \cs{dbdatesep} \marg{separator}
+%   \end{syntax}
+%
+%   Set the separator for internal date parsing. The default value is |/|,
+%   i.e. the date must be store in the format of |yyyy/mm/dd|. Example
+%   \ref{en-inner-date-sep} shows how to store dates with two formats.
+%   However, the separators are not really stored but used to parse the year,
+%   month and day, which will be stored internally as three integers.
+% \end{function}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(inner-date-sep){Set Date Parsing Format}
+  \dbNewDatabase{inner-date-db}{date=date}
+  \dbNewStyle{inner-date-style}{inner-date-db}{
+    item-code = \dbuse{date}\quad,
+  }
+  \dbitemkv{inner-date-db}{date=2020/01/20}
+  \dbdatesep{-}
+  \dbitemkv{inner-date-db}{date=2022-01-10}
+  \dbshow{inner-date-style}{inner-date-db}
 \end{example*}
 % \iffalse
 %</verb>
@@ -1683,18 +1928,6 @@ Copyright and License
 %   of the month or day.
 % \end{option}
 %
-% \changes{1.4}{2022-01-13}{Add macro}{\cs{dbdatesep}}
-% \begin{function}[added=2022-01-13, EXP]{\dbdatesep}
-%   \begin{syntax}
-%     \cs{dbdatesep} \marg{separator}
-%   \end{syntax}
-%
-%   Set the separator for internal date parsing. The default value is |/|,
-%   i.e. the date must be store in the format of |yyyy/mm/dd|.
-% \end{function}
-%
-% \subsubsection{Decorators}
-%
 % The options below serves as decorators. In some cases, decorator can also be
 % encoded directly into |item-code| or some other places, which is convenient
 % sometimes. The benefit of defining decorators with options is that styles step
@@ -1736,22 +1969,6 @@ Copyright and License
 %
 %   Only for attributes of type |date|. Output of \cs{dbuse}\marg{date attr}
 %   will be \meta{control sequence}\marg{date}.
-% \end{option}
-%
-% \begin{option}[added=2022-01-05, rEXP]{before-code}
-%   \begin{syntax}
-%     before-code = <code>
-%   \end{syntax}
-%
-%   Set the \meta{code} that is executed \enbefore displaying the database.
-% \end{option}
-%
-% \begin{option}[added=2022-01-05, rEXP]{after-code}
-%   \begin{syntax}
-%     after-code = <code>
-%   \end{syntax}
-%
-%   Set the \meta{code} that is executed \enafter displaying the database.
 % \end{option}
 %
 % \changes{1.2}{2022-01-08}{Add options}{\opt{record-before-code},
@@ -3218,14 +3435,14 @@ Copyright and License
       g_@@_style_attr_after_tl_#1_#2_#3
     },
     after-code       .initial:n    = ,
-    item-code        .code:n       = {
-      \bool_gset_false:c { g_@@_style_attr_item_exp_bool_#1_#2_#3 }
-      \cs_gset:cn { @@_style_attr_item_code_#1_#2_#3:n } {##1}
+    code        .code:n       = {
+      \bool_gset_false:c { g_@@_style_attr_exp_bool_#1_#2_#3 }
+      \cs_gset:cn { @@_style_attr_code_#1_#2_#3:n } {##1}
     },
-    item-code        .initial:n    = {##1},
-    item-code*       .code:n       = {
-      \bool_gset_true:c  { g_@@_style_attr_item_exp_bool_#1_#2_#3 }
-      \cs_gset:cn { @@_style_attr_item_code_#1_#2_#3:n } {##1}
+    code             .initial:n    = {##1},
+    code*            .code:n       = {
+      \bool_gset_true:c  { g_@@_style_attr_exp_bool_#1_#2_#3 }
+      \cs_gset:cn { @@_style_attr_code_#1_#2_#3:n } {##1}
     },
 %    \end{macrocode}
 % For comma list and date.
@@ -3546,9 +3763,9 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \cs_new:Nn \@@_use_data:nnnn {
-  \bool_if:cT { g_@@_style_attr_item_exp_bool_#4_#1_#2 }
+  \bool_if:cT { g_@@_style_attr_exp_bool_#4_#1_#2 }
     { \exp_args:Nnx }
-  \use:c { @@_style_attr_item_code_#4_#1_#2:n }
+  \use:c { @@_style_attr_code_#4_#1_#2:n }
   { \@@_use_data_raw:nnnn {#1} {#2} {#3} {#4} }
 }
 \cs_new:Nn \@@_use_data_raw:nnnn {
