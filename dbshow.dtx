@@ -3565,8 +3565,12 @@ Copyright and License
 %    \begin{macrocode}
   \seq_map_inline:Nn \l_@@_cond_seq {
     \seq_if_in:cnT { g_@@_cond_seq_#1 } {##1} {
-      \seq_gput_right:cn { g_@@_filter_run_seq_#1_#2 }
+      \seq_if_in:cnF { g_@@_filter_run_seq_#1_#2 }
         { g_@@_filter_hook_#1_##1:n }
+      {
+        \seq_gput_right:cn { g_@@_filter_run_seq_#1_#2 }
+          { g_@@_filter_hook_#1_##1:n }
+      }
     }
   }
   \tl_set:Nn \l_@@_cond_expr_tl {#3}
@@ -3593,13 +3597,17 @@ Copyright and License
 %    \end{macrocode}
 % \begin{arguments}[2]
 %   \item \meta{star}
-%   \item \meta{conditional}
+%   \item \meta{filter/conditional}
 %   \item \meta{attr}
 %   \item \meta{expr}
+%   \item \meta{filter info}
 % \end{arguments}
 %    \begin{macrocode}
-  \DeclareDocumentCommand { \dbNewConditional } { s m m m } {
+  \DeclareDocumentCommand { \dbNewConditional } { s m m m O{} } {
     \@@_new_conditional:nnnnn {#2} {##2} {##3} {##4} {##1}
+    \IfValueT {#1} {
+      \dbCombCond{##2}{##2}[##5]
+    }
   }
 %    \end{macrocode}
 % \begin{arguments}[2]
@@ -3630,14 +3638,17 @@ Copyright and License
 % Define filter with single conditional.
 % \begin{arguments}
 %   \item \meta{star}
+%   \item \meta{filter and conditional name}
 %   \item \meta{database}
-%   \item \meta{conditional}
 %   \item \meta{attr}
 %   \item \meta{expr}
+%   \item \meta{filter info}
 % \end{arguments}
 %    \begin{macrocode}
-\DeclareDocumentCommand { \dbNewConditional } { s m m m m } {
-  \@@_new_conditional:nnnnn {#2} {#3} {#4} {#5} {#1}
+\DeclareDocumentCommand { \dbNewConditional } { s m m m m O{} } {
+  \@@_new_conditional:nnnnn {#3} {#2} {#4} {#5} {#1}
+  \tl_gset:cn { g_@@_filter_info_tl_#3_#2 } {#6}
+  \@@_combine_conditional:nnn {#3} {#2} {#5}
 }
 %    \end{macrocode}
 % \end{macro}
