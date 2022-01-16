@@ -387,7 +387,7 @@ Copyright and License
     \__codedoc_function_label:xN {##1} ##2
     \hbox_set:Nn \l_tmpa_box {##1}
     \group_begin: \color{#2}
-    \int_compare:nTF { \str_count:n {##1} <= 22 }
+    \int_compare:nTF { \str_count:n {##1} <= 20 }
       {##1} { \adjustbox{width=.7\marginparwidth, height=\box_ht:N \l_tmpa_box}{##1} }
     \group_end:
     #1{##1}
@@ -907,11 +907,11 @@ Copyright and License
 %     \textcolor{option}{<attr>/code*} = <code> \inidef
 %   \end{syntax}
 %
-%     设置 \meta{attr} 的样式代码。在 \meta{code} 中用 |#1| 指代属性的值。属性的
-%     值是完全展开的，对某些需要以特定格式解析参数的命令比较有用。
+%     设置 \meta{attr} 的样式代码。在 \meta{code} 中用 |#1| 指代\textbf{展开}的
+%     属性的值。这对某些需要以特定格式解析参数的命令比较有用。
 % \end{option}
 %
-%     示例 \ref{cn-exp-db} 中 \pkg{zhnumber} 宏包的 \cs{zhdate} 命令接收
+%     示例 \ref{cn-exp-code} 中 \pkg{zhnumber} 宏包的 \cs{zhdate} 命令接收
 %     |yyyy/mm/dd| 格式的时期并输出中文日期，本宏包默认的日期输出格式是
 %     |yyyy/mm/dd|，因此可以通过 \opt{date/code*} 选项，将日期完全展开后然后传递
 %     给 \cs{zhdate} 命令，如果不展开，\cs{zhdate} 接收到的是若干个用来展示日期
@@ -957,6 +957,43 @@ Copyright and License
 %
 %   属性样式代码的执行顺序为：\opt{<attr>/before-code}，\opt{<attr>/code} 或者
 %   \opt{<attr>/code*}，\opt{<attr>/after-code}。
+%
+% \changes{1.5}{2022-01-16}{Add options}{\opt{<attr>/item-code},
+% \opt{<attr>/item-code*}}
+% \begin{option}[added=2022-01-16, rEXP]{<attr>/item-code}
+%   \begin{syntax}
+%     \textcolor{option}{<attr>/item-code} = <item code> \inidef(\#1)
+%   \end{syntax}
+%
+%   设置列表元素的样式代码。在 \meta{item code} 中用 |#1| 指代列表元素的值。示例
+%   \ref{cn-clist-code} 演示了如何为列表元素设置额外的样式。
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(clist-code){设置列表元素样式代码}
+  \dbNewDatabase{clist-db}{name=str, label=clist}
+  \dbNewStyle{clist-style}{clist-db}{
+    item-code       = \par\dbuse{name}:~\dbuse{label},
+    label/item-code = (\textcolor{red}{\textit{#1}}),
+  }
+  \dbitemkv{clist-db}{name=pig,  label={animal, meat}}
+  \dbitemkv{clist-db}{name=Alex, label={person, male}}
+  \dbshow{clist-style}{clist-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
+%
+% \begin{option}[added=2022-01-16, rEXP]{<attr>/item-code*}
+%   \begin{syntax}
+%     \textcolor{option}{<attr>/item-code*} = <item code> \inidef
+%   \end{syntax}
+%
+%   设置列表元素的样式代码。在 \meta{item code} 中用 |#1| 指代\textbf{展开}的列
+%   表元素的值。
+% \end{option}
 %
 % \begin{option}[added=2022-01-05, rEXP]{<attr>/item-before-code}
 %   \begin{syntax}
@@ -1731,9 +1768,9 @@ Copyright and License
 %     \textcolor{option}{<attr>/code} = <code> \inidef(\#1)
 %   \end{syntax}
 %
-%     Set the style code of \meta{attr}. The value of \meta{attr} is replaced
-%     with |#1| in \meta{code}. Example \ref{en-attr-code} prints |name| whose
-%     |count| is less than 10 in red color, otherwise in teal color.
+%   Set the style code of \meta{attr}. In \meta{code}, |#1| is replaced with the
+%   value of \meta{attr}. Example \ref{en-attr-code} prints |name| whose |count|
+%   is less than 10 in teal color, otherwise in red color.
 % \end{option}
 %
 % \iffalse
@@ -1770,16 +1807,17 @@ Copyright and License
 %   \begin{syntax}
 %     \textcolor{option}{<attr>/code*} = <code> \inidef
 %   \end{syntax}
-
-%     Set the style code of \meta{attr}. In \meta{code}, |#1| is replaced with
-%     the \textbf{expanded} value of \meta{attr}. This is useful to commands
-%     that require special format of the arguments. Example \ref{en-exp-code}
-%     shows how to print Chinese date with \cs{zhdate} of package \pkg{zhnumber}.
-%     \cs{zhdate} require argument to be the date of |yyyy/mm/dd|, which is the
-%     default date format of \pkg{dbshow}. But we need to expand the date
-%     through \opt{date/code*} first because \cs{zhdate} cannot parse the
-%     token list other than |yyyy/mm/dd|.
+%
+%   Set the style code of \meta{attr}. In \meta{code}, |#1| is replaced with the
+%   \textbf{expanded} value of \meta{attr}. This is useful to commands that
+%   require special format of the arguments.
 % \end{option}
+%
+%   Example \ref{en-exp-code} shows how to print Chinese date with \cs{zhdate}
+%   of package \pkg{zhnumber}. \cs{zhdate} require argument to be the date of
+%   |yyyy/mm/dd|, which is the default date format of \pkg{dbshow}. But we need
+%   to expand the date through \opt{date/code*} first because \cs{zhdate} cannot
+%   parse the token list other than |yyyy/mm/dd|.
 %
 % \iffalse
 %<*verb>
@@ -1821,6 +1859,44 @@ Copyright and License
 %
 %   The style code execution order of attribute is: \opt{<attr>/before-code}，
 %   \opt{<attr>/code} or \opt{<attr>/code*}，\opt{<attr>/after-code}.
+%
+% \changes{1.5}{2022-01-16}{Add options}{\opt{<attr>/item-code},
+% \opt{<attr>/item-code*}}
+% \begin{option}[added=2022-01-16, rEXP]{<attr>/item-code}
+%   \begin{syntax}
+%     \textcolor{option}{<attr>/item-code} = <item code> \inidef(\#1)
+%   \end{syntax}
+%
+%   Set the style code of \meta{attr}. In \meta{item code}, |#1| is replaced
+%   with the item of the comma list. Example \ref{en-clist-code} shows how to
+%   set the style code of the item of the comma list.
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(clist-code){Set the Style Code of Clist Item}
+  \dbNewDatabase{clist-db}{name=str, label=clist}
+  \dbNewStyle{clist-style}{clist-db}{
+    item-code       = \par\dbuse{name}:~\dbuse{label},
+    label/item-code = (\textcolor{red}{\textit{#1}}),
+  }
+  \dbitemkv{clist-db}{name=pig,  label={animal, meat}}
+  \dbitemkv{clist-db}{name=Alex, label={person, male}}
+  \dbshow{clist-style}{clist-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
+%
+% \begin{option}[added=2022-01-16, rEXP]{<attr>/item-code*}
+%   \begin{syntax}
+%     \textcolor{option}{<attr>/item-code*} = <item code> \inidef
+%   \end{syntax}
+%
+%   Set the style code of \meta{attr}. In \meta{item code}, |#1| is replaced
+%   with the \textbf{expanded} item of the comma list.
+% \end{option}
 %
 % \changes{1.4}{2022-01-13}{Add macro}{\cs{dbdatesep}}
 % \begin{function}[added=2022-01-13]{\dbdatesep}
@@ -3383,7 +3459,7 @@ Copyright and License
     item-code        .initial:n    = {##1},
     item-code*       .code:n       = {
       \bool_gset_true:c  { g_@@_style_clist_item_exp_bool_#1_#2_#3 }
-      \cs_gset:cn { @@_style_attr_item_code_#1_#2_#3:n } {##1}
+      \cs_gset:cn { @@_style_clist_item_code_#1_#2_#3:n } {##1}
     },
 %    \end{macrocode}
 % Only for date.
@@ -3590,39 +3666,45 @@ Copyright and License
 %
 % \subsection{Display Data}
 %
-% \begin{macro}{\@@_clist_wrapper:NNn}
+% \begin{macro}{\@@_clist_wrapper:NNNNn}
 % Wrap the clist item with \meta{before code} and \meta{after code}.
 % \begin{arguments}
 %   \item \meta{before code tl}
 %   \item \meta{after code tl}
+%   \item \meta{item code cs}
+%   \item \meta{exp boolean var}
 %   \item \meta{item}
 % \end{arguments}
 %    \begin{macrocode}
-\cs_new:Nn \@@_clist_wrapper:NNn {
-  \exp_not:n { { #1#3#2 }, }
+\cs_new:Nn \@@_clist_wrapper:NNNNn {
+  \bool_if:NTF #4
+    { \exp_not:n { { #1\exp_args:Nx#3{#5}#2 }, } }
+    { \exp_not:n { { #1#3{#5}#2 }, } }
 }
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{\@@_clist_use:NNNN, \@@_clist_use:cccc}
+% \begin{macro}{\@@_clist_use:NNNNNN, \@@_clist_use:cccccc}
 % Display a comma list.
 % \begin{arguments}
 %   \item \meta{data clist}
 %   \item \meta{separator clist}
 %   \item \meta{before code tl}
 %   \item \meta{after code tl}
+%   \item \meta{item code cs}
+%   \item \meta{exp boolean var}
 % \end{arguments}
 %    \begin{macrocode}
-\cs_new:Nn \@@_clist_use:NNNN {
+\cs_new:Nn \@@_clist_use:NNNNNN {
   \int_case:nnF { \clist_count:N #2 } {
     { 1 } {
       \clist_use:xx
-        { \clist_map_tokens:Nn #1 { \@@_clist_wrapper:NNn #3 #4 } }
+        { \clist_map_tokens:Nn #1 { \@@_clist_wrapper:NNNNn #3#4#5#6 } }
         { \clist_item:Nn #2 { 1 } }
     }
     { 3 } {
       \clist_use:xxxx
-        { \clist_map_tokens:Nn #1 { \@@_clist_wrapper:NNn #3 #4 } }
+        { \clist_map_tokens:Nn #1 { \@@_clist_wrapper:NNNNn #3#4#5#6 } }
         { \clist_item:Nn #2 { 1 } }
         { \clist_item:Nn #2 { 2 } }
         { \clist_item:Nn #2 { 3 } }
@@ -3634,7 +3716,7 @@ Copyright and License
       { \clist_use:Nn #2 { ,~ } }
   }
 }
-\cs_generate_variant:Nn \@@_clist_use:NNNN { cccc }
+\cs_generate_variant:Nn \@@_clist_use:NNNNNN { cccccc }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -3700,10 +3782,12 @@ Copyright and License
     { int }   { \int_use:c { g_@@_data_#1_#2_#3 } }
     { fp }    { \fp_use:c  { g_@@_data_#1_#2_#3 } }
     { clist } {
-      \@@_clist_use:cccc { g_@@_data_#1_#2_#3 }
+      \@@_clist_use:cccccc { g_@@_data_#1_#2_#3 }
         { g_@@_style_attr_sep_#4_#1_#2 }
         { g_@@_style_attr_item_before_tl_#4_#1_#2 }
         { g_@@_style_attr_item_after_ tl_#4_#1_#2 }
+        {   @@_style_clist_item_code_    #4_#1_#2:n }
+        { g_@@_style_clist_item_exp_bool_#4_#1_#2 }
     }
     { date }  {
       \cs_if_exist_use:cTF { @@_style_date_format_code_#4_#1_#2:xxx } {
