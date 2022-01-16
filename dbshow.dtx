@@ -948,11 +948,32 @@ Copyright and License
 %
 % \begin{option}[added=2022-01-05, rEXP]{<attr>/after-code}
 %   \begin{syntax}
-%     <attr>/after-code = <code>
+%     \textcolor{option}{<attr>/after-code} = <after code> \inidef*
 %   \end{syntax}
 %
 %   该选项用来设置展示数据库中属性 \meta{attr} 对应数据之\zhafter 需要执行的代码。
 %   \cs{dbuse} 会在展示属性数据\zhafter 执行此代码。
+% \end{option}
+%
+%   属性样式代码的执行顺序为：\opt{<attr>/before-code}，\opt{<attr>/code} 或者
+%   \opt{<attr>/code*}，\opt{<attr>/after-code}。
+%
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/item-before-code}
+%   \begin{syntax}
+%     \textcolor{option}{<attr>/item-before-code} = <code> \inidef*
+%   \end{syntax}
+%
+%   该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素\zhbefore 需要
+%   执行的代码。
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/item-after-code}
+%   \begin{syntax}
+%     \textcolor{option}{<attr>/item-after-code} = <code> \inidef*
+%   \end{syntax}
+%
+%   该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素\zhafter 需要执
+%   行的代码。
 % \end{option}
 %
 % \changes{1.4}{2022-01-13}{Add macro}{\cs{dbdatesep}}
@@ -1068,54 +1089,6 @@ Copyright and License
 %   \end{syntax}
 %
 %   该选项只适用于类型为 |date| 的属性。控制输出月份和天时是否补零。
-% \end{option}
-%
-% 下面这些选项在不同层次上装饰原有的展示代码，有些其实不必通过选项的形式来装饰，
-% 但这样做的好处是可以进一步使样式与内容分离。下面的例子中，\meta{style1} 和
-% \meta{style2} 是相同的样式，都用 * 将 \meta{attr1} 包裹住了，但是如果你还想定
-% 义一个样式用 = 将 \meta{attr1} 包裹住，如果用 \meta{style1} 的方式，那就可能
-% 需要重复大片代码，用 \meta{style2} 的方式则可以很轻松的继承 \meta{style1} 中的
-% 代码。
-%
-% \begin{verbatim}
-%   \dbNewStyle{style1}{db}{
-%     item-code = {%
-%       *\rvuse{attr1}*\rvuse{attr2}
-%       % more code
-%     }
-%   }
-%   \dbNewStyle{base-style}{db}{
-%     item-code = {%
-%       \rvuse{attr1}\rvuse{attr2}
-%       % more code
-%     }
-%   }
-%   \dbNewStyle[base-style]{style2}{db}{
-%     attr1/before-code = { * },
-%     attr1/after-code = { * },
-%   }
-%   \dbNewStyle[base-style]{style3}{db}{
-%     attr1/before-code = { = },
-%     attr1/after-code = { = },
-%   }
-% \end{verbatim}
-%
-% \begin{option}[added=2022-01-05, rEXP]{<attr>/item-before-code}
-%   \begin{syntax}
-%     <attr>/item-before-code = <code>
-%   \end{syntax}
-%
-%   该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素\zhbefore 需要
-%   执行的代码。
-% \end{option}
-%
-% \begin{option}[added=2022-01-05, rEXP]{<attr>/item-after-code}
-%   \begin{syntax}
-%     <attr>/item-after-code = <code>
-%   \end{syntax}
-%
-%   该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素\zhafter 需要执
-%   行的代码。
 % \end{option}
 %
 % \subsection{使用 \cs{dbNewReviewPoints} 定义复习点}
@@ -1828,6 +1801,27 @@ Copyright and License
 %</verb>
 % \fi
 %
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/before-code}
+%   \begin{syntax}
+%     \textcolor{option}{<attr>/before-code} = <before code> \inidef*
+%   \end{syntax}
+%
+%   Set the \meta{code} that is executed by \cs{dbuse} \enbefore displaying
+%   the value of attribute.
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/after-code}
+%   \begin{syntax}
+%     \textcolor{option}{<attr>/after-code} = <after code> \inidef*
+%   \end{syntax}
+%
+%   Set the \meta{code} that is executed by \cs{dbuse} \enafter displaying
+%   the value of attribute.
+% \end{option}
+%
+%   The style code execution order of attribute is: \opt{<attr>/before-code}，
+%   \opt{<attr>/code} or \opt{<attr>/code*}，\opt{<attr>/after-code}.
+%
 % \changes{1.4}{2022-01-13}{Add macro}{\cs{dbdatesep}}
 % \begin{function}[added=2022-01-13]{\dbdatesep}
 %   \begin{syntax}
@@ -1926,85 +1920,6 @@ Copyright and License
 %
 %   Only for attributes of type |date|. Control whether to fill zero on the left
 %   of the month or day.
-% \end{option}
-%
-% The options below serves as decorators. In some cases, decorator can also be
-% encoded directly into |item-code| or some other places, which is convenient
-% sometimes. The benefit of defining decorators with options is that styles step
-% further to be divided with contents. In the examples below, \meta{style1} and
-% \meta{style2} is the same style, which wrap \meta{attr1} with *. When you want
-% another style which wrap \meta{attr1} with =, if you choose the way of
-% \meta{style1}, \meta{item code} are repeated, otherwise if you choose the way
-% of \meta{style2}, \meta{item code} is inherited and you only need define the
-% decorators.
-%
-% \begin{verbatim}
-%   \dbNewStyle{style1}{db}{
-%     item-code = {%
-%       *\rvuse{attr1}*\rvuse{attr2}
-%       % more code
-%     }
-%   }
-%   \dbNewStyle{base-style}{db}{
-%     item-code = {%
-%       \rvuse{attr1}\rvuse{attr2}
-%       % more code
-%     }
-%   }
-%   \dbNewStyle[base-style]{style2}{db}{
-%     attr1/before-code = { * },
-%     attr1/after-code = { * },
-%   }
-%   \dbNewStyle[base-style]{style3}{db}{
-%     attr1/before-code = { = },
-%     attr1/after-code = { = },
-%   }
-% \end{verbatim}
-%
-% \changes{1.3}{2022-01-08}{Add option}{\opt{<attr>/wrapper}}
-% \begin{option}[added=2022-01-08, rEXP]{<attr>/wrapper}
-%   \begin{syntax}
-%     <attr>/wrapper = <control sequence>
-%   \end{syntax}
-%
-%   Only for attributes of type |date|. Output of \cs{dbuse}\marg{date attr}
-%   will be \meta{control sequence}\marg{date}.
-% \end{option}
-%
-% \changes{1.2}{2022-01-08}{Add options}{\opt{record-before-code},
-% \opt{record-after-code}}
-% \begin{option}[added=2022-01-05, rEXP]{record-before-code}
-%   \begin{syntax}
-%     record-before-code = <code>
-%   \end{syntax}
-%
-%   Set the \meta{code} that is executed \enbefore displaying a record.
-% \end{option}
-%
-% \begin{option}[added=2022-01-05, rEXP]{record-after-code}
-%   \begin{syntax}
-%     record-after-code = <code>
-%   \end{syntax}
-%
-%   Set the \meta{code} that is executed \enafter displaying the record.
-% \end{option}
-%
-% \begin{option}[added=2022-01-05, rEXP]{<attr>/before-code}
-%   \begin{syntax}
-%     <attr>/before-code = <code>
-%   \end{syntax}
-%
-%   Set the \meta{code} that is executed by \cs{dbuse} \enbefore displaying
-%   certain attribute.
-% \end{option}
-%
-% \begin{option}[added=2022-01-05, rEXP]{<attr>/after-code}
-%   \begin{syntax}
-%     <attr>/after-code = <code>
-%   \end{syntax}
-%
-%   Set the \meta{code} that is executed by \cs{dbuse} \enafter displaying
-%   certain attribute.
 % \end{option}
 %
 % \begin{option}[added=2022-01-05, rEXP]{<attr>/item-before-code}
@@ -3435,7 +3350,7 @@ Copyright and License
       g_@@_style_attr_after_tl_#1_#2_#3
     },
     after-code       .initial:n    = ,
-    code        .code:n       = {
+    code             .code:n       = {
       \bool_gset_false:c { g_@@_style_attr_exp_bool_#1_#2_#3 }
       \cs_gset:cn { @@_style_attr_code_#1_#2_#3:n } {##1}
     },
@@ -3461,6 +3376,15 @@ Copyright and License
       g_@@_style_attr_item_after_tl_#1_#2_#3
     },
     item-after-code  .initial:n    = ,
+    item-code        .code:n       = {
+      \bool_gset_false:c { g_@@_style_clist_item_exp_bool_#1_#2_#3 }
+      \cs_gset:cn { @@_style_clist_item_code_#1_#2_#3:n } {##1}
+    },
+    item-code        .initial:n    = {##1},
+    item-code*       .code:n       = {
+      \bool_gset_true:c  { g_@@_style_clist_item_exp_bool_#1_#2_#3 }
+      \cs_gset:cn { @@_style_attr_item_code_#1_#2_#3:n } {##1}
+    },
 %    \end{macrocode}
 % Only for date.
 %    \begin{macrocode}
