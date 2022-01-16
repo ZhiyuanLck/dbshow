@@ -374,8 +374,8 @@ Copyright and License
 } {}
 
 \definecolor{option}{HTML}{009933}
-\definecolor{env}{HTML}{FF6600}
-\definecolor{cs}{HTML}{A80C91}
+\definecolor{cs}{HTML}{FF6600}
+\definecolor{env}{HTML}{A80C91}
 \cs_set_eq:NN \__codedoc_old_cs:nN \__codedoc_typeset_function_block:nN
 \cs_gset_protected:Npn \__codedoc_typeset_function_block:nN #1#2 {
   \color{cs}\bfseries
@@ -489,7 +489,7 @@ Copyright and License
 \DeclareDocumentCommand \env { O{} m }
   { \dbshowdoc_cmd:nnn { env } {#1} {#2} }
 \DeclareDocumentCommand \cs  { O{} m }
-  { \dbshowdoc_cmd:nnn { env } {#1} { \c_backslash_str #2 } }
+  { \dbshowdoc_cmd:nnn { cs } {#1} { \c_backslash_str #2 } }
 
 \NewDocumentCommand \linktarget { m m m } {%
   \hyperlink{#1}{#3}%
@@ -1022,8 +1022,12 @@ Copyright and License
 %   \cs{dbuse} 会在展示属性数据\zhafter 执行此代码。
 % \end{option}
 %
-%   属性样式代码的执行顺序为：\opt{<attr>/before-code}，\opt{<attr>/code} 或者
-%   \opt{<attr>/code*}，\opt{<attr>/after-code}。
+% 属性样式代码的执行顺序为：
+% \begin{enumerate}[nolistsep]
+%   \item \opt{<attr>/before-code}
+%   \item \opt{<attr>/code} or \opt{<attr>/code*}
+%   \item \opt{<attr>/after-code}
+% \end{enumerate}
 %
 % \changes{1.5}{2022-01-16}{Add options}{\opt{<attr>/item-code},
 % \opt{<attr>/item-code*}}
@@ -1080,6 +1084,159 @@ Copyright and License
 %   行的代码。
 % \end{option}
 %
+% 列表元素样式代码的执行顺序为：
+% \begin{enumerate}[nolistsep]
+%   \item \opt{<attr>/item-before-code}
+%   \item \opt{<attr>/item-code} or \opt{<attr>/item-code*}
+%   \item \opt{<attr>/item-after-code}
+% \end{enumerate}
+%
+% \def\sepini{%
+%   \begingroup\normalfont%
+%   \hfill%
+%   (initially \texttt{\{,\char`~\}} for \texttt{clist}%
+%   and \texttt{/} for \texttt{date}, no default)%
+%   \endgroup%
+% }
+% \changes{1.3}{2022-01-09}{Update option}{\opt{<attr>/sep}}
+% \begin{option}[added=2022-01-05, updated=2022-01-08, rEXP]{<attr>/sep}
+%   \begin{syntax}
+%     \nopt{<attr>/sep} = <separator> \sepini\\
+%     \nopt{<attr>/sep} = \{ \\
+%     ~~\meta{separator between two}, \\
+%     ~~\meta{separator between more than two}, \\
+%     ~~\meta{separator between final two} \\
+%     \} \\
+%     \nopt{<attr>/sep} = \{ \\
+%     ~~\meta{separator before year}, \\
+%     ~~\meta{separator between year and month}, \\
+%     ~~\meta{separator between month and day}, \\
+%     ~~\meta{separator after day} \\
+%     \} \\
+%   \end{syntax}
+%
+%   该选项只适用于类型为 |clist| 或 |date| 的属性，用来设置列表间元素的间隔。参
+%   数为一个 \meta{separator} 时，所有元素间的分隔符被设置为 \meta{separator}。
+%   \meta{separator before year} 和 \meta{separator after day} 被设置为空。
+% \end{option}
+%
+%   参数为3个元素的逗号分隔的列表时，此选项用来设置列表元素的分隔符，分别用来设
+%   置只有两个元素时的分隔符 \meta{separator between two}，超过两个元素时的分隔
+%   符 \meta{separator between more than two}，和最后两个元素之间的分隔符
+%   \meta{separator between final two}。对于类型为 |clist| 的属性，设置此选项时
+%   如果参数列表数量不是1或者3会触发报错。示例 \ref{cn-clist-sep} 展示了如何设
+%   置列表元素间隔。
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(clist-sep){设置列表元素间隔}
+  \dbNewDatabase{clist-db}{label=clist}
+  \dbNewStyle{clist-base}{clist-db}{
+    before-code = {\dbIfEmptyF{\begin{enumerate}}},
+    after-code  = {\dbIfEmptyF{\end{enumerate}}},
+    item-code   = \item \dbuse{label},
+  }
+  \dbNewStyle[clist-base]{clist-style1}{clist-db}{
+    label/sep = {{,~}}
+  }
+  \dbNewStyle[clist-base]{clist-style2}{clist-db}{
+    label/sep = {{,~}, {,~}, ~and~}
+  }
+  \dbitemkv{clist-db}{label={a, b, c}}
+  \dbitemkv{clist-db}{label={1, 2, 3}}
+  \dbshow{clist-style1}{clist-db}
+  \dbshow{clist-style2}{clist-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
+%
+%   参数为4个元素的逗号分隔的列表时，此选项用来设置日期的分隔符，分别用来设
+%   置 \meta{year} 之前的分隔符 \meta{separator before year} ，\meta{year} 和
+%   \meta{month} 之间的分隔符 \meta{separator between year and month} ，
+%   \meta{month} 和 \meta{day} 之间的分隔符，以及 \meta{day} 之后的分隔符。对于
+%   类型为 |date| 的属性，设置此选项时如果参数列表数量不是1或者4会触发报错。示例
+%   \ref{cn-date-sep} 展示了如何自定义日期间隔符。
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(date-sep){设置日期间隔符}
+  \dbNewDatabase{date-db}{date=date}
+  \dbNewStyle{date-style1}{date-db}{
+    item-code = \dbuse{date}\quad,
+    date/sep  = -,
+  }
+  \dbNewStyle{date-style2}{date-db}{
+    item-code = \dbuse{date}\quad,
+    date/sep  = {\$, +, !, \$},
+  }
+  \dbitemkv{date-db}{date=2020/01/02}
+  \dbitemkv{date-db}{date=2022/07/12}
+  \dbshow{date-style1}{date-db}
+  \dbshow{date-style2}{date-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
+%
+% \changes{1.5}{2022-01-14}{Add option}{\opt{<attr>/format-code}}
+% \begin{option}[added=2022-01-14, rEXP]{<attr>/format-code}
+%   \begin{syntax}
+%     \nopt{<attr>/format-code} = <format code> \inidef
+%   \end{syntax}
+%
+%   该选项用来更精细地控制日期的输出格式。在 \meta{format code}中，|#1| 代表年份，
+%   |#2| 代表月份，|#3| 代表天。示例 \ref{cn-date-code} 演示了如何使用该选项。
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(date-code){任意日期格式}
+  \dbNewDatabase{date-db}{date=date}
+  \dbNewStyle{date-style}{date-db}{
+    item-code        = \dbuse{date},
+    date/format-code = {日：#3\quad 月：#2\quad 年：#1}
+  }
+  \dbitemkv{date-db}{date=2022/01/01}
+  \dbshow{date-style}{date-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
+%
+% \changes{1.3}{2022-01-08}{Add option}{\opt{<attr>/zfill}}
+% \begin{option}[added=2022-01-08, EXP]{<attr>/zfill}
+%   \begin{syntax}
+%     \nopt{<attr>/zfill} = <\TTF> \inidef(true)[true]
+%   \end{syntax}
+%
+%   该选项只适用于类型为 |date| 的属性。控制输出月份和天时是否补零。示例
+%   \ref{cn-date-zfill} 展示了补零和不补零的日期。
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(date-zfill){月份和天补零}
+  \dbNewDatabase{date-db}{date=date}
+  \dbNewStyle {zfill-style}{date-db}{
+    item-code = \dbuse{date},
+  }
+  \dbNewStyle{nofill-style}{date-db}{
+    item-code  = \dbuse{date},
+    date/zfill = false,
+  }
+  \dbitemkv{date-db}{date=2022/01/01}
+  \dbshow {zfill-style}{date-db}
+  \dbshow{nofill-style}{date-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
+%
 % \changes{1.4}{2022-01-13}{Add macro}{\cs{dbdatesep}}
 % \begin{function}[added=2022-01-13]{\dbdatesep}
 %   \begin{syntax}
@@ -1104,96 +1261,10 @@ Copyright and License
   \dbitemkv{inner-date-db}{date=2022-01-10}
   \dbshow{inner-date-style}{inner-date-db}
 \end{example}
+\dbdatesep{/}
 % \iffalse
 %</verb>
 % \fi
-% \dbdatesep{/}
-%
-% \changes{1.3}{2022-01-09}{Update option}{\opt{<attr>/sep}}
-% \begin{option}[added=2022-01-05, updated=2022-01-08, rEXP]{<attr>/sep}
-%   \begin{syntax}
-%     \nopt{<attr>/sep} = <separator> \\
-%     \nopt{<attr>/sep} = \{ \\
-%     ~~\meta{separator between two}, \\
-%     ~~\meta{separator between more than two}, \\
-%     ~~\meta{separator between final two} \\
-%     \} \\
-%     \nopt{<attr>/sep} = \{ \\
-%     ~~\meta{separator before year}, \\
-%     ~~\meta{separator between year and month}, \\
-%     ~~\meta{separator between month and day}, \\
-%     ~~\meta{separator after day} \\
-%     \} \\
-%   \end{syntax}
-%
-%   该选项只适用于类型为 |clist| 或 |date| 的属性，用来设置列表间元素的间隔。参
-%   数为一个 \meta{separator} 时，所有元素间的分隔符被设置为 \meta{separator}。
-%   \meta{separator before year} 和 \meta{separator after day} 被设置为空。
-% \end{option}
-%
-%   参数为3个元素的逗号分隔的列表时，此选项用来设置列表元素的分隔符，分别用来设
-%   置只有两个元素时的分隔符 \meta{separator between two}，超过两个元素时的分隔
-%   符 \meta{separator between more than two}，和最后两个元素之间的分隔符
-%   \meta{separator between final two}。对于类型为 |clist| 的属性，设置此选项时
-%   如果参数列表数量不是1或者3会触发报错。
-%
-% \iffalse
-%<*verb>
-% \fi
-\begin{example}(clist-sep){设置列表元素间隔}
-  \dbNewDatabase{clist-db}{label=clist}
-  \dbNewStyle{clist-base}{clist-db}{
-    before-code = {\dbIfEmptyF{\begin{enumerate}}},
-    after-code  = {\dbIfEmptyF{\end{enumerate}}},
-    item-code   = \item \dbuse{label},
-  }
-  \dbNewStyle[clist-base]{clist-style1}{clist-db}{
-    label/sep = {,~}
-  }
-  \dbNewStyle[clist-base]{clist-style2}{clist-db}{
-    label/sep = {,~, ,~, ~and~}
-  }
-  \dbitemkv{clist-db}{label={a, b, c}}
-  \dbitemkv{clist-db}{label={1, 2, 3}}
-  \dbshow{clist-style1}{clist-db}
-  \dbshow{clist-style2}{clist-db}
-\end{example}
-% \iffalse
-%</verb>
-% \fi
-%
-% \begin{verbatim}
-%   % clist-attr is an attribute of database db
-%   % suppose the val of clist-attr is { 1, 2, 3 }
-%   \dbNewStyle{clist-sep}{db}{
-%     clist-attr/sep = { ,~ },                % print 1, 2, 3
-%     clist-attr/sep = { {,~}, {,~}, {and~} } % print 1, 2 and 3
-%   }
-% \end{verbatim}
-%
-%   参数为4个元素的逗号分隔的列表时，此选项用来设置日期的分隔符，分别用来设
-%   置 \meta{year} 之前的分隔符 \meta{separator before year} ，\meta{year} 和
-%   \meta{month} 之间的分隔符 \meta{separator between year and month} ，
-%   \meta{month} 和 \meta{day} 之间的分隔符，以及 \meta{day} 之后的分隔符。对于
-%   类型为 |date| 的属性，设置此选项时如果参数列表数量不是1或者4会触发报错。
-%
-% \begin{verbatim}
-%   % date-attr is an attribute of database db
-%   % suppose the val of date-attr is 2022/01/01
-%   \dbNewStyle{date-sep}{db}{
-%     date-attr/sep = -,             % print 2022-01-01
-%     date-attr/sep = { |, -, -, | } % print |2022-01-01|
-%   }
-% \end{verbatim}
-%
-% \changes{1.3}{2022-01-08}{Add option}{\opt{<attr>/zfill}}
-% \begin{option}[added=2022-01-08, EXP]{<attr>/zfill}
-%   \begin{syntax}
-%     <attr>/zfill = <\TTF>
-%   \end{syntax}
-%
-%   该选项只适用于类型为 |date| 的属性。控制输出月份和天时是否补零。
-% \end{option}
 %
 % \subsection{使用 \cs{dbNewReviewPoints} 定义复习点}
 %
@@ -1216,7 +1287,9 @@ Copyright and License
 %   \dbNewStyle{review-style}{ques}{filter=filter1}       % 定义展示样式
 % \end{verbatim}
 %
-% \subsection{在 \env{dbFilters} 环境中定义过滤器}
+% \subsection{过滤器}
+%
+% 过滤器是一些条件的组合，只有满足过滤器指定条件的数据才会被展现出来。
 %
 % \begin{environment}[added=2022-01-05]{dbFilters}
 %   \begin{syntax}
@@ -1231,7 +1304,9 @@ Copyright and License
 %   过滤器。
 % \end{environment}
 %
-% \begin{function}[added=2022-01-05, updated=2022-01-08]{\dbNewConditional, \dbNewConditional*}
+% \changes{1.5}{2022-01-15}{Add macros}{\cs{dbNewCond}, \cs{dbCombCond}}
+% \begin{function}[added=2022-01-05, updated=2022-01-16]{\dbNewConditional,
+% \dbNewCond, \dbNewConditional*, \dbNewCond*}
 %   \begin{syntax}
 %     \cs{dbNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
 %     \cs{dbNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
@@ -1247,6 +1322,7 @@ Copyright and License
 %
 %   \cs{dbNewConditional} 用来定义名为 \meta{name} 的条件，\meta{attr} 指定条件
 %   所绑定的属性，在 \meta{cond spec} 中可以用 \cs{dbval} 指代属性的值。
+%   \cs{dbNewCond} 是 \cs{dbNewConditional} 的别名。
 % \end{function}
 %
 %   \changes{1.3}{2022-01-10}{Update doc}{truncated division}
@@ -1255,6 +1331,16 @@ Copyright and License
 %   \begin{note}
 %     |/| 为四舍五入除法，截断除法请用 \cs{dbIntDivTruncate}。
 %   \end{note}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(filter-int){整数筛选条件}
+  \dbNewDatabase{filter-db}{count=int}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
 %
 %   对于类型为 |str| 和 |tl| 的属性，\meta{regex} 为正则表达式，
 %   \cs{dbNewConditional} 表示部分匹配，\cs{dbNewConditional*} 表示整体匹配。
@@ -1924,8 +2010,12 @@ Copyright and License
 %   the value of attribute.
 % \end{option}
 %
-%   The style code execution order of attribute is: \opt{<attr>/before-code}，
-%   \opt{<attr>/code} or \opt{<attr>/code*}，\opt{<attr>/after-code}.
+% The style code execution order of attribute is:
+% \begin{enumerate}[nolistsep]
+%   \item \opt{<attr>/before-code}
+%   \item \opt{<attr>/code} or \opt{<attr>/code*}
+%   \item \opt{<attr>/after-code}
+% \end{enumerate}
 %
 % \changes{1.5}{2022-01-16}{Add options}{\opt{<attr>/item-code},
 % \opt{<attr>/item-code*}}
@@ -1965,6 +2055,181 @@ Copyright and License
 %   with the \textbf{expanded} item of the comma list.
 % \end{option}
 %
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/item-before-code}
+%   \begin{syntax}
+%     \nopt{<attr>/item-before-code} = <before code> \inidef*
+%   \end{syntax}
+%
+%   Only for attributes of type |clist|. Set the \meta{code} that is excuted
+%   \enbefore displaying the item of the comma list.
+% \end{option}
+%
+% \begin{option}[added=2022-01-05, rEXP]{<attr>/item-after-code}
+%   \begin{syntax}
+%     \nopt{<attr>/item-after-code} = <after code> \inidef*
+%   \end{syntax}
+%
+%   Only for attributes of type |clist|. Set the \meta{code} that is excuted
+%   \enafter displaying the item of the comma list.
+% \end{option}
+%
+% The style code execution order of comma list item is:
+% \begin{enumerate}[nolistsep]
+%   \item \opt{<attr>/item-before-code}
+%   \item \opt{<attr>/item-code} or \opt{<attr>/item-code*}
+%   \item \opt{<attr>/item-after-code}
+% \end{enumerate}
+%
+% \changes{1.3}{2022-01-09}{Update option}{\opt{<attr>/sep}}
+% \begin{option}[added=2022-01-05, updated=2022-01-08, rEXP]{<attr>/sep}
+%   \begin{syntax}
+%     \nopt{<attr>/sep} = <separator> \sepini\\
+%     \nopt{<attr>/sep} = \{ \\
+%     ~~\meta{separator between two}, \\
+%     ~~\meta{separator between more than two}, \\
+%     ~~\meta{separator between final two} \\
+%     \} \\
+%     \nopt{<attr>/sep} = \{ \\
+%     ~~\meta{separator before year}, \\
+%     ~~\meta{separator between year and month}, \\
+%     ~~\meta{separator between month and day}, \\
+%     ~~\meta{separator after day} \\
+%     \} \\
+%   \end{syntax}
+%
+%   Only for attributes of type |clist| or |date|. Set the separator between
+%   items. If the argument is an one-item comma list, all separators are set to
+%   \meta{separator} but \meta{separator before year} and \meta{separator after
+%   day} is set empty.
+% \end{option}
+%
+%   If the argument is a comma list of 3 items, it is used to set the separator
+%   between items of the comma list. Following documentation is quoted from
+%   \pkg{interface3}:
+%   \begin{quote}
+%     If the comma list has more than two items, the \meta{separator between
+%     more than two} is placed between each pair of items except the last, for
+%     which the \meta{separator between final two} is used. If the comma list
+%     has exactly two items, then they are placed in the input stream separated
+%     by the \meta{separator between two}. If the comma list has a single item,
+%     it is placed in the input stream, and a comma list with no items produces
+%     no output.
+%   \end{quote}
+%   For attributes of type |clist|, incorrect number (numbers exclude 1 and 3)
+%   of items of the argument will raise an error. Example \ref{en-clist-sep}
+%   shows how to use this option to customize the separators between comma
+%   list items.
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(clist-sep){Set Separator Between Items of Comma List}
+  \dbNewDatabase{clist-db}{label=clist}
+  \dbNewStyle{clist-base}{clist-db}{
+    before-code = {\dbIfEmptyF{\begin{enumerate}}},
+    after-code  = {\dbIfEmptyF{\end{enumerate}}},
+    item-code   = \item \dbuse{label},
+  }
+  \dbNewStyle[clist-base]{clist-style1}{clist-db}{
+    label/sep = {{,~}}
+  }
+  \dbNewStyle[clist-base]{clist-style2}{clist-db}{
+    label/sep = {{,~}, {,~}, ~and~}
+  }
+  \dbitemkv{clist-db}{label={a, b, c}}
+  \dbitemkv{clist-db}{label={1, 2, 3}}
+  \dbshow{clist-style1}{clist-db}
+  \dbshow{clist-style2}{clist-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
+%
+%   If the argument is a comma list of 4 items, it is used to set the separators
+%   of the date. For attributes of type |date|, incorrect number (numbers
+%   exclude 1 and 4) will raise an error. Example \ref{en-date-sep} shows how
+%   to customize the date separators.
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(date-sep){Set Date Separators}
+  \dbNewDatabase{date-db}{date=date}
+  \dbNewStyle{date-style1}{date-db}{
+    item-code = \dbuse{date}\quad,
+    date/sep  = -,
+  }
+  \dbNewStyle{date-style2}{date-db}{
+    item-code = \dbuse{date}\quad,
+    date/sep  = {\$, +, !, \$},
+  }
+  \dbitemkv{date-db}{date=2020/01/02}
+  \dbitemkv{date-db}{date=2022/07/12}
+  \dbshow{date-style1}{date-db}
+  \dbshow{date-style2}{date-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
+%
+% \changes{1.5}{2022-01-14}{Add option}{\opt{<attr>/format-code}}
+% \begin{option}[added=2022-01-14, rEXP]{<attr>/format-code}
+%   \begin{syntax}
+%     \nopt{<attr>/format-code} = <format code> \inidef
+%   \end{syntax}
+%
+%   Use this option to get fine-grained control over date formatting. In
+%   \meta{format code}, |#1| represents for the \meta{year}, |#2| represents for
+%   the \meta{month} and |#3| represents for the \meta{day}. Example
+%   \ref{en-date-code} shows how to format the date with this option.
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(date-code){Date Formatting}
+  \dbNewDatabase{date-db}{date=date}
+  \dbNewStyle{date-style}{date-db}{
+    item-code        = \dbuse{date},
+    date/format-code = {日：#3\quad 月：#2\quad 年：#1}
+  }
+  \dbitemkv{date-db}{date=2022/01/01}
+  \dbshow{date-style}{date-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
+%
+% \changes{1.3}{2022-01-08}{Add option}{\opt{<attr>/zfill}}
+% \begin{option}[added=2022-01-08, EXP]{<attr>/zfill}
+%   \begin{syntax}
+%     \nopt{<attr>/zfill} = <\TTF> \inidef(true)[true]
+%   \end{syntax}
+%
+%   Only for attributes of type |date|. Control whether to fill zero on the left
+%   of the month or day. Example \ref{en-date-zfill} shows the differences.
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(date-zfill){Control the Leading Zero of the Date}
+  \dbNewDatabase{date-db}{date=date}
+  \dbNewStyle {zfill-style}{date-db}{
+    item-code = \dbuse{date},
+  }
+  \dbNewStyle{nofill-style}{date-db}{
+    item-code  = \dbuse{date},
+    date/zfill = false,
+  }
+  \dbitemkv{date-db}{date=2022/01/01}
+  \dbshow {zfill-style}{date-db}
+  \dbshow{nofill-style}{date-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
+%
 % \changes{1.4}{2022-01-13}{Add macro}{\cs{dbdatesep}}
 % \begin{function}[added=2022-01-13]{\dbdatesep}
 %   \begin{syntax}
@@ -1995,94 +2260,6 @@ Copyright and License
 %</verb>
 % \fi
 %
-% \changes{1.3}{2022-01-09}{Update option}{\opt{<attr>/sep}}
-% \begin{option}[added=2022-01-05, updated=2022-01-08, rEXP]{<attr>/sep}
-%   \begin{syntax}
-%     <attr>/sep = <separator> \\
-%     <attr>/sep = \{ \\
-%     ~~\meta{separator between two}, \\
-%     ~~\meta{separator between more than two}, \\
-%     ~~\meta{separator between final two} \\
-%     \} \\
-%     <attr>/sep = \{ \\
-%     ~~\meta{separator before year}, \\
-%     ~~\meta{separator between year and month}, \\
-%     ~~\meta{separator between month and day}, \\
-%     ~~\meta{separator after day} \\
-%     \} \\
-%   \end{syntax}
-%
-%   Only for attributes of type |clist| or |date|. Set the separator between
-%   items. If the argument is an one-item comma list, all separators are set to
-%   \meta{separator} but \meta{separator before year} and \meta{separator after
-%   day} is set empty.
-% \end{option}
-%
-%   If the argument is a comma list of 3 items, it is used to set the separator
-%   between items of the comma list. Following documentation is quoted from
-%   \pkg{interface3}:
-%   \begin{quote}
-%     If the comma list has more than two items, the \meta{separator between
-%     more than two} is placed between each pair of items except the last, for
-%     which the \meta{separator between final two} is used. If the comma list
-%     has exactly two items, then they are placed in the input stream separated
-%     by the \meta{separator between two}. If the comma list has a single item,
-%     it is placed in the input stream, and a comma list with no items produces
-%     no output.
-%   \end{quote}
-%   For attributes of type |clist|, incorrect number (numbers exclude 1 and 3)
-%   of items of the argument will raise an error.
-%
-% \begin{verbatim}
-%   % clist-attr is an attribute of database db
-%   % suppose the val of clist-attr is { 1, 2, 3 }
-%   \dbNewStyle{clist-sep}{db}{
-%     clist-attr/sep = { ,~ },                % print 1, 2, 3
-%     clist-attr/sep = { {,~}, {,~}, {and~} } % print 1, 2 and 3
-%   }
-% \end{verbatim}
-%
-%   If the argument is a comma list of 4 items, it is used to set the separators
-%   of the date. For attributes of type |date|, incorrect number (numbers
-%   exclude 1 and 4) will raise an error.
-%
-% \begin{verbatim}
-%   % date-attr is an attribute of database db
-%   % suppose the val of date-attr is 2022/01/01
-%   \dbNewStyle{date-sep}{db}{
-%     date-attr/sep = -,             % print 2022-01-01
-%     date-attr/sep = { |, -, -, | } % print |2022-01-01|
-%   }
-% \end{verbatim}
-%
-% \changes{1.3}{2022-01-08}{Add option}{\opt{<attr>/zfill}}
-% \begin{option}[added=2022-01-08, EXP]{<attr>/zfill}
-%   \begin{syntax}
-%     <attr>/zfill = <\TTF>
-%   \end{syntax}
-%
-%   Only for attributes of type |date|. Control whether to fill zero on the left
-%   of the month or day.
-% \end{option}
-%
-% \begin{option}[added=2022-01-05, rEXP]{<attr>/item-before-code}
-%   \begin{syntax}
-%     <attr>/item-before-code = <code>
-%   \end{syntax}
-%
-%   Only for attributes of type |clist|. Set the \meta{code} that is excuted
-%   \enbefore displaying the item of the comma list.
-% \end{option}
-%
-% \begin{option}[added=2022-01-05, rEXP]{<attr>/item-after-code}
-%   \begin{syntax}
-%     <attr>/item-after-code = <code>
-%   \end{syntax}
-%
-%   Only for attributes of type |clist|. Set the \meta{code} that is excuted
-%   \enafter displaying the item of the comma list.
-% \end{option}
-%
 % \subsection{Use \cs{dbNewReviewPoints} to Define Review Points}
 %
 % \begin{function}[added=2022-01-05]{\dbNewReviewPoints}
@@ -2105,7 +2282,10 @@ Copyright and License
 %   \dbNewStyle{review-style}{ques}{filter=filter1}       % define style
 % \end{verbatim}
 %
-% \subsection{Define Filters inside \env{dbFilters} Environment}
+% \subsection{Data Filters}
+%
+% Filter is a combination of conditionals that is used to filter the data you
+% want to display.
 %
 % \begin{environment}[added=2022-01-05]{dbFilters}
 %   \begin{syntax}
@@ -2121,7 +2301,9 @@ Copyright and License
 %   allowed in different databases.
 % \end{environment}
 %
-% \begin{function}[added=2022-01-05, updated=2022-01-08]{\dbNewConditional, \dbNewConditional*}
+% \changes{1.5}{2022-01-15}{Add macros}{\cs{dbNewCond}, \cs{dbCombCond}}
+% \begin{function}[added=2022-01-05, updated=2022-01-16]{\dbNewConditional,
+% \dbNewCond, \dbNewConditional*, \dbNewCond*}
 %   \begin{syntax}
 %     \cs{dbNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
 %     \cs{dbNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
@@ -3406,8 +3588,8 @@ Copyright and License
 %   \item \meta{database}
 % \end{arguments}
 %    \begin{macrocode}
-\NewDocumentEnvironment { dbFilters } { m } {
-  \seq_gclear_new:c { g_@@_cond_seq_#1 }
+\NewDocumentEnvironment { dbFilters } { s m } {
+  \seq_gclear_new:c { g_@@_cond_seq_#2 }
 %    \end{macrocode}
 % \begin{arguments}[2]
 %   \item \meta{star}
@@ -3417,9 +3599,16 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
   \DeclareDocumentCommand { \dbNewConditional } { s m m m } {
-    \@@_new_conditional:nnnnn
-      {#1} {##2} {##3} {##4} {##1}
+    \@@_new_conditional:nnnnn {#2} {##2} {##3} {##4} {##1}
   }
+%    \end{macrocode}
+% \begin{arguments}[2]
+%   \item \meta{star}
+%   \item \meta{conditional}
+%   \item \meta{attr}
+%   \item \meta{expr}
+% \end{arguments}
+%    \begin{macrocode}
 %    \end{macrocode}
 % \begin{arguments}[2]
 %   \item \meta{filter}
@@ -3428,12 +3617,28 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
   \DeclareDocumentCommand { \dbCombineConditionals } { m m O{} } {
-    \tl_gset:cn { g_@@_filter_info_tl_#1_##1 } {##3}
-    \@@_combine_conditional:nnn {#1} {##1} {##2}
+    \tl_gset:cn { g_@@_filter_info_tl_#2_##1 } {##3}
+    \@@_combine_conditional:nnn {#2} {##1} {##2}
   }
   \cs_set_eq:NN \dbNewCond  \dbNewConditional
   \cs_set_eq:NN \dbCombCond \dbCombineConditionals
 } {}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\dbNewConditional, \dbNewConditional*}
+% Define filter with single conditional.
+% \begin{arguments}
+%   \item \meta{star}
+%   \item \meta{database}
+%   \item \meta{conditional}
+%   \item \meta{attr}
+%   \item \meta{expr}
+% \end{arguments}
+%    \begin{macrocode}
+\DeclareDocumentCommand { \dbNewConditional } { s m m m m } {
+  \@@_new_conditional:nnnnn {#2} {#3} {#4} {#5} {#1}
+}
 %    \end{macrocode}
 % \end{macro}
 %
@@ -3466,13 +3671,6 @@ Copyright and License
 % \end{macro}
 %
 % \subsection{Style and Options}
-%
-% \begin{macro}{\@@_identity:n}
-% Does nothing and keep things unchanged.
-%    \begin{macrocode}
-\cs_new:Nn \@@_identity:n {#1}
-%    \end{macrocode}
-% \end{macro}
 %
 % \begin{macro}{\@@_new_attr_style:nnn}
 % Define style keys for each attribute.
