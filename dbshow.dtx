@@ -1291,33 +1291,59 @@ Copyright and License
 %
 % 过滤器是一些条件的组合，只有满足过滤器指定条件的数据才会被展现出来。
 %
-% \begin{environment}[added=2022-01-05]{dbFilters}
+% \changes{1.5}{2022-01-16}{Update env}{add starred version of \env{dbFilters}}
+% \begin{environment}[added=2022-01-05, updated=2022-01-16]{dbFilters}
 %   \begin{syntax}
-%     |\begin{dbFilters}|\marg{database} \\
+%     |\begin|\{\env{dbFilters}\}   \marg{database} \\
 %     ~~\meta{code}
-%     |\end{dbFilters}| \\
+%     |\end|\{\env{dbFilters}\} \\
+%     |\begin|\{\env{dbFilters}\} * \marg{database} \\
+%     ~~\meta{code}
+%     |\end|\{\env{dbFilters}\} \\
 %   \end{syntax}
 %
 %   \env{dbFilters}用来定义过滤器，此环境中定义了 \cs{dbNewConditional} 命令用来
-%   定义条件和 \cs{dbCombineConditionals} 命令用来组合条件定义过滤器。过滤器独立
-%   于每个 \meta{database}，这意味着你可以在不同数据库中定义名称相同的过滤条件和
-%   过滤器。
+%   定义条件和 \cs{dbCombineConditionals} 命令用来组合条件定义过滤器。星号版本在
+%   定义条件的同时会定义一个与条件同名且只使用这个条件的过滤器。示例
+%   \ref{cn-star-filter} 中定义 |greater| 条件的同时也定义了一个同名的过滤器，你
+%   可以直接在 \opt{filter} 中使用这个过滤器。过滤器独立于每个 \meta{database}，
+%   这意味着你可以在不同数据库中定义名称相同的过滤条件和过滤器。
 % \end{environment}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(star-filter){定义与条件同名的过滤器}
+  \dbNewDatabase{filter-db}{count=int}
+  \begin{dbFilters}*{filter-db}
+    \dbNewCond{greater}{count}{\dbval > 3}
+  \end{dbFilters}
+  \dbNewStyle{filter-style}{filter-db}{
+    filter    = greater,
+    item-code = \dbuse{count}\quad,
+  }
+  \dbitemkv{filter-db}{count=2}
+  \dbitemkv{filter-db}{count=5}
+  \dbshow{filter-style}{filter-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
 %
 % \changes{1.5}{2022-01-15}{Add macros}{\cs{dbNewCond}, \cs{dbCombCond}}
 % \begin{function}[added=2022-01-05, updated=2022-01-16]{\dbNewConditional,
 % \dbNewCond, \dbNewConditional*, \dbNewCond*}
 %   \begin{syntax}
-%     \cs{dbNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
-%     \cs{dbNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
-%     \cs{dbNewConditional}  \marg{name} \marg{int/fp attr} \marg{expr} \\
-%     \cs{dbNewConditional}* \marg{name} \marg{int/fp attr} \marg{expr} \\
-%     \cs{dbNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \\
-%     \cs{dbNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \\
-%     \cs{dbNewConditional}  \marg{name}  \marg{clist attr} \marg{val list} \\
-%     \cs{dbNewConditional}* \marg{name}  \marg{clist attr} \marg{val list} \\
-%     \cs{dbNewConditional}  \marg{name}   \marg{date attr} \marg{expr}
-%     \cs{dbNewConditional}* \marg{name}   \marg{date attr} \{\meta{review points}\orbar\meta{date}\} \\
+%     \cs{dbNewConditional}  \marg{name}        \marg{attr} \marg{cond spec}  \oarg{filter info}
+%     \cs{dbNewConditional}* \marg{name}        \marg{attr} \marg{cond spec}  \oarg{filter info} \\[2pt]
+%     \cs{dbNewConditional}  \marg{name} \marg{int/fp attr} \marg{expr}       \oarg{filter info}
+%     \cs{dbNewConditional}* \marg{name} \marg{int/fp attr} \marg{expr}       \oarg{filter info}
+%     \cs{dbNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \oarg{filter info}
+%     \cs{dbNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \oarg{filter info}
+%     \cs{dbNewConditional}  \marg{name}  \marg{clist attr} \marg{val list}   \oarg{filter info}
+%     \cs{dbNewConditional}* \marg{name}  \marg{clist attr} \marg{val list}   \oarg{filter info}
+%     \cs{dbNewConditional}  \marg{name}   \marg{date attr} \marg{expr}       \oarg{filter info}
+%     \cs{dbNewConditional}* \marg{name}   \marg{date attr} \{\meta{review points}\orbar\meta{date}\} \oarg{filter info}
 %   \end{syntax}
 %
 %   \cs{dbNewConditional} 用来定义名为 \meta{name} 的条件，\meta{attr} 指定条件
@@ -1332,23 +1358,40 @@ Copyright and License
 %     |/| 为四舍五入除法，截断除法请用 \cs{dbIntDivTruncate}。
 %   \end{note}
 %
+%   对于类型为 |str| 和 |tl| 的属性，\meta{regex} 为正则表达式，
+%   \cs{dbNewConditional} 表示部分匹配，\cs{dbNewConditional*} 表示整体匹配。该
+%   选项依赖于 \pkg{l3regex}。示例 \ref{cn-filter-str} 演示了部分匹配和全部匹
+%   配的区别，|part| 过滤器匹配所有含数字的 |name|，而 |all| 过滤器匹配全部为
+%   数字的 |name|。
+%
 % \iffalse
 %<*verb>
 % \fi
-\begin{example}(filter-int){整数筛选条件}
-  \dbNewDatabase{filter-db}{count=int}
+\begin{example}(filter-str){匹配字符串}
+  \dbNewDatabase{filter-db}{name=str}
+  \begin{dbFilters}*{filter-db}
+    \dbNewCond{part}{name}{\d+}
+    \dbNewCond*{all}{name}{\d+}
+  \end{dbFilters}
+  \dbNewStyle{part-style}{filter-db}{
+    before-code = Match part:~,
+    item-code   = \dbuse{name}\quad,
+    filter      = part,
+  }
+  \dbNewStyle{all-style}{filter-db}{
+    before-code = Match all:~,
+    item-code   = \dbuse{name}\quad,
+    filter      = all,
+  }
+  \dbitemkv{filter-db}{name=123}
+  \dbitemkv{filter-db}{name=int12}
+  \dbitemkv{filter-db}{name=variable}
+  \dbshow{part-style}{filter-db}
+  \dbshow {all-style}{filter-db}
 \end{example}
 % \iffalse
 %</verb>
 % \fi
-%
-%   对于类型为 |str| 和 |tl| 的属性，\meta{regex} 为正则表达式，
-%   \cs{dbNewConditional} 表示部分匹配，\cs{dbNewConditional*} 表示整体匹配。
-%
-% \begin{verbatim}
-%   \dbNewConditional {cond1}{str-attr}{abc} % 匹配 abc, abcd, 1abc, =abc= 等
-%   \dbNewConditional*{cond2}{str-attr}{abc} % 只匹配 abc
-% \end{verbatim}
 %
 %   对于类型为 |clist| 的属性，使用 \cs{dbNewConditional} 定义的条件只要
 %   \meta{val list} 中的任意一个元素在属性值（列表）中则条件成立；使用
@@ -2287,34 +2330,61 @@ Copyright and License
 % Filter is a combination of conditionals that is used to filter the data you
 % want to display.
 %
-% \begin{environment}[added=2022-01-05]{dbFilters}
+% \changes{1.5}{2022-01-16}{Update env}{add starred version of \env{dbFilters}}
+% \begin{environment}[added=2022-01-05, updated=2022-01-16]{dbFilters}
 %   \begin{syntax}
-%     |\begin{dbFilters}|\marg{database} \\
+%     |\begin|\{\env{dbFilters}\}   \marg{database} \\
 %     ~~\meta{code}
-%     |\end{dbFilters}| \\
+%     |\end|\{\env{dbFilters}\} \\
+%     |\begin|\{\env{dbFilters}\} * \marg{database} \\
+%     ~~\meta{code}
+%     |\end|\{\env{dbFilters}\} \\
 %   \end{syntax}
 %
 %   Filters are defined inside \env{dbFilters} environment, inside which,
 %   \cs{dbNewConditional} is defined to declare conditionals and
-%   \cs{dbCombineConditionals} is defined to combine conditionals. Filters are
-%   independent in different databases, which means the same name of filters is
-%   allowed in different databases.
+%   \cs{dbCombineConditionals} is defined to combine conditionals. Starred
+%   version will define a filter of the same name of conditional as soon as you
+%   define it. In example \ref{en-star-filter}, line 3 define the conditional
+%   and the filter named |greater| so that you can use it in option \opt{option}.
+%   Filters are independent in different databases, which means the same name of
+%   filters is allowed in different databases.
 % \end{environment}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(star-filter){Define Conditional and Filter at Same Time}
+  \dbNewDatabase{filter-db}{count=int}
+  \begin{dbFilters}*{filter-db}
+    \dbNewCond{greater}{count}{\dbval > 3}
+  \end{dbFilters}
+  \dbNewStyle{filter-style}{filter-db}{
+    filter    = greater,
+    item-code = \dbuse{count}\quad,
+  }
+  \dbitemkv{filter-db}{count=2}
+  \dbitemkv{filter-db}{count=5}
+  \dbshow{filter-style}{filter-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
 %
 % \changes{1.5}{2022-01-15}{Add macros}{\cs{dbNewCond}, \cs{dbCombCond}}
 % \begin{function}[added=2022-01-05, updated=2022-01-16]{\dbNewConditional,
 % \dbNewCond, \dbNewConditional*, \dbNewCond*}
 %   \begin{syntax}
-%     \cs{dbNewConditional}  \marg{name}        \marg{attr} \marg{cond spec} \\
-%     \cs{dbNewConditional}* \marg{name}        \marg{attr} \marg{cond spec} \\[2pt]
-%     \cs{dbNewConditional}  \marg{name} \marg{int/fp attr} \marg{expr} \\
-%     \cs{dbNewConditional}* \marg{name} \marg{int/fp attr} \marg{expr} \\
-%     \cs{dbNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \\
-%     \cs{dbNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \\
-%     \cs{dbNewConditional}  \marg{name}  \marg{clist attr} \marg{val list} \\
-%     \cs{dbNewConditional}* \marg{name}  \marg{clist attr} \marg{val list} \\
-%     \cs{dbNewConditional}  \marg{name}   \marg{date attr} \marg{expr}
-%     \cs{dbNewConditional}* \marg{name}   \marg{date attr} \{\meta{review points}\orbar\meta{date}\} \\
+%     \cs{dbNewConditional}  \marg{name}        \marg{attr} \marg{cond spec}  \oarg{filter info}
+%     \cs{dbNewConditional}* \marg{name}        \marg{attr} \marg{cond spec}  \oarg{filter info} \\[2pt]
+%     \cs{dbNewConditional}  \marg{name} \marg{int/fp attr} \marg{expr}       \oarg{filter info}
+%     \cs{dbNewConditional}* \marg{name} \marg{int/fp attr} \marg{expr}       \oarg{filter info}
+%     \cs{dbNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \oarg{filter info}
+%     \cs{dbNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \oarg{filter info}
+%     \cs{dbNewConditional}  \marg{name}  \marg{clist attr} \marg{val list}   \oarg{filter info}
+%     \cs{dbNewConditional}* \marg{name}  \marg{clist attr} \marg{val list}   \oarg{filter info}
+%     \cs{dbNewConditional}  \marg{name}   \marg{date attr} \marg{expr}       \oarg{filter info}
+%     \cs{dbNewConditional}* \marg{name}   \marg{date attr} \{\meta{review points}\orbar\meta{date}\} \oarg{filter info}
 %   \end{syntax}
 %
 %   Define the conditional named \meta{name} that binds to \meta{attr}. \cs{dbval}
@@ -3489,7 +3559,7 @@ Copyright and License
 %   \item \meta{index}
 % \end{arguments}
 %    \begin{macrocode}
-\cs_set:Nn \@@_filter:nnn {
+\cs_new_protected:Nn \@@_filter:nnn {
   \tl_set_eq:Nc \l_@@_attr_tl { g_@@_filter_attr_tl_#1_#2 }
   \cs_set_eq:Nc \dbval { g_@@_data_#1_\l_@@_attr_tl _#3 }
   \tl_set:Nx \l_@@_type_tl { \@@_get_type:nV {#1} \l_@@_attr_tl }
@@ -3518,6 +3588,8 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \cs_new_protected:Nn \@@_new_conditional:nnnnn {
+  \@@_check_database:n {#1}
+  \@@_check_attr:nn {#1} {#3}
   \tl_gset:cn { g_@@_filter_attr_tl_#1_#2 } {#3}
   \tl_gset:cn { g_@@_filter_expr_tl_#1_#2 } {#4}
   \bool_if_exist:cF { g_@@_filter_bool_#1_#2 }
@@ -3634,7 +3706,7 @@ Copyright and License
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}{\dbNewConditional, \dbNewConditional*}
+% \begin{macro}{\dbNewRawFilter, \dbNewRawFilter*}
 % Define filter with single conditional.
 % \begin{arguments}
 %   \item \meta{star}
@@ -3645,7 +3717,7 @@ Copyright and License
 %   \item \meta{filter info}
 % \end{arguments}
 %    \begin{macrocode}
-\DeclareDocumentCommand { \dbNewConditional } { s m m m m O{} } {
+\DeclareDocumentCommand { \dbNewRawFilter } { s m m m m O{} } {
   \@@_new_conditional:nnnnn {#3} {#2} {#4} {#5} {#1}
   \tl_gset:cn { g_@@_filter_info_tl_#3_#2 } {#6}
   \@@_combine_conditional:nnn {#3} {#2} {#5}
