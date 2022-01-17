@@ -1577,7 +1577,7 @@ Copyright and License
 \begin{example}(dbitem){存储数据}
   \dbNewDatabase{ques-db}{date=date, ques=tl, ans=tl}
   \dbNewStyle{ques-style}{ques-db}{
-    item-code       = {
+    item-code       = {%
       \par\dbuse{date}
       \par\dbarabic.~\dbuse{ques}
       \par\textbf{答案：}~\dbuse{ans}
@@ -2790,7 +2790,7 @@ Copyright and License
 \begin{example*}(dbitem){Store Date}
   \dbNewDatabase{ques-db}{date=date, ques=tl, ans=tl}
   \dbNewStyle{ques-style}{ques-db}{
-    item-code       = {
+    item-code       = {%
       \par\dbuse{date}
       \par\dbarabic.~\dbuse{ques}
       \par\textbf{Answer:}~\dbuse{ans}
@@ -3008,6 +3008,7 @@ Copyright and License
 %    \begin{macrocode}
 \cs_generate_variant:Nn \msg_warning:nnnn      { nnnx }
 \cs_generate_variant:Nn \keys_set:nn           { nv }
+\cs_generate_variant:Nn \tl_put_right:Nn       { Nv }
 \cs_generate_variant:Nn \clist_use:nn          { xx }
 \cs_generate_variant:Nn \clist_use:nnnn        { xxxx }
 \cs_generate_variant:Nn \clist_map_inline:nn   { Vn }
@@ -4065,8 +4066,15 @@ Copyright and License
     item-before-code .initial:n    = ,
     item-after-code  .tl_gset:c    = { g_@@_style_item_after_tl_#1_#2 },
     item-after-code  .initial:n    = ,
-    item-code        .tl_gset:c    = { g_@@_style_item_tl_#1_#2 },
+    item-code        .code:n       = {
+      \bool_gset_false:c { g_@@_style_item_exp_bool_#1_#2 }
+      \tl_gset:cn { g_@@_style_item_tl_#1_#2 } {##1}
+    },
     item-code        .initial:n    = ,
+    item-code*       .code:n       = {
+      \bool_gset_true:c { g_@@_style_item_exp_bool_#1_#2 }
+      \tl_gset:cn { g_@@_style_item_tl_#1_#2 } {##1}
+    },
   }
   \prop_map_inline:cn { g_@@_attr_type_prop_#2 }
     { \@@_new_attr_style:nnn {#1} {#2} {##1} }
@@ -4423,6 +4431,26 @@ Copyright and License
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}{\@@_show_set_if_last:NN, \dbIfLastT, \dbIfLastF, \dbIfLastTF}
+% Define conditional to check if the current item is the last item.
+% \begin{arguments}
+%   \item \meta{current index}
+%   \item \meta{count}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_show_set_if_last:NN {
+  \prg_set_conditional:Nnn \@@_show_if_last: { T, F, TF } {
+    \int_compare:nNnTF {#1} = {#2}
+      { \prg_return_true: }
+      { \prg_return_false: }
+  }
+  \cs_set_eq:NN \dbIfLastT  \@@_show_if_last:T
+  \cs_set_eq:NN \dbIfLastF  \@@_show_if_last:F
+  \cs_set_eq:NN \dbIfLastTF \@@_show_if_last:TF
+}
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}{\@@_show_item:nn, \dbIndex, \dbuse}
 % Display single record.
 % \begin{arguments}
@@ -4433,6 +4461,9 @@ Copyright and License
 %    \begin{macrocode}
 \cs_new_protected:Nn \@@_show_item:nnN {
   \int_zero_new:N \l_@@_show_int
+  \int_zero_new:N \l_@@_show_count_int
+  \int_set:Nn \l_@@_show_count_int { \clist_count:N #3 }
+  \tl_clear_new:N \l_@@_item_tl
 %    \end{macrocode}
 % \begin{arguments}[2]
 %   \item \meta{index}
@@ -4440,7 +4471,8 @@ Copyright and License
 %    \begin{macrocode}
   \clist_map_inline:Nn #3 {
     \int_incr:N \l_@@_show_int
-    \@@_show_set_counter:N \l_@@_show_int
+    \@@_show_set_if_last:NN \l_@@_show_int \l_@@_show_count_int
+    \@@_show_set_counter:N  \l_@@_show_int
     \tl_set:Nn \dbIndex {##1}
 %    \end{macrocode}
 % \begin{arguments}[3]
@@ -4453,10 +4485,20 @@ Copyright and License
       \@@_use_data:nnnn {#2} {####1} {##1} {#1}
       \tl_use:c { g_@@_style_attr_after_ tl_#1_#2_####1 }
     }
-    \tl_use:c { g_@@_style_item_before_tl_#1_#2 }
-    \tl_use:c { g_@@_style_item_       tl_#1_#2 }
-    \tl_use:c { g_@@_style_item_after_ tl_#1_#2 }
+    \bool_if:cTF { g_@@_style_item_exp_bool_#1_#2 } {
+      \tl_put_right:Nx \l_@@_item_tl
+        { \tl_use:c { g_@@_style_item_before_tl_#1_#2 } }
+      \tl_put_right:Nx \l_@@_item_tl
+        { \tl_use:c { g_@@_style_item_       tl_#1_#2 } }
+      \tl_put_right:Nx \l_@@_item_tl
+        { \tl_use:c { g_@@_style_item_after_ tl_#1_#2 } }
+    } {
+      \tl_use:c { g_@@_style_item_before_tl_#1_#2 }
+      \tl_use:c { g_@@_style_item_       tl_#1_#2 }
+      \tl_use:c { g_@@_style_item_after_ tl_#1_#2 }
+    }
   }
+  \l_@@_item_tl
 }
 %    \end{macrocode}
 % \end{macro}
