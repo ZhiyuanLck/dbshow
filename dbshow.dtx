@@ -4459,6 +4459,38 @@ Copyright and License
 %<@@=dbdate>
 %    \end{macrocode}
 %
+% \begin{arguments}
+%   \item \meta{date}
+%   \item \meta{date sep}
+% \end{arguments}
+%    \begin{macrocode}
+\msg_new:nnn { dbshow } { wrong-date-sep } {
+  can~not~parse~the~date~'#1'~with~the~global~date~separator~'#2'~
+  \msg_line_context:.~Please~set~the~correct~date~separator~with~
+  \dbdatesep.
+}
+%    \end{macrocode}
+%
+% \begin{macro}{\@@_check_date_sep:nn, \@@_check_date_sep:Vn}
+% Check if the global date separator is valid.
+% \begin{arguments}
+%   \item \meta{date}
+%   \item \meta{date sep}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new:Nn \@@_check_date_sep:nn {
+  \int_zero_new:N \l_@@_sep_int
+  \tl_map_inline:nn {#1} {
+    \tl_if_eq:nnT {#2} {##1} { \int_incr:N \l_@@_sep_int }
+    \int_compare:nNnT { \l_@@_sep_int } > { 2 } { \tl_map_break: }
+  }
+  \int_compare:nNnF { \l_@@_sep_int } = { 2 }
+    { \msg_fatal:nnnn { dbshow } { wrong-date-sep } {#1} {#2} }
+}
+\cs_generate_variant:Nn \@@_check_date_sep:nn { nV }
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[pTF]{\@@_if_leap:n}
 % Check if the year is leap.
 % \begin{arguments}
@@ -4714,10 +4746,12 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \cs_new_protected:Nn \@@_set:nn {
+  \@@_check_date_sep:nV {#2} \g_@@_sep_tl
   \@@_set:w #1\@@_sep#2\@@_stop
 }
 \cs_generate_variant:Nn \@@_set:nn { xx }
 \cs_new_protected:Nn \@@_gset:nn {
+  \@@_check_date_sep:nV {#2} \g_@@_sep_tl
   \@@_gset:w #1\@@_sep#2\@@_stop
 }
 \cs_generate_variant:Nn \@@_gset:nn { xx }
