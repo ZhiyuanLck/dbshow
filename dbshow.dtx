@@ -143,10 +143,10 @@ Copyright and License
 \fi
 %</internal>
 %<package>\NeedsTeXFormat{LaTeX2e}
-%<+package|config>\GetIdInfo$Id: dbshow.dtx 461d9bb 2022-01-14 02:50:24 +0800 Changkai Li <lichangkai225@qq.com> $
+%<+package|config>\GetIdInfo$Id: dbshow.dtx 461d9bb 2022-01-17 22:53:24 +0800 Changkai Li <lichangkai225@qq.com> $
 %<package>  {Database to store and display data}
 %<package>\ProvidesExplPackage{\ExplFileName}
-%<package|config>  {\ExplFileDate}{1.4}{\ExplFileDescription}
+%<package|config>  {\ExplFileDate}{1.5}{\ExplFileDescription}
 %<*driver>
 \documentclass[full]{l3doc}
 \usepackage[scheme=plain, fontset=ubuntu]{ctex}
@@ -509,11 +509,6 @@ Copyright and License
 \DeclareDocumentCommand \cs  { O{} m }
   { \dbshowdoc_cmd:nnn { cs } {#1} { \c_backslash_str #2 } }
 
-\NewDocumentCommand \linktarget { m m m } {%
-  \hyperlink{#1}{#3}%
-  \raisebox{1em}{\hypertarget{#2}{}}%
-}
-
 \DeclareDocumentCommand \GetFileId { m } {
   \GetFileInfo {#1}
   \file_get:nnNTF { \c_sys_jobname_str .id }
@@ -564,10 +559,11 @@ Copyright and License
 %   \protect\footnote{%
 %     代码仓库：\url{https://github.com/ZhiyuanLck/dbshow}，
 %     QQ群：788706534}
-%   \rlap{\makebox[4cm][r]{
-%     \normalsize $\Longrightarrow$ \color{red}
-%     \linktarget{en}{zh}{English Version}
-%   }}
+%   \rlap{\makebox[4cm][r]{%
+%     \normalfont $\Longrightarrow$%
+%     \hyperref[enver]{English Version}%
+%     \protect\label{zhver}%
+%   }}%
 % }
 % \author{\textit{李昌锴} \protect\path{<lichangkai225@qq.com>}}
 % \date{\cnfiledate}
@@ -1790,7 +1786,7 @@ Copyright and License
 % \end{tblr}
 %
 %   \cs{dbtoday} 使用 \cs{dbdatesep} 确定的分隔符来展示日期。见示例
-%   \ref{cn-spespecial-db}.
+%   \ref{cn-spespecial-cs}.
 % \end{function}
 %
 % \iffalse
@@ -1836,10 +1832,11 @@ Copyright and License
 %   \protect\footnote{%
 %     Repository: \url{https://github.com/ZhiyuanLck/dbshow},
 %     Telegram Group: \url{https://t.me/latex_dbshow}}
-%   \rlap{\makebox[4cm][r]{
-%     \normalsize $\Longrightarrow$ \color{red}
-%     \linktarget{zh}{en}{中文版本}
-%   }}
+%   \rlap{\makebox[4cm][r]{%
+%     \normalfont $\Longrightarrow$%
+%     \hyperref[zhver]{中文版本}%
+%     \protect\label{enver}%
+%   }}%
 % }
 % \author{Changkai Li \protect\path{<lichangkai225@qq.com>}}
 % \date{\filedate}
@@ -3091,7 +3088,7 @@ Copyright and License
 % \end{tblr}
 %
 %   \cs{dbtoday} show the current date with the separator defined by
-%   \cs{dbdatesep}. See example \ref{en-special-cs}.
+%   \cs{dbdatesep}. See example~\ref{en-special-cs}.
 % \end{function}
 %
 % \iffalse
