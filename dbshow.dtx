@@ -1275,8 +1275,33 @@ Copyright and License
 %   \end{syntax}
 %
 %   定义名为 \meta{name} 的复习间隔列表。\meta{points} 是一系列整数，用于设置日
-%   期的过滤器。
+%   期的过滤器。示例 \ref{review-points} 中，预定义了一个复习间隔列表 |review|
+%   和一个时间锚点 |2022/02/06|，筛选时，将当前条目的日期与描点相比较，计算得
+%   到时间间隔 $\meta{interval} = \meta{date anchor} - \meta{date cmp}$，只有
+%   当 \meta{interval} 的值在 \meta{points} 中时，条件才成立。
 % \end{function}
+%
+% \iffalse
+%<*verb>
+% \fi
+\DeleteShortVerb{\|}
+\begin{example}(review-points){按时间间隔筛选}
+  \dbNewDatabase{filter-db}{date=date}
+  \dbNewReviewPoints{review}{2, 5}
+  \dbNewRawFilter*{review-filter}{filter-db}{date}{review|2022/02/06}
+  \dbNewStyle{filter-style}{filter-db}{
+    item-code = \dbuse{date}\quad,
+    filter    = review-filter,
+  }
+  \dbitemkv{filter-db}{date=2022/01/30}
+  \dbitemkv{filter-db}{date=2022/02/01}
+  \dbitemkv{filter-db}{date=2022/02/04}
+  \dbshow{filter-style}{filter-db}
+\end{example}
+\MakeShortVerb{\|}
+% \iffalse
+%</verb>
+% \fi
 %
 % \changes{1.5}{2022-01-16}{Update env}{add starred version of \env{dbFilters}}
 % \begin{environment}[added=2022-01-05, updated=2022-01-16]{dbFilters}
@@ -3605,8 +3630,11 @@ Copyright and License
     \__dbdate_set:xx { tmp_day1 } { \l_@@_filter_tmp_tl }
     \__dbdate_set:xx { tmp_day2 } {#3}
     \__dbdate_sub:nnN { tmp_day1 } { tmp_day2 } \l_@@_filter_diff_int
-    \clist_if_in:NxTF \l_@@_filter_tmp_clist
-      { \int_use:N \l_@@_filter_diff_int } {#4} {#5}
+    #5
+    \clist_map_inline:Nn \l_@@_filter_tmp_clist {
+      \int_compare:nNnT { \l_@@_filter_diff_int } = {##1}
+        { #4 \clist_map_break: }
+    }
   } {
 %    \end{macrocode}
 % For unstarred \meta{conditional} which parses \meta{expr}. We first replace
@@ -3941,7 +3969,7 @@ Copyright and License
       \str_set:Nx \l_@@_raw_filter_str
         { -raw\int_use:N \g_@@_raw_filter_int - }
       \tl_gset:cV { g_@@_filter_#1_#2 } \l_@@_raw_filter_str
-      \@@_combine_conditional:nnn {#2}  \l_@@_raw_filter_str {##1}
+      \@@_combine_conditional:nVn {#2}  \l_@@_raw_filter_str {##1}
     },
     filter           .tl_gset:c    = { g_@@_filter_#1_#2 },
     filter           .initial:n    = -none-,
