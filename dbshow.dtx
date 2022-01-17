@@ -218,22 +218,23 @@ Copyright and License
   \par\textbf{\textsf{NOTE:~}}#1\par
 } {}
 
-% \definecolor {exambg}    {RGB}  {248, 241, 224} % 示例背景
-% \definecolor {examno}    {RGB}  {176, 101, 90}  % 示例行号
-% \definecolor {examnobg}  {RGB}  {241, 225, 208} % 示例行号背景
-% \definecolor {examframe} {RGB}  {156, 129, 110} % 示例边框（标题背景）
-% \definecolor {option}    {HTML} {009933}        % 选项
-% \definecolor {cs}        {HTML} {FF6600}        % 命令
-% \definecolor {env}       {HTML} {A80C91}        % 环境
+\definecolor {exambg}    {RGB}  {248, 241, 224} % 示例背景
+\definecolor {examno}    {RGB}  {176, 101, 90}  % 示例行号
+\definecolor {examnobg}  {RGB}  {241, 225, 208} % 示例行号背景
+\definecolor {examframe} {RGB}  {156, 129, 110} % 示例边框（标题背景）
+\definecolor {option}    {HTML} {009933}        % 选项
+\definecolor {cs}        {HTML} {FF6600}        % 命令
+\definecolor {env}       {HTML} {C81531}        % 环境
+\definecolor {link}      {HTML} {33539E}        % 链接
 
-\definecolor {exambg}    {RGB}  {241, 225, 208} % 示例背景
-\definecolor {examno}    {HTML} {F3AA20} % 示例行号
-\definecolor {examnobg}  {HTML} {8B4C70} % 示例行号背景
-\definecolor {examframe} {HTML} {58094F} % 示例边框（标题背景）
-\definecolor {option}    {HTML} {8B4C70} % 选项
-\definecolor {cs}        {HTML} {F3AA20} % 命令
-\definecolor {env}       {HTML} {669933} % 环境
-\definecolor {link}      {HTML} {33539E} % 链接
+% \definecolor {exambg}    {RGB}  {241, 225, 208} % 示例背景
+% \definecolor {examno}    {HTML} {F3AA20} % 示例行号
+% \definecolor {examnobg}  {HTML} {8B4C70} % 示例行号背景
+% \definecolor {examframe} {HTML} {58094F} % 示例边框（标题背景）
+% \definecolor {option}    {HTML} {8B4C70} % 选项
+% \definecolor {cs}        {HTML} {F3AA20} % 命令
+% \definecolor {cs}        {HTML} {F9A911} % 命令
+% \definecolor {env}       {HTML} {669933} % 环境
 \hypersetup{linkcolor=link}
 \tcbset{
   exam-base/.style={
@@ -730,10 +731,10 @@ Copyright and License
 %   演示了如何定义条件，将条件组合成过滤器以及使用过滤器。
 % \end{option}
 %
-% \DeleteShortVerb{\|}
 % \iffalse
 %<*verb>
 % \fi
+\DeleteShortVerb{\|}
 \begin{example}(filter){使用过滤器筛选数据}
   \dbNewDatabase{filter-db}{name=str, count=int}
   \begin{dbFilters}{filter-db}
@@ -758,10 +759,10 @@ Copyright and License
   \dbshow{filter-and-style}{filter-db}
   \dbshow{filter-or-style} {filter-db}
 \end{example}
+\MakeShortVerb{\|}
 % \iffalse
 %</verb>
 % \fi
-% \MakeShortVerb{\|}
 %
 % \changes{1.1}{2022-01-06}{Add option}{\opt{raw-filter}}
 % \begin{option}[added=2022-01-06]{raw-filter}
@@ -1505,19 +1506,6 @@ Copyright and License
 %   \meta{review points} 是 \cs{dbNewReviewPoints} 定义的复习点，\meta{date}
 %   是用来比较的日期（见示例 \ref{cn-review-points}）。
 %
-% \begin{function}[added=2022-01-05]{\dbCombineConditionals}
-%   \begin{syntax}
-%     \cs{dbCombineConditionals} \marg{name} \marg{cond combination} \oarg{info}
-%   \end{syntax}
-%
-%   \cs{dbCombineConditionals} 定义名为 \marg{name} 的过滤器，并将
-%   \cs{dbNewConditional} 定义的条件组合起来，比如
-%   \verb=\dbCombineConditionals{filter}{(cond1 && cond2) || !cond3}=。
-%   \meta{cond combination} 中可以使用的关系操作符为 \verb=&&, ||, !=。
-%   可以将 \opt{filter} 选项设置为 \meta{name} 来应用过滤器。\meta{info} 为过滤
-%   器的相关信息，在展示数据库的时候可以用 \cs{dbFilterInfo} 指代。
-% \end{function}
-%
 % \changes{1.5}{2022-01-16}{Add macro}{\cs{dbNewRawFilter}}
 % \begin{function}[added=2022-01-16]{\dbNewRawFilter}
 %   \begin{syntax}
@@ -1530,17 +1518,48 @@ Copyright and License
 %     |\end|\{\env{dbFilters}\}
 %   \end{syntax}
 %
-%   该命令用来快捷地定义单个过滤器
+%   该命令用来快捷地定义单个过滤器。示例 \ref{cn-new-raw-filter} 展示了如何使
+%   用该命令，它和示例 \ref{cn-star-filter} 本质上是相同的。
 % \end{function}
 %
-% \subsection{使用 \env{dbitem} 环境存储数据}
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(new-raw-filter){定义与条件同名的过滤器}
+  \dbNewDatabase{filter-db}{count=int}
+  \dbNewRawFilter{greater}{filter-db}{count}{\dbval > 3}
+  \dbNewStyle{filter-style}{filter-db}{
+    filter    = greater,
+    item-code = \dbuse{count}\quad,
+  }
+  \dbitemkv{filter-db}{count=2}
+  \dbitemkv{filter-db}{count=5}
+  \dbshow{filter-style}{filter-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
+%
+% \begin{function}[added=2022-01-05]{\dbCombineConditionals}
+%   \begin{syntax}
+%     \cs{dbCombineConditionals} \marg{name} \marg{cond combination} \oarg{info}
+%   \end{syntax}
+%
+%   \cs{dbCombineConditionals} 定义名为 \marg{name} 的过滤器，并将
+%   \cs{dbNewConditional} 定义的条件组合起来。\meta{cond combination} 中可以使
+%   用的关系操作符为 \verb=&&, ||, !=。可以将 \opt{filter} 选项设置为
+%   \meta{name} 来应用过滤器。\meta{info} 为过滤器的相关信息，在展示数据库的时
+%   候可以用 \cs{dbFilterInfo} 指代。使用示例见示例 \ref{cn-filter}.
+% \end{function}
+%
+% \subsection{存储和使用数据}
 %
 % \changes{1.4}{2022-01-13}{Update env}{dbitem}
 % \begin{environment}[added=2022-01-05, updated=2022-01-13]{dbitem}
 %   \begin{syntax}
-%     |\begin{dbitem}| \marg{database} \oarg{attr-val list}
+%     |\begin|\marg{\env{dbitem}} \marg{database} \oarg{attr-val list}
 %     ~~\meta{code} \\
-%     |\end{dbitem}|
+%     |\end|\marg{\env{dbitem}}
 %   \end{syntax}
 %
 %   \env{dbitem} 环境用来存储数据。有两种存储数据的方法，较短的数据可以在选项列
@@ -1548,15 +1567,37 @@ Copyright and License
 %   \meta{attr} = \meta{val} 等同于 \cs{dbsave}\marg{attr}\marg{val}，
 %   \meta{attr}\texttt{*} = \meta{val} 等同于 \cs{dbsave*}\marg{attr}
 %   \marg{val}，数据在 |e| 或者 |x| 类型的参数中不可展开。\cs{dbsave}会覆盖选
-%   项中设置的值。没有设置的值将会被设置为全局默认值，下面给出一个存储示例。
+%   项中设置的值。没有设置的值将会被设置为全局默认值。示例 \ref{cn-dbitem} 展
+%   示了如何存储数据。
 % \end{environment}
 %
-% \begin{verbatim}
-%   \begin{dbitem}[date = 2022-01-01, info = 测试]
-%     \dbsave{question}{这是一个测试问题}
-%     \dbsave{answer}  {这是一个测试答案}
-%   \end{dbitem}
-% \end{verbatim}
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(dbitem){存储数据}
+  \dbNewDatabase{ques-db}{date=date, ques=tl, ans=tl}
+  \dbNewStyle{ques-style}{ques-db}{
+    item-code       = {
+      \par\dbuse{date}
+      \par\dbarabic.~\dbuse{ques}
+      \par\textbf{答案：}~\dbuse{ans}
+    },
+    item-after-code = \medskip,
+    date/code*      = \zhdate{#1},
+  }
+  \begin{dbitem}{ques-db}[date=2022/01/01]
+    \dbsave{ques}{地球到月亮的距离}
+    \dbsave{ans} {384,401公里}
+  \end{dbitem}
+  \begin{dbitem}{ques-db}[date=2022/01/02]
+    \dbsave{ques}{鲁迅的本名}
+    \dbsave{ans} {周树人}
+  \end{dbitem}
+  \dbshow{ques-style}{ques-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
 %
 % \changes{1.4}{2022-01-13}{Add macro}{\cs{dbitemkv}}
 % \begin{function}[added=2022-01-13]{\dbitemkv}
@@ -1566,8 +1607,6 @@ Copyright and License
 %
 %   只使用 \meta{attr-val list} 来存储数据。
 % \end{function}
-%
-% \subsection{\cs{dbsave} 和 \cs{dbuse}}
 %
 % \changes{1.3}{2022-01-08}{Add macro}{\cs{dbsave*}}
 % \begin{function}[added=2022-01-05, updated=2022-01-08]{\dbsave, \dbsave*}
@@ -1586,8 +1625,8 @@ Copyright and License
 %     \cs{dbuse} \marg{attr}
 %   \end{syntax}
 %
-%   \cs{dbuse} 用来展示数据，只能在 \opt{item-code} 选项中使用。\cs{dbuse} 是可
-%   展开的。
+%   \cs{dbuse} 用来展示数据，只能在 \opt{item-code}, \opt{item-before-code},
+%   \opt{item-after-code} 选项中使用。\cs{dbuse} 是可展开的。
 % \end{function}
 %
 % \subsection{条件判别式}
@@ -1595,20 +1634,36 @@ Copyright and License
 % \begin{function}[added=2022-01-05, EXP]{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
 %   \begin{syntax}
 %     \cs{dbIfEmptyTF} \marg{true code} \marg{false code} \\
-%     \cs{dbIfEmptyT} \marg{true code} \\
+%     \cs{dbIfEmptyT}  \marg{true code} \\
 %     \cs{dbIfEmptyF} \marg{false code}
 %   \end{syntax}
 %
-%   该判别式用来判断当前数据库是否为空。下面的示例展示了如何预防空的列表环境。
+%   该判别式用来判断当前数据库是否为空。示例 \ref{cn-empty-db} 演示了如何使用
+%   该判别式来预防空的列表环境。
 % \end{function}
 %
-% \begin{verbatim}
-%   \dbNewStyle{style-cond1}{database-test}{
-%     before-code = {\dbIfEmptyF{\begin{enumerate}}},
-%     after-code = {\dbIfEmptyF{\end{enumerate}}},
-%     item-code = {\item \dbuse{attr-test}}
-%   }
-% \end{verbatim}
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(empty-db){预防空列表环境}
+  \dbNewDatabase{test-db}{text=tl}
+  \dbNewRawFilter{alph}{test-db}{text}{\d}
+  \dbNewStyle{base-style}{test-db}{
+    before-code = \dbIfEmptyTF{Empty db}{\begin{enumerate}},
+    after-code  = \dbIfEmptyF{\end{enumerate}}\medskip,
+    item-code   = \item \dbuse{text},
+  }
+  \dbNewStyle[base-style]{empty-style}{test-db}{
+    raw-filter=!alph
+  }
+  \dbitemkv{test-db}{text={$1 + 1 = 2$.}}
+  \dbitemkv{test-db}{text={I have 2 pens.}}
+  \dbshow {base-style}{test-db}
+  \dbshow{empty-style}{test-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
 %
 % \changes{1.2}{2022-01-08}{Remove macros}{\cs{dbItemIfEmpty(TF)}, \cs{dbClistItemIfEmpty(TF)}}
 %
@@ -1620,25 +1675,48 @@ Copyright and License
 %   \dbIntMin, \dbIntMod, \dbFpSign,
 % }
 %   \begin{syntax}
-%     \cs{dbIntAbs} \Arg{intexpr}
-%     \cs{dbIntSign} \Arg{intexpr}
-%     \cs{dbIntDivRound} \Arg{intexpr_1} \marg{intexpr_2}
-%     \cs{dbIntDivTruncate} \Arg{intexpr_1} \marg{intexpr_2}
-%     \cs{dbIntMax} \Arg{intexpr_1} \marg{intexpr_2}
-%     \cs{dbIntMin} \Arg{intexpr_1} \marg{intexpr_2}
-%     \cs{dbIntMod} \Arg{intexpr_1} \marg{intexpr_2}
-%     \cs{dbFpSign} \Arg{fpexpr}
+%     \cs{dbIntAbs}         \Arg{intexpr}
+%     \cs{dbIntSign}        \Arg{intexpr}
+%     \cs{dbIntDivRound}    \Arg{intexpr_1} \Arg{intexpr_2}
+%     \cs{dbIntDivTruncate} \Arg{intexpr_1} \Arg{intexpr_2}
+%     \cs{dbIntMax}         \Arg{intexpr_1} \Arg{intexpr_2}
+%     \cs{dbIntMin}         \Arg{intexpr_1} \Arg{intexpr_2}
+%     \cs{dbIntMod}         \Arg{intexpr_1} \Arg{intexpr_2}
+%     \cs{dbFpSign}         \Arg{fpexpr}
 %   \end{syntax}
-%   \cs{dbIntAbs} 等同于 \cs{int_abs:n} \\
-%   \cs{dbIntSign} 等同于 \cs{int_sign:n} \\
-%   \cs{dbIntDivRound} 等同于 \cs{int_div_round:nn} \\
-%   \cs{dbIntDivTruncate} 等同于 \cs{int_div_truncate:nn} \\
-%   \cs{dbIntMax} 等同于 \cs{int_max:nn} \\
-%   \cs{dbIntMin} 等同于 \cs{int_min:nn} \\
-%   \cs{dbIntMod} 等同于 \cs{int_mod:nn} \\
-%   \cs{dbFpSign} 等同于 \cs{fp_sign:n} \\
-%    详细的文档见 \pkg{interface3} \\
+% \begin{tblr}{ll}
+%   \cs{dbIntAbs}         & 等同于 \cs{int_abs:n} \\
+%   \cs{dbIntSign}        & 等同于 \cs{int_sign:n} \\
+%   \cs{dbIntDivRound}    & 等同于 \cs{int_div_round:nn} \\
+%   \cs{dbIntDivTruncate} & 等同于 \cs{int_div_truncate:nn} \\
+%   \cs{dbIntMax}         & 等同于 \cs{int_max:nn} \\
+%   \cs{dbIntMin}         & 等同于 \cs{int_min:nn} \\
+%   \cs{dbIntMod}         & 等同于 \cs{int_mod:nn} \\
+%   \cs{dbFpSign}         & 等同于 \cs{fp_sign:n} \\
+% \end{tblr}
+%
+%   详细的文档见 \pkg{interface3}。示例 \ref{cn-expr-db} 展示了如何筛选3的倍数。
 % \end{function}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(expr-db){筛选3的倍数}
+  \dbNewDatabase{expr-db}{n=int}
+  \dbNewRawFilter{mod}{expr-db}{n}{\dbIntMod{\dbval}{3} = 0}
+  \dbNewStyle{expr-style}{expr-db}{
+    item-code = \dbuse{n}\quad,
+    filter    = mod,
+  }
+  \dbitemkv{expr-db}{n=2}
+  \dbitemkv{expr-db}{n=3}
+  \dbitemkv{expr-db}{n=6}
+  \dbitemkv{expr-db}{n=7}
+  \dbshow{expr-style}{expr-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
 %
 % \subsection{特殊命令}
 %
@@ -1650,27 +1728,28 @@ Copyright and License
 % }
 % \changes{1.1}{2022-01-06}{Fix bug}{\cs{dbIndex} not defined}
 % \begin{function}[added=2022-01-05, EXP]{
-%   \dbval, \dbDatabase, \dbFilterName, \dbFilterInfo,
+%   \dbval, \dbtoday, \dbDatabase, \dbFilterName, \dbFilterInfo,
 %   \dbIndex, \dbarabic, \dbalph, \dbAlph, \dbroman, \dbRoman
 % }
 % \begin{tblr}{ll}
-%   \cs{dbval} & 当前属性的值 \\
-%   \cs{dbDatabase} & 数据库名称 \\
+%   \cs{dbval}        & 当前属性的值 \\
+%   \cs{dbtoday}      & 当天的日期 \\
+%   \cs{dbDatabase}   & 数据库名称 \\
 %   \cs{dbFilterName} & 当前样式过滤器的名称 \\
 %   \cs{dbFilterInfo} & 当前样式过滤器的相关信息 \\
-%   \cs{dbIndex} & 数据索引，等同于 \cs{dbuse}|{id}| \\
-%   \cs{dbarabic} & 用数字表示的查询集数据计数 \\
-%   \cs{dbalph} & 用小写字母表示的查询集数据计数 \\
-%   \cs{dbAlph} & 用大写字母表示的查询集数据计数 \\
-%   \cs{dbroman} & 用小写罗马字母表示的查询集数据计数 \\
-%   \cs{dbroman} & 用大写罗马字母表示的查询集数据计数 \\
-%   \end{tblr}
+%   \cs{dbIndex}      & 数据索引，等同于 \cs{dbuse}\marg{id} \\
+%   \cs{dbarabic}     & 用数字表示的查询集数据计数 \\
+%   \cs{dbalph}       & 用小写字母表示的查询集数据计数 \\
+%   \cs{dbAlph}       & 用大写字母表示的查询集数据计数 \\
+%   \cs{dbroman}      & 用小写罗马字母表示的查询集数据计数 \\
+%   \cs{dbroman}      & 用大写罗马字母表示的查询集数据计数 \\
+% \end{tblr}
+%
+%   \cs{dbtoday} 使用 \cs{dbdatesep} 确定的分隔符来展示日期。
 % \end{function}
 %
-% \section{错题本示例}
-% 见第 \ref{sec:example} 节。
-%
 % \changes{1.1}{2022-01-07}{Update doc}{improve example}
+% \changes{1.5}{2022-01-17}{Remove doc}{Remove big example}
 %
 % \title{
 %   Package \pkg{dbshow} \fileversion%
@@ -2639,26 +2718,61 @@ Copyright and License
 %   \cs{dbNewReviewPoints} and \meta{date} is the date to be compared (see
 %   example \ref{en-review-points}).
 %
+% \changes{1.5}{2022-01-16}{Add macro}{\cs{dbNewRawFilter}}
+% \begin{function}[added=2022-01-16]{\dbNewRawFilter}
+%   \begin{syntax}
+%     \cs{dbNewRawFilter}  \marg{name} \marg{database} \marg{attr} \marg{cond spec} \oarg{filter info}
+%     \cs{dbNewRawFilter}* \marg{name} \marg{database} \marg{attr} \marg{cond spec} \oarg{filter info}
+%     \textnormal{\textit{Equal to}}
+%     |\begin|\{\env{dbFilters}\}*\phantom{\marg{name}}\marg{database}
+%     ~~\cs{dbNewCond}     \marg{name} \phantom{\marg{database}} \marg{attr} \marg{cond spec} \oarg{filter info}
+%     ~~\cs{dbNewCond}*    \marg{name} \phantom{\marg{database}} \marg{attr} \marg{cond spec} \oarg{filter info}
+%     |\end|\{\env{dbFilters}\}
+%   \end{syntax}
+%
+%   Use this command to quickly define a \meta{filter} that has the same name
+%   with the \meta{conditional}. Example \ref{en-new-raw-filter} is actually the
+%   same with example \ref{en-star-filter}, but it is more concise.
+% \end{function}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(new-raw-filter){Define Conditional and Filter at Same Time}
+  \dbNewDatabase{filter-db}{count=int}
+  \dbNewRawFilter{greater}{filter-db}{count}{\dbval > 3}
+  \dbNewStyle{filter-style}{filter-db}{
+    filter    = greater,
+    item-code = \dbuse{count}\quad,
+  }
+  \dbitemkv{filter-db}{count=2}
+  \dbitemkv{filter-db}{count=5}
+  \dbshow{filter-style}{filter-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
+%
 % \begin{function}[added=2022-01-05]{\dbCombineConditionals}
 %   \begin{syntax}
 %     \cs{dbCombineConditionals} \marg{name} \marg{cond combination} \oarg{info}
 %   \end{syntax}
 %
-%   Define the filter \meta{name}, which combine the conditionals and store the
-%   extra \meta{info} into \cs{dbFilterInfo}. So you can write something as\\
-%   \verb=\dbCombineConditionals{filter}{(cond1 && cond2) || !cond3}=.\\
-%   Supported operators are \verb=&&, ||, !=. You can set the option \opt{filter}
-%   to \meta{name} to apply the filter when you display the database.
+%   Define the filter \meta{name}, which combine the conditionals and store
+%   the extra \meta{info} into \cs{dbFilterInfo}.  Supported operators are
+%   \verb=&&, ||, !=. You can set the option \opt{filter} to \meta{name} to
+%   apply the filter when you display the database. See example
+%   \ref{en-filter}.
 % \end{function}
 %
-% \subsection{Store Data with \env{dbitem} Environment}
+% \subsection{Store and Use Data}
 %
 % \changes{1.4}{2022-01-13}{Update env}{dbitem}
 % \begin{environment}[added=2022-01-05, updated=2022-01-13]{dbitem}
 %   \begin{syntax}
-%     |\begin{dbitem}| \marg{database} \oarg{attr-val list}
+%     |\begin|\marg{\env{dbitem}} \marg{database} \oarg{attr-val list}
 %     ~~\meta{code} \\
-%     |\end{dbitem}|
+%     |\end|\marg{\env{dbitem}}
 %   \end{syntax}
 %
 %   The data are stored with \env{dbitem} environment in two ways. Short data
@@ -2667,15 +2781,35 @@ Copyright and License
 %   \meta{attr} = \meta{val} is equal to \cs{dbsave}\marg{attr}\marg{val}, and
 %   \meta{attr} = \meta{val} is equal to \cs{dbsave*}\marg{attr}\marg{val},
 %   in which case, data will not be expanded in an |e| or |x|-type argument.
-%   An example code is showned below.
+%   Example \ref{en-dbitem} shows how to store data with \env{dbitem}.
 % \end{environment}
 %
-% \begin{verbatim}
-%   \begin{dbitem}[date=2022-01-01, info=test]
-%     \dbsave{question}{This is a test question.}
-%     \dbsave{answer}  {This is a test answer.}
-%   \end{dbitem}
-% \end{verbatim}
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(dbitem){Store Date}
+  \dbNewDatabase{ques-db}{date=date, ques=tl, ans=tl}
+  \dbNewStyle{ques-style}{ques-db}{
+    item-code       = {
+      \par\dbuse{date}
+      \par\dbarabic.~\dbuse{ques}
+      \par\textbf{Answer:}~\dbuse{ans}
+    },
+    item-after-code = \medskip,
+  }
+  \begin{dbitem}{ques-db}[date=2022/01/01]
+    \dbsave{ques}{Distance from earth to moon?}
+    \dbsave{ans} {384,401 kilometers.}
+  \end{dbitem}
+  \begin{dbitem}{ques-db}[date=2022/01/02]
+    \dbsave{ques}{The number of English letters?}
+    \dbsave{ans} {26.}
+  \end{dbitem}
+  \dbshow{ques-style}{ques-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
 %
 % \changes{1.4}{2022-01-13}{Add macro}{\cs{dbitemkv}}
 % \begin{function}[added=2022-01-13]{\dbitemkv}
@@ -2708,7 +2842,8 @@ Copyright and License
 %   \end{syntax}
 %
 %   Display the value of \meta{attr} of current record. \cs{dbuse} is
-%   \textbf{expandable} and can be only used inside the option \opt{item-code}.
+%   \textbf{expandable} and can be only used inside the option \opt{item-code},
+%   \opt{item-before-code}, \opt{item-after-code}.
 % \end{function}
 %
 % \subsection{Conditionals}
@@ -2716,21 +2851,36 @@ Copyright and License
 % \begin{function}[added=2022-01-05, EXP]{\dbIfEmptyT, \dbIfEmptyF, \dbIfEmptyTF}
 %   \begin{syntax}
 %     \cs{dbIfEmptyTF} \marg{true code} \marg{false code} \\
-%     \cs{dbIfEmptyT} \marg{true code} \\
+%     \cs{dbIfEmptyT}  \marg{true code} \\
 %     \cs{dbIfEmptyF} \marg{false code}
 %   \end{syntax}
 %
-%   Test if the database is empty. The example below shows how to avoid an empty
-%   list environment.
+%   Test if the database is empty. Example \ref{en-empty-db} shows how to
+%   avoid an empty list environment.
 % \end{function}
 %
-% \begin{verbatim}
-%   \dbNewStyle{style-cond1}{database-test}{
-%     before-code = {\dbIfEmptyF{\begin{enumerate}}},
-%     after-code = {\dbIfEmptyF{\end{enumerate}}},
-%     item-code = {\item \dbuse{attr-test}}
-%   }
-% \end{verbatim}
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(empty-db){Avoid Empty List Environment}
+  \dbNewDatabase{test-db}{text=tl}
+  \dbNewRawFilter{alph}{test-db}{text}{\d}
+  \dbNewStyle{base-style}{test-db}{
+    before-code = \dbIfEmptyTF{Empty db}{\begin{enumerate}},
+    after-code  = \dbIfEmptyF{\end{enumerate}}\medskip,
+    item-code   = \item \dbuse{text},
+  }
+  \dbNewStyle[base-style]{empty-style}{test-db}{
+    raw-filter=!alph
+  }
+  \dbitemkv{test-db}{text={$1 + 1 = 2$.}}
+  \dbitemkv{test-db}{text={I have 2 pens.}}
+  \dbshow {base-style}{test-db}
+  \dbshow{empty-style}{test-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
 %
 % \changes{1.2}{2022-01-08}{Remove macros}{\cs{dbItemIfEmpty(TF)}, \cs{dbClistItemIfEmpty(TF)}}
 %
@@ -2742,25 +2892,49 @@ Copyright and License
 %   \dbIntMin, \dbIntMod, \dbFpSign,
 % }
 %   \begin{syntax}
-%     \cs{dbIntAbs} \Arg{intexpr}
-%     \cs{dbIntSign} \Arg{intexpr}
-%     \cs{dbIntDivRound} \Arg{intexpr_1} \marg{intexpr_2}
-%     \cs{dbIntDivTruncate} \Arg{intexpr_1} \marg{intexpr_2}
-%     \cs{dbIntMax} \Arg{intexpr_1} \marg{intexpr_2}
-%     \cs{dbIntMin} \Arg{intexpr_1} \marg{intexpr_2}
-%     \cs{dbIntMod} \Arg{intexpr_1} \marg{intexpr_2}
-%     \cs{dbFpSign} \Arg{fpexpr}
+%     \cs{dbIntAbs}         \Arg{intexpr}
+%     \cs{dbIntSign}        \Arg{intexpr}
+%     \cs{dbIntDivRound}    \Arg{intexpr_1} \Arg{intexpr_2}
+%     \cs{dbIntDivTruncate} \Arg{intexpr_1} \Arg{intexpr_2}
+%     \cs{dbIntMax}         \Arg{intexpr_1} \Arg{intexpr_2}
+%     \cs{dbIntMin}         \Arg{intexpr_1} \Arg{intexpr_2}
+%     \cs{dbIntMod}         \Arg{intexpr_1} \Arg{intexpr_2}
+%     \cs{dbFpSign}         \Arg{fpexpr}
 %   \end{syntax}
-%   \cs{dbIntAbs} is identical to \cs{int_abs:n} \\
-%   \cs{dbIntSign} is identical to \cs{int_sign:n} \\
-%   \cs{dbIntDivRound} is identical to \cs{int_div_round:nn} \\
-%   \cs{dbIntDivTruncate} is identical to \cs{int_div_truncate:nn} \\
-%   \cs{dbIntMax} is identical to \cs{int_max:nn} \\
-%   \cs{dbIntMin} is identical to \cs{int_min:nn} \\
-%   \cs{dbIntMod} is identical to \cs{int_mod:nn} \\
-%   \cs{dbFpSign} is identical to \cs{fp_sign:n} \\
-%    Detailed documentation see \pkg{interface3} \\
+% \begin{tblr}{ll}
+%   \cs{dbIntAbs}         & is equal to \cs{int_abs:n} \\
+%   \cs{dbIntSign}        & is equal to \cs{int_sign:n} \\
+%   \cs{dbIntDivRound}    & is equal to \cs{int_div_round:nn} \\
+%   \cs{dbIntDivTruncate} & is equal to \cs{int_div_truncate:nn} \\
+%   \cs{dbIntMax}         & is equal to \cs{int_max:nn} \\
+%   \cs{dbIntMin}         & is equal to \cs{int_min:nn} \\
+%   \cs{dbIntMod}         & is equal to \cs{int_mod:nn} \\
+%   \cs{dbFpSign}         & is equal to \cs{fp_sign:n} \\
+% \end{tblr}
+%
+%   See detailed documentation of \pkg{interface3}. Example \ref{en-expr-db}
+%   shows how to filter multiples of 3.
 % \end{function}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(expr-db){Filter Multiples of 3}
+  \dbNewDatabase{expr-db}{n=int}
+  \dbNewRawFilter{mod}{expr-db}{n}{\dbIntMod{\dbval}{3} = 0}
+  \dbNewStyle{expr-style}{expr-db}{
+    item-code = \dbuse{n}\quad,
+    filter    = mod,
+  }
+  \dbitemkv{expr-db}{n=2}
+  \dbitemkv{expr-db}{n=3}
+  \dbitemkv{expr-db}{n=6}
+  \dbitemkv{expr-db}{n=7}
+  \dbshow{expr-style}{expr-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
 %
 % \subsection{Special Macros}
 %
@@ -2776,208 +2950,25 @@ Copyright and License
 %   \dbIndex, \dbarabic, \dbalph, \dbAlph, \dbroman, \dbRoman
 % }
 % \begin{tblr}{ll}
-%   \cs{dbval} & Attribute value, only according in \cs{dbNewConditional}. \\
-%   \cs{dbDatabase} & Database name. \\
+%   \cs{dbval}        & Attribute value, only accessible in \cs{dbNewConditional}. \\
+%   \cs{dbtoday}      & Date of today. \\
+%   \cs{dbDatabase}   & Database name. \\
 %   \cs{dbFilterName} & Filter name. \\
 %   \cs{dbFilterInfo} & Filter information. \\
-%   \cs{dbIndex} & Record index, identical to \cs{dbuse}|{id}| \\
-%   \cs{dbarabic} & Show the counter of query set as digits. \\
-%   \cs{dbalph} & Show the counter of query set as lowercase letters. \\
-%   \cs{dbAlph} & Show the counter of query set as uppercase letters. \\
-%   \cs{dbroman} & Show the counter of query set as lowercase roman numerals. \\
-%   \cs{dbroman} & Show the counter of query set as uppercase roman numerals. \\
-%   \end{tblr}
+%   \cs{dbIndex}      & Record index, identical to \cs{dbuse}\marg{id} \\
+%   \cs{dbarabic}     & Show the counter of query set as digits. \\
+%   \cs{dbalph}       & Show the counter of query set as lowercase letters. \\
+%   \cs{dbAlph}       & Show the counter of query set as uppercase letters. \\
+%   \cs{dbroman}      & Show the counter of query set as lowercase roman numerals. \\
+%   \cs{dbroman}      & Show the counter of query set as uppercase roman numerals. \\
+% \end{tblr}
+%
+%   \cs{dbtoday} show the current date with the separator defined by
+%   \cs{dbdatesep}.
 % \end{function}
 %
-% \section{Example of Flaw Sweeper Template}
-% \label{sec:example}
-%
 % \changes{1.1}{2022-01-07}{Update doc}{improve example}
-%
-% \begin{verbatim}
-% \documentclass{article}
-% \usepackage{amsmath, physics}
-% \usepackage{geometry}
-% \usepackage{dbshow}
-% \usepackage{tikz}
-% \usepackage{tcolorbox}
-% \tcbuselibrary{skins}
-% \usetikzlibrary{shadings}
-% \usepackage[hidelinks]{hyperref}
-%
-% \geometry{
-%   margin=2cm
-% }
-%
-% % #1 link node #2 target node #3 text to show
-% \NewDocumentCommand \linktarget { m m m } {%
-%   \hyperlink{#1}{#3}%
-%   \raisebox{1em}{\hypertarget{#2}{}}%
-% }
-%
-% % question box
-% \tcbset{
-%   base/.style={
-%     empty,
-%     frame engine=path,
-%     colframe=yellow!10,
-%     coltitle=red!70,
-%     fonttitle=\bfseries\sffamily,
-%     sharp corners,
-%     left=4pt,
-%     right=4pt,
-%     drop fuzzy shadow,
-%     drop fuzzy shadow,
-%     borderline west={3pt}{-3pt}{red!80},
-%   }
-% }
-%
-% \newtcolorbox{mybox}[1]{%
-%   base, title = {#1}
-% }
-%
-% \dbNewReviewPoints{review}{1, 3, 7, 15, 30, 60}
-%
-% \dbNewDatabase{ques-book}{
-%   ques = tl,
-%   answer = tl,
-%   count = int|1,
-%   labels = clist,
-%   date = date,
-% }
-%
-% \begin{dbFilters}{ques-book}
-%   \dbNewConditional{hard}{labels}{hard}
-%   \dbNewConditional{bad}{count}{\dbval > 1}
-%   \dbNewConditional*{review}{date}{review|2022/01/07}
-%   \dbNewConditional{after}{date}{\dbval > 2022/01/02}
-% \end{dbFilters}
-%
-% % show all questions with hyperlink to answers
-% \dbNewStyle{ques}{ques-book}{
-%   before-code = {\section{Questions}},
-%   item-code = {
-%     \begin{mybox}{%
-%       \linktarget{answer_\dbIndex}{ques_\dbIndex}{%
-%         Question \dbarabic%
-%         \hspace{2em}\dbuse{date}%
-%         \hspace{2em}\dbuse{labels}%
-%         \hfill\dbuse{count}%
-%       }%
-%     }
-%       \dbuse{ques}%
-%     \end{mybox}
-%   },
-%   labels/sep = /,
-% }
-%
-% % show all questions and answers with hyperlink to questions
-% \dbNewStyle{answer}{ques-book}{
-%   before-code = {\section{Questions and Answers}},
-%   item-code = {
-%     \begin{mybox}{%
-%       \linktarget{ques_\dbIndex}{answer_\dbIndex}{%
-%         Question \dbarabic%
-%         \hspace{2em}\dbuse{date}%
-%         \hspace{2em}\dbuse{labels}%
-%         \hfill\dbuse{count}%
-%       }%
-%     }
-%       \dbuse{ques}\tcbsubtitle{Answer}\dbuse{answer}%
-%     \end{mybox}
-%   },
-%   labels/sep = /,
-% }
-%
-% % show all hard questions with hyperlink to answers
-% \dbNewStyle{hard}{ques-book}{
-%   before-code = {\section{Hard Questions}},
-%   item-code = {
-%     \begin{mybox}{%
-%       \hyperlink{answer_\dbIndex}{%
-%         Question \dbarabic%
-%         \hspace{2em}\dbuse{date}%
-%         \hspace{2em}\dbuse{labels}%
-%         \hfill\dbuse{count}%
-%       }%
-%     }
-%       \dbuse{ques}%
-%     \end{mybox}
-%   },
-%   raw-filter = hard,
-%   labels/sep = /,
-% }
-%
-% % show all hard questions that have been answered incorrectly for more than
-% % one time with hyperlink to answers
-% \dbNewStyle[hard]{bad}{ques-book}{
-%   before-code = {\section{Bad Questions}},
-%   raw-filter = {bad && hard},
-% }
-% % show all questions that plan to be reviewed on 2022/01/07 with hyperlink to
-% % answers
-% \dbNewStyle[hard]{review}{ques-book}{
-%   before-code = {\section{Questions to be Reviewed}},
-%   raw-filter = {review},
-% }
-% % show all questions that is record after 2022/01/02 with hyperlink to answers
-% \dbNewStyle[hard]{after}{ques-book}{
-%   before-code = {\section{Questions after 2022/01/02}},
-%   raw-filter = {after},
-% }
-%
-% \AtEndDocument{
-%   \dbshow{review}{ques-book}
-%   \dbshow{hard}{ques-book}
-%   \dbshow{bad}{ques-book}
-%   \dbshow{after}{ques-book}
-%   \dbshow{ques}{ques-book}
-%   \dbshow{answer}{ques-book}
-% }
-%
-% \begin{document}
-%
-% \begin{dbitem}{ques-book}[
-%   date=2022/01/01,
-%   labels={math, equation, easy},
-%   count=2
-%   ]
-%   \dbsave{ques}{%
-%     Solve the linear equation: $x + 16 = 31$.
-%   }
-%   \dbsave{answer}{%
-%     $x = 31 - 16 = 15$
-%   }
-% \end{dbitem}
-%
-% \begin{dbitem}{ques-book}[
-%   date=2022/01/01,
-%   labels={math, equation, hard},
-%   count=3
-%   ]
-%   \dbsave{ques}{%
-%     Solve the linear equation: $2y = 16$.
-%   }
-%   \dbsave{answer}{%
-%     $y = 16 / 2 = 8$
-%   }
-% \end{dbitem}
-%
-% \begin{dbitem}{ques-book}[
-%   date=2022/01/04,
-%   labels={math, integral, hard},
-%   count=1
-%   ]
-%   \dbsave{ques}{%
-%     Find the indefinite integral: $\int 2x \dd x$.
-%   }
-%   \dbsave{answer}{%
-%     $\int 2x \dd x = x^2$
-%   }
-% \end{dbitem}
-%
-% \end{document}
-% \end{verbatim}
+% \changes{1.5}{2022-01-17}{Remove doc}{Remove big example}
 %
 % \end{documentation}
 %
