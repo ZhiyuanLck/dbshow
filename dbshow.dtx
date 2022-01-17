@@ -218,17 +218,27 @@ Copyright and License
   \par\textbf{\textsf{NOTE:~}}#1\par
 } {}
 
-\definecolor {exambg}    {RGB}  {248, 241, 224} % 示例背景
-\definecolor {examno}    {RGB}  {176, 101, 90}  % 示例行号
-\definecolor {examnobg}  {RGB}  {241, 225, 208} % 示例行号背景
-\definecolor {examframe} {RGB}  {156, 129, 110} % 示例边框（标题背景）
-\definecolor {option}    {HTML} {009933}        % 选项
-\definecolor {cs}        {HTML} {FF6600}        % 颜色
-\definecolor {env}       {HTML} {A80C91}        % 环境
+% \definecolor {exambg}    {RGB}  {248, 241, 224} % 示例背景
+% \definecolor {examno}    {RGB}  {176, 101, 90}  % 示例行号
+% \definecolor {examnobg}  {RGB}  {241, 225, 208} % 示例行号背景
+% \definecolor {examframe} {RGB}  {156, 129, 110} % 示例边框（标题背景）
+% \definecolor {option}    {HTML} {009933}        % 选项
+% \definecolor {cs}        {HTML} {FF6600}        % 命令
+% \definecolor {env}       {HTML} {A80C91}        % 环境
+
+\definecolor {exambg}    {RGB}  {241, 225, 208} % 示例背景
+\definecolor {examno}    {HTML} {F3AA20} % 示例行号
+\definecolor {examnobg}  {HTML} {8B4C70} % 示例行号背景
+\definecolor {examframe} {HTML} {58094F} % 示例边框（标题背景）
+\definecolor {option}    {HTML} {8B4C70} % 选项
+\definecolor {cs}        {HTML} {F3AA20} % 命令
+\definecolor {env}       {HTML} {669933} % 环境
+\definecolor {link}      {HTML} {33539E} % 链接
+\hypersetup{linkcolor=link}
 \tcbset{
   exam-base/.style={
     listing engine=minted, listing and text,
-    minted style=xcode, breakable,
+    minted style=emacs, breakable,
     minted options={fontsize=\small,breaklines,linenos,numbersep=3mm},
     colback=exambg, colframe=examframe,
     left=5mm, enhanced,
@@ -314,7 +324,7 @@ Copyright and License
   \int_compare:nNnT { \str_count:n {#1} } = { 3 } { \phantom{0} }
   \c_space_tl
 }
-\cs_set_eq:NN \dbshowdocver \dbshowdoc_print_version:n
+\cs_gset_eq:NN \dbshowdocver \dbshowdoc_print_version:n
 
 % #1 ver #2 date #3 type #4 desc
 \cs_new_protected:Nn \dbshowdoc_changes_what:nnnn {
@@ -376,10 +386,16 @@ Copyright and License
   \end{itemize}
 } {}
 
-\cs_set_eq:NN \__codedoc_old_cs:nN \__codedoc_typeset_function_block:nN
 \cs_gset_protected:Npn \__codedoc_typeset_function_block:nN #1#2 {
-  \color{cs}\bfseries
-  \__codedoc_old_cs:nN {#1} #2
+    \__codedoc_function_index:x
+      { #1 \bool_if:NT #2 { \tl_to_str:n {TF} } }
+    \__codedoc_function_label:xN {#1} #2
+    \color{cs}\bfseries #1
+    \bool_if:NT #2 { \__codedoc_typeset_TF: }
+    \__codedoc_typeset_expandability:
+    \seq_if_empty:NF \g__codedoc_variants_seq
+      { \__codedoc_typeset_variant_list:nN {#1} #2 }
+    \\
 }
 \cs_new_protected:Nn \dbshowdoc_function_begin:Nn {
   \cs_set_eq:NN \__codedoc_tmp_cs:nN \__codedoc_typeset_function_block:nN
@@ -480,7 +496,8 @@ Copyright and License
 
 % #1 color #2 opt #3 content
 \cs_new_protected:Nn \dbshowdoc_cmd:nnn {
-  \textcolor{#1}{\__codedoc_cmd:no {#2} {#3}}
+  \__codedoc_get_hyper_target:xN {#3} \l_tmpa_tl
+  \hyperref[\l_tmpa_tl]{\textcolor{#1}{\__codedoc_cmd:no {#2} {#3}}}
 }
 \DeclareDocumentCommand \opt { O{} m }
   { \dbshowdoc_cmd:nnn { option } {#1} {#2} }
@@ -795,9 +812,9 @@ Copyright and License
 %   \end{syntax}
 %
 %   为当前样式设置排序规则。支持对 |str|，|date|，|int|，|fp| 类型的数据进行排
-%   序，支持多级排序。\meta{attr} 表示增序，\meta{attr}* 表示降序。示例
-%   \ref{cn-sort} 的排序规则为先按 |count| 降序排序，|count| 相同的再按 |name|
-%   增序排序。
+%   序，支持多级排序。\meta{attr} 表示增序，\meta{attr}\texttt{*} 表示降序。示
+%   例 \ref{cn-sort} 的排序规则为先按 |count| 降序排序，|count| 相同的再按
+%   |name| 增序排序。
 % \end{option}
 %
 % \iffalse
@@ -1275,9 +1292,9 @@ Copyright and License
 %   \end{syntax}
 %
 %   定义名为 \meta{name} 的复习间隔列表。\meta{points} 是一系列整数或整数表达
-%   式，用于设置日期的过滤器。示例 \ref{review-points} 中，预定义了一个复习间
-%   隔列表 |review| 和一个时间锚点 |2022/02/06|，筛选时，将当前条目的日期与描
-%   点相比较，计算得到时间间隔 $\meta{interval} = \meta{date anchor} -
+%   式，用于设置日期的过滤器。示例 \ref{cn-review-points} 中，预定义了一个复习
+%   间隔列表 |review| 和一个时间锚点 |2022/02/06|，筛选时，将当前条目的日期与
+%   描点相比较，计算得到时间间隔 $\meta{interval} = \meta{date anchor} -
 %   \meta{date cmp}$，只有当 \meta{interval} 的值在 \meta{points} 中时，条件才
 %   成立。
 % \end{function}
@@ -1355,7 +1372,7 @@ Copyright and License
 %     \cs{dbNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \oarg{filter info}
 %     \cs{dbNewConditional}  \marg{name}  \marg{clist attr} \marg{val list}   \oarg{filter info}
 %     \cs{dbNewConditional}* \marg{name}  \marg{clist attr} \marg{val list}   \oarg{filter info}
-%     \cs{dbNewConditional}  \marg{name}   \marg{date attr} \marg{expr}       \oarg{filter info}
+%     \cs{dbNewConditional}  \marg{name}   \marg{date attr} \marg{date expr}  \oarg{filter info}
 %     \cs{dbNewConditional}* \marg{name}   \marg{date attr} \{\meta{review points}\orbar\meta{date}\} \oarg{filter info}
 %   \end{syntax}
 %
@@ -1461,10 +1478,32 @@ Copyright and License
 %   \changes{1.3}{2022-01-08}{Update logic}{swap definition of starred and
 %   unstarred conditionals of date}
 %   对于类型为 |date| 的属性，\cs{dbNewConditional} 定义的条件后续处理中会将
-%   \meta{expr} 中的所有日期转换成相对\textit{1971年1月1日}的一个整数值，然后将
-%   处理后的表达式传递给 \cs{int_compare:nTF} 做进一步处理；
-%   \cs{dbNewConditional*} 使用复习点来定义过滤条件，\meta{review points} 是
-%   \cs{dbNewReviewPoints} 定义的复习点，\meta{date} 是用来比较的日期。
+%   \meta{expr} 中的所有日期转换成相对1971年1月1日的一个整数值，然后将处理后的
+%   表达式传递给 \cs{int_compare:nTF} 做进一步处理。示例 \ref{cn-filter-date}
+%   展示了如何使用该选项。
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(filter-date){根据日期表达式过滤}
+  \dbNewDatabase{filter-db}{date=date}
+  \dbNewRawFilter{date-filter}{filter-db}{date}{\dbval >= 2022/02/01}
+  \dbNewStyle{filter-style}{filter-db}{
+    item-code = \dbuse{date}\quad,
+    filter    = date-filter,
+  }
+  \dbitemkv{filter-db}{date=2022/01/30}
+  \dbitemkv{filter-db}{date=2022/02/01}
+  \dbitemkv{filter-db}{date=2022/02/04}
+  \dbshow{filter-style}{filter-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
+%
+%   对于类型为 |date| 的属性，\cs{dbNewConditional*} 使用复习点来定义过滤条件，
+%   \meta{review points} 是 \cs{dbNewReviewPoints} 定义的复习点，\meta{date}
+%   是用来比较的日期（见示例 \ref{cn-review-points}）。
 %
 % \begin{function}[added=2022-01-05]{\dbCombineConditionals}
 %   \begin{syntax}
@@ -1477,6 +1516,21 @@ Copyright and License
 %   \meta{cond combination} 中可以使用的关系操作符为 \verb=&&, ||, !=。
 %   可以将 \opt{filter} 选项设置为 \meta{name} 来应用过滤器。\meta{info} 为过滤
 %   器的相关信息，在展示数据库的时候可以用 \cs{dbFilterInfo} 指代。
+% \end{function}
+%
+% \changes{1.5}{2022-01-16}{Add macro}{\cs{dbNewRawFilter}}
+% \begin{function}[added=2022-01-16]{\dbNewRawFilter}
+%   \begin{syntax}
+%     \cs{dbNewRawFilter}  \marg{name} \marg{database} \marg{attr} \marg{cond spec} \oarg{filter info}
+%     \cs{dbNewRawFilter}* \marg{name} \marg{database} \marg{attr} \marg{cond spec} \oarg{filter info}
+%     等同于
+%     |\begin|\{\env{dbFilters}\}*\phantom{\marg{name}}\marg{database}
+%     ~~\cs{dbNewCond}     \marg{name} \phantom{\marg{database}} \marg{attr} \marg{cond spec} \oarg{filter info}
+%     ~~\cs{dbNewCond}*    \marg{name} \phantom{\marg{database}} \marg{attr} \marg{cond spec} \oarg{filter info}
+%     |\end|\{\env{dbFilters}\}
+%   \end{syntax}
+%
+%   该命令用来快捷地定义单个过滤器
 % \end{function}
 %
 % \subsection{使用 \env{dbitem} 环境存储数据}
@@ -1492,9 +1546,9 @@ Copyright and License
 %   \env{dbitem} 环境用来存储数据。有两种存储数据的方法，较短的数据可以在选项列
 %   表中通过键值对设置值，较长的数据可以在 \meta{code} 中使用 \cs{dbsave} 存储。
 %   \meta{attr} = \meta{val} 等同于 \cs{dbsave}\marg{attr}\marg{val}，
-%   \meta{attr}* = \meta{val} 等同于 \cs{dbsave*}\marg{attr}\marg{val}，数据在
-%   |e| 或者 |x| 类型的参数中不可展开。\cs{dbsave}会覆盖选项中设置的值。没有设
-%   置的值将会被设置为全局默认值，下面给出一个存储示例。
+%   \meta{attr}\texttt{*} = \meta{val} 等同于 \cs{dbsave*}\marg{attr}
+%   \marg{val}，数据在 |e| 或者 |x| 类型的参数中不可展开。\cs{dbsave}会覆盖选
+%   项中设置的值。没有设置的值将会被设置为全局默认值，下面给出一个存储示例。
 % \end{environment}
 %
 % \begin{verbatim}
@@ -1877,7 +1931,7 @@ Copyright and License
 %
 %   Set sorting rules. Attributes of type |str, date, int, fp| is supported to
 %   sort. Multi-level sort is allowed. \meta{attr} represents for ascending
-%   order, and \meta{attr}* represents for descending order. Example
+%   order, and \meta{attr}\texttt{*} represents for descending order. Example
 %   \ref{en-sort} shows how to sort items by |count| in descending order and
 %   for the same |count|, sort by |name| in ascending order.
 % \end{option}
@@ -2453,7 +2507,7 @@ Copyright and License
 %     \cs{dbNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \oarg{filter info}
 %     \cs{dbNewConditional}  \marg{name}  \marg{clist attr} \marg{val list}   \oarg{filter info}
 %     \cs{dbNewConditional}* \marg{name}  \marg{clist attr} \marg{val list}   \oarg{filter info}
-%     \cs{dbNewConditional}  \marg{name}   \marg{date attr} \marg{expr}       \oarg{filter info}
+%     \cs{dbNewConditional}  \marg{name}   \marg{date attr} \marg{date expr}  \oarg{filter info}
 %     \cs{dbNewConditional}* \marg{name}   \marg{date attr} \{\meta{review points}\orbar\meta{date}\} \oarg{filter info}
 %   \end{syntax}
 %
@@ -2558,10 +2612,32 @@ Copyright and License
 %   \changes{1.3}{2022-01-08}{Update logic}{swap definition of starred and
 %   unstarred conditionals of date}
 %   For attributes of type |date|, unstarred form replace each date with a
-%   integer representing for the days between \meta{date} and
-%   \textit{1971/01/01}, and the result is passed to \cs{int_compare:nTF}.
+%   integer representing for the days between \meta{date} and 1971/01/01, and
+%   the result is passed to \cs{int_compare:nTF}. Example \ref{en-filter-date}
+%   shows how to use the \meta{date expr} to filter the data.
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(filter-date){Filter with Date Expression}
+  \dbNewDatabase{filter-db}{date=date}
+  \dbNewRawFilter{date-filter}{filter-db}{date}{\dbval >= 2022/02/01}
+  \dbNewStyle{filter-style}{filter-db}{
+    item-code = \dbuse{date}\quad,
+    filter    = date-filter,
+  }
+  \dbitemkv{filter-db}{date=2022/01/30}
+  \dbitemkv{filter-db}{date=2022/02/01}
+  \dbitemkv{filter-db}{date=2022/02/04}
+  \dbshow{filter-style}{filter-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
+%
 %   Starred form defines the conditional with review points defined by
-%   \cs{dbNewReviewPoints} and \meta{date} is the date to be compared.
+%   \cs{dbNewReviewPoints} and \meta{date} is the date to be compared (see
+%   example \ref{en-review-points}).
 %
 % \begin{function}[added=2022-01-05]{\dbCombineConditionals}
 %   \begin{syntax}
@@ -3601,7 +3677,7 @@ Copyright and License
 % \begin{macro}{\@@_filter_tl:NNNnn, \@@_filter_tl:cccnn}
 % Filter token list with regex expression. It is the same with string.
 %    \begin{macrocode}
-\cs_set_eq:NN \@@_filter_tl:NNNnn \@@_filter_str:NNNnn
+\cs_gset_eq:NN \@@_filter_tl:NNNnn \@@_filter_str:NNNnn
 \cs_generate_variant:Nn \@@_filter_tl:NNNnn { cccnn }
 %    \end{macrocode}
 % \end{macro}
@@ -3879,14 +3955,14 @@ Copyright and License
 % \dbIntMax, \dbIntMin, \dbIntMod, \dbFpSign}
 % Function aliases to support more operations of integer and floating points.
 %    \begin{macrocode}
-\cs_set_eq:NN \dbIntAbs         \int_abs:n
-\cs_set_eq:NN \dbIntSign        \int_sign:n
-\cs_set_eq:NN \dbIntDivRound    \int_div_round:nn
-\cs_set_eq:NN \dbIntDivTruncate \int_div_truncate:nn
-\cs_set_eq:NN \dbIntMax         \int_max:nn
-\cs_set_eq:NN \dbIntMin         \int_min:nn
-\cs_set_eq:NN \dbIntMod         \int_mod:nn
-\cs_set_eq:NN \dbFpSign         \fp_sign:n
+\cs_gset_eq:NN \dbIntAbs         \int_abs:n
+\cs_gset_eq:NN \dbIntSign        \int_sign:n
+\cs_gset_eq:NN \dbIntDivRound    \int_div_round:nn
+\cs_gset_eq:NN \dbIntDivTruncate \int_div_truncate:nn
+\cs_gset_eq:NN \dbIntMax         \int_max:nn
+\cs_gset_eq:NN \dbIntMin         \int_min:nn
+\cs_gset_eq:NN \dbIntMod         \int_mod:nn
+\cs_gset_eq:NN \dbFpSign         \fp_sign:n
 %    \end{macrocode}
 % \end{macro}
 %
