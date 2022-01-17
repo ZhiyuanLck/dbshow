@@ -883,8 +883,9 @@ Copyright and License
 %     \opt{item-code*} = <item code> \inidef
 %   \end{syntax}
 %
-%   使用该选项设置的代码在被插入到最终执行代码序列之前会先完全展开。示例
-%   \ref{cn-item-exp} 展示了如何通过该选项使用表格来展示数据。
+%   使用该选项设置的代码在被插入到最终执行代码序列之前会先通过
+%   \cs{protected@edef} 完全展开。示例 \ref{cn-item-exp} 展示了如何通过该选项
+%   使用表格来展示数据。
 % \end{option}
 %
 % \iffalse
@@ -900,7 +901,7 @@ Copyright and License
     },
     after-code  = \end{tabular},
     item-code*  = {%
-      \noexpand\textcolor{red}{\dbuse{name}} & \dbuse{count} \\
+      \textcolor{red}{\dbuse{name}} & \dbuse{count} \\
     },
   }
   \dbitemkv{tab-db}{name=bag, count=100}
@@ -2160,8 +2161,9 @@ Copyright and License
 %     \opt{item-code*} = <item code> \inidef
 %   \end{syntax}
 %
-%   The \meta{item code} will be expanded before it is used. \ref{en-item-exp}
-%   shows how to display data with table using the expanded code.
+%   The \meta{item code} will be expanded through \cs{protected@edef} before
+%   it is used. \ref{en-item-exp} shows how to display data with table using
+%   the expanded code.
 % \end{option}
 %
 % \iffalse
@@ -2177,7 +2179,7 @@ Copyright and License
     },
     after-code  = \end{tabular},
     item-code*  = {%
-      \noexpand\textcolor{red}{\dbuse{name}} & \dbuse{count} \\
+      \textcolor{red}{\dbuse{name}} & \dbuse{count} \\
     },
   }
   \dbitemkv{tab-db}{name=bag, count=100}
@@ -4489,10 +4491,14 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \cs_new:Nn \@@_use_data:nnnn {
-  \bool_if:cT { g_@@_style_attr_exp_bool_#4_#1_#2 }
-    { \exp_args:Nnx }
-  \use:c { @@_style_attr_code_#4_#1_#2:n }
-  { \@@_use_data_raw:nnnn {#1} {#2} {#3} {#4} }
+  \bool_if:cTF { g_@@_style_attr_exp_bool_#4_#1_#2 } {
+    \protected@edef\@dbshow@tmp{\@@_use_data_raw:nnnn {#1} {#2} {#3} {#4}}
+    \exp_args:Nno
+    \use:c { @@_style_attr_code_#4_#1_#2:n } { \@dbshow@tmp }
+  } {
+    \use:c { @@_style_attr_code_#4_#1_#2:n }
+    { \@@_use_data_raw:nnnn {#1} {#2} {#3} {#4} }
+  }
 }
 \cs_new:Nn \@@_use_data_raw:nnnn {
   \str_case_e:nn
