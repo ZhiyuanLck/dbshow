@@ -218,10 +218,13 @@ Copyright and License
   \par\textbf{\textsf{NOTE:~}}#1\par
 } {}
 
-\definecolor{exambg}{RGB}{248, 241, 224}
-\definecolor{examno}{RGB}{176, 101, 90}
-\definecolor{examnobg}{RGB}{241, 225, 208}
-\definecolor{examframe}{RGB}{156, 129, 110}
+\definecolor {exambg}    {RGB}  {248, 241, 224} % 示例背景
+\definecolor {examno}    {RGB}  {176, 101, 90}  % 示例行号
+\definecolor {examnobg}  {RGB}  {241, 225, 208} % 示例行号背景
+\definecolor {examframe} {RGB}  {156, 129, 110} % 示例边框（标题背景）
+\definecolor {option}    {HTML} {009933}        % 选项
+\definecolor {cs}        {HTML} {FF6600}        % 颜色
+\definecolor {env}       {HTML} {A80C91}        % 环境
 \tcbset{
   exam-base/.style={
     listing engine=minted, listing and text,
@@ -373,9 +376,6 @@ Copyright and License
   \end{itemize}
 } {}
 
-\definecolor{option}{HTML}{009933}
-\definecolor{cs}{HTML}{FF6600}
-\definecolor{env}{HTML}{A80C91}
 \cs_set_eq:NN \__codedoc_old_cs:nN \__codedoc_typeset_function_block:nN
 \cs_gset_protected:Npn \__codedoc_typeset_function_block:nN #1#2 {
   \color{cs}\bfseries
@@ -1274,11 +1274,12 @@ Copyright and License
 %     \cs{dbNewReviewPoints} \marg{name} \marg{points}
 %   \end{syntax}
 %
-%   定义名为 \meta{name} 的复习间隔列表。\meta{points} 是一系列整数，用于设置日
-%   期的过滤器。示例 \ref{review-points} 中，预定义了一个复习间隔列表 |review|
-%   和一个时间锚点 |2022/02/06|，筛选时，将当前条目的日期与描点相比较，计算得
-%   到时间间隔 $\meta{interval} = \meta{date anchor} - \meta{date cmp}$，只有
-%   当 \meta{interval} 的值在 \meta{points} 中时，条件才成立。
+%   定义名为 \meta{name} 的复习间隔列表。\meta{points} 是一系列整数或整数表达
+%   式，用于设置日期的过滤器。示例 \ref{review-points} 中，预定义了一个复习间
+%   隔列表 |review| 和一个时间锚点 |2022/02/06|，筛选时，将当前条目的日期与描
+%   点相比较，计算得到时间间隔 $\meta{interval} = \meta{date anchor} -
+%   \meta{date cmp}$，只有当 \meta{interval} 的值在 \meta{points} 中时，条件才
+%   成立。
 % \end{function}
 %
 % \iffalse
@@ -2357,32 +2358,47 @@ Copyright and License
 %</verb>
 % \fi
 %
-% \subsection{Use \cs{dbNewReviewPoints} to Define Review Points}
+% \subsection{Data Filters}
+%
+% Filter is a combination of conditionals that is used to filter the data you
+% want to display.
 %
 % \begin{function}[added=2022-01-05]{\dbNewReviewPoints}
 %   \begin{syntax}
 %     \cs{dbNewReviewPoints} \marg{name} \marg{points}
 %   \end{syntax}
 %
-%   Define the new \meta{points} that is specially designed for reviewing
-%   something. \meta{points} is a list of integers. Suppose you record the date
-%   when you did not answer correctly and you plan to review every 2, 5 and 15
-%   days. The following code give what you want.
+%   Define \meta{points} to filter dates by intervals.  something. \meta{points}
+%   is a list of \meta{intexpr}. In example \ref{en-review-points}, a \meta{date
+%   anchor} and a list of \meta{points} is defined. During the filtering process,
+%   \meta{interval} is calculated by $\meta{interval} = \meta{date anchor} -
+%   \meta{date cmp}$, \meta{date cmp} is the \meta{date} of current item. Then
+%   each \meta{intexpr} in \meta{points} is compared with \meta{interval} to
+%   test if they are equal.
 % \end{function}
 %
-% \begin{verbatim}
-%   \dbNewReviewPoints{review-point}{2, 5, 15}            % define points
-%   \begin{dbFilters}
-%     \dbNewConditional{cond1}{date}{review-point|\Today} % define conditional
-%     \dbCombineConditionals{filter1}{cond1}              % define filter
-%   \end{dbFilters}
-%   \dbNewStyle{review-style}{ques}{filter=filter1}       % define style
-% \end{verbatim}
-%
-% \subsection{Data Filters}
-%
-% Filter is a combination of conditionals that is used to filter the data you
-% want to display.
+% \iffalse
+%<*verb>
+% \fi
+\DeleteShortVerb{\|}
+\dbdatesep{/}
+\begin{example*}(review-points){Filter with Review Points}
+  \dbNewDatabase{filter-db}{date=date}
+  \dbNewReviewPoints{review}{2, 5}
+  \dbNewRawFilter*{review-filter}{filter-db}{date}{review|2022/02/06}
+  \dbNewStyle{filter-style}{filter-db}{
+    item-code = \dbuse{date}\quad,
+    filter    = review-filter,
+  }
+  \dbitemkv{filter-db}{date=2022/01/30}
+  \dbitemkv{filter-db}{date=2022/02/01}
+  \dbitemkv{filter-db}{date=2022/02/04}
+  \dbshow{filter-style}{filter-db}
+\end{example*}
+\MakeShortVerb{\|}
+% \iffalse
+%</verb>
+% \fi
 %
 % \changes{1.5}{2022-01-16}{Update env}{add starred version of \env{dbFilters}}
 % \begin{environment}[added=2022-01-05, updated=2022-01-16]{dbFilters}
@@ -3036,7 +3052,7 @@ Copyright and License
 %    \begin{macrocode}
 \cs_new:Nn \@@_check_style:nn {
   \tl_if_exist:cF { g_@@_style_opts_tl_\tl_to_str:n {#1}_\tl_to_str:n {#2} }
-    { \msg_error:nnnn { dbshow } { non-existent-style } {#1} {#2} }
+    { \msg_fatal:nnnn { dbshow } { non-existent-style } {#1} {#2} }
 }
 %    \end{macrocode}
 % \end{macro}
@@ -3129,7 +3145,7 @@ Copyright and License
 }
 %    \end{macrocode}
 %
-% \begin{macro}{\@@_sep_error:nnn, \@@_sep_error:xxx}
+% \begin{macro}{\@@_sep_fatal:nnn, \@@_sep_fatal:xxx}
 % Check the value of \opt{<attr>/sep} is valid.
 % \begin{arguments}
 %   \item \meta{valid count}
@@ -3137,10 +3153,10 @@ Copyright and License
 %   \item \meta{value}
 % \end{arguments}
 %    \begin{macrocode}
-\cs_new:Nn \@@_sep_error:nnn {
-  \msg_error:nnnnn { dbshow } { wrong-seperator } {#1} {#2} {#3}
+\cs_new:Nn \@@_sep_fatal:nnn {
+  \msg_fatal:nnnnn { dbshow } { wrong-seperator } {#1} {#2} {#3}
 }
-\cs_generate_variant:Nn \@@_sep_error:nnn { xxx }
+\cs_generate_variant:Nn \@@_sep_fatal:nnn { xxx }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -4095,7 +4111,7 @@ Copyright and License
         { \@@_get_type:nV {#1} \l_@@_sort_attr_str }
       \clist_if_in:nVF
       { str, int, date, fp } { \l_@@_sort_type_tl } {
-        \msg_error:nnx { dbshow } { unsupported-sort-type }
+        \msg_fatal:nnx { dbshow } { unsupported-sort-type }
           { \l_@@_sort_type_tl }
       }
       \str_if_eq:eeT { \l_@@_sort_type_tl } { date }
@@ -4179,7 +4195,7 @@ Copyright and License
         { \clist_item:Nn #2 { 3 } }
     }
   } {
-    \@@_sep_error:xxx
+    \@@_sep_fatal:xxx
       { 1~or~3 }
       { \clist_count:N #2 }
       { \clist_use:Nn #2 { ,~ } }
@@ -4217,7 +4233,7 @@ Copyright and License
         { \clist_item:Nn #2 { 4 } }
     }
   } {
-    \@@_sep_error:xxx
+    \@@_sep_fatal:xxx
       { 1~or~4 }
       { \clist_count:N #2 }
       { \clist_use:Nn #2 { ,~ } }
