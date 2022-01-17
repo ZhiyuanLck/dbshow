@@ -1265,31 +1265,18 @@ Copyright and License
 % \iffalse
 %</verb>
 % \fi
+% \subsection{过滤器}
 %
-% \subsection{使用 \cs{dbNewReviewPoints} 定义复习点}
+% 过滤器是一些条件的组合，只有满足过滤器指定条件的数据才会被展现出来。
 %
 % \begin{function}[added=2022-01-05]{\dbNewReviewPoints}
 %   \begin{syntax}
 %     \cs{dbNewReviewPoints} \marg{name} \marg{points}
 %   \end{syntax}
 %
-%   定义名为 \meta{name} 的复习点。这是专门为错题本或复习所定制的功能，
-%   \meta{points}是一系列整数，现在假设每道错题你都将写错时的日期记录在了 |date|
-%   属性中，并且你希望每隔2，5，15天复习一次。下面的代码给出了一个实现示例。
+%   定义名为 \meta{name} 的复习间隔列表。\meta{points} 是一系列整数，用于设置日
+%   期的过滤器。
 % \end{function}
-%
-% \begin{verbatim}
-%   \dbNewReviewPoints{review-point}{2, 5, 15}            % 定义复习点
-%   \begin{dbFilters}
-%     \dbNewConditional{cond1}{date}{review-point|\Today} % 定义复习条件
-%     \dbCombineConditionals{filter1}{cond1}              % 定义过滤器
-%   \end{dbFilters}
-%   \dbNewStyle{review-style}{ques}{filter=filter1}       % 定义展示样式
-% \end{verbatim}
-%
-% \subsection{过滤器}
-%
-% 过滤器是一些条件的组合，只有满足过滤器指定条件的数据才会被展现出来。
 %
 % \changes{1.5}{2022-01-16}{Update env}{add starred version of \env{dbFilters}}
 % \begin{environment}[added=2022-01-05, updated=2022-01-16]{dbFilters}
@@ -1396,12 +1383,54 @@ Copyright and License
 %   对于类型为 |clist| 的属性，使用 \cs{dbNewConditional} 定义的条件只要
 %   \meta{val list} 中的任意一个元素在属性值（列表）中则条件成立；使用
 %   \cs{dbNewConditional*} 定义的条件只有 \meta{val list} 中每一个值都在属性值
-%   （列表）中条件才成立。
+%   （列表）中条件才成立。示例 \ref{cn-filter-clist} 中过滤器 |or| 匹配含有
+%   hard \textbf{或者} red 的标签，而过滤器 |and| 匹配含有 hard \textbf{并且}
+%   含有 red 的标签。
 %
-% \begin{verbatim}
-%   \dbNewConditional {cond1}{clist-attr}{a, b, c} % a, b, d 满足条件
-%   \dbNewConditional*{cond2}{clist-attr}{a, b, c} % a, b, d 不满足条件
-% \end{verbatim}
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(filter-clist){筛选列表}
+  \dbNewDatabase{filter-db}{label=clist}
+  \begin{dbFilters}*{filter-db}
+    \dbNewCond  {or}{label}{hard, red}
+    \dbNewCond*{and}{label}{hard, red}
+  \end{dbFilters}
+  \def\emph#1{\textit{\textbf{#1}}}
+  \dbNewStyle{base-style}{filter-db}{
+    before-code = {
+      \begin{minipage}[t]{.3\textwidth}
+        All items
+    },
+    after-code  = {\end{minipage}},
+    item-code   = \par\dbarabic.~\dbuse{label},
+  }
+  \dbNewStyle[base-style] {or-style}{filter-db}{
+    before-code = {
+      \begin{minipage}[t]{.3\textwidth}
+        Match \emph{any} of hard \emph{or} red
+    },
+    filter      = or,
+  }
+  \dbNewStyle[base-style]{and-style}{filter-db}{
+    before-code = {
+      \begin{minipage}[t]{.3\textwidth}
+        Match \emph{all} of hard \emph{and} red
+    },
+    filter      = and,
+  }
+  \dbitemkv{filter-db}{label={hard, red}}
+  \dbitemkv{filter-db}{label={hard, blue}}
+  \dbitemkv{filter-db}{label={easy, blue}}
+  \dbitemkv{filter-db}{label={easy, red}}
+  \dbitemkv{filter-db}{label={hard, red, flat}}
+  \dbshow {base-style}{filter-db}
+  \dbshow   {or-style}{filter-db}
+  \dbshow  {and-style}{filter-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
 %
 %   \changes{1.3}{2022-01-08}{Update logic}{swap definition of starred and
 %   unstarred conditionals of date}
@@ -2400,24 +2429,90 @@ Copyright and License
 %   \end{note}
 %
 %   For attribute of type |str| and |tl|, unstarred form matches any part while
-%   starred form matches the whole part with the \meta{regex expr}.
+%   starred form matches the whole part with the \meta{regex expr}, which is
+%   shown in example \ref{en-filter-str}: filter |part| match |name|s that
+%   contain numbers and filter |all| match |name|s that is composed of digits.
 %
-% \begin{verbatim}
-%   \dbNewConditional {cond1}{str-attr}{abc}  % match abc, abcd, 1abc, =abc=, etc
-%   \dbNewConditional*{cond2}{str-attr}{abc} % only match abc
-% \end{verbatim}
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(filter-str){Match Strings}
+  \dbNewDatabase{filter-db}{name=str}
+  \begin{dbFilters}*{filter-db}
+    \dbNewCond{part}{name}{\d+}
+    \dbNewCond*{all}{name}{\d+}
+  \end{dbFilters}
+  \dbNewStyle{part-style}{filter-db}{
+    before-code = Match part:~,
+    item-code   = \dbuse{name}\quad,
+    filter      = part,
+  }
+  \dbNewStyle{all-style}{filter-db}{
+    before-code = Match all:~,
+    item-code   = \dbuse{name}\quad,
+    filter      = all,
+  }
+  \dbitemkv{filter-db}{name=123}
+  \dbitemkv{filter-db}{name=int12}
+  \dbitemkv{filter-db}{name=variable}
+  \dbshow{part-style}{filter-db}
+  \dbshow {all-style}{filter-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
 %
 %   For attributes of type |clist|, the conditional defined by unstarred form is
 %   true if any item of \meta{val list} is in the comma list. While the
 %   conditional defined by starred form is true only if every item of \meta{val
-%   list} is in the comma list. As is showed below, for |cond1|, |a| is in
-%   |{a, b, d}| so |cond1| is true. While |c| is not in |{a, b, d}| so |cond2|
-%   is false.
+%   list} is in the comma list. In example \ref{en-filter-clist}, filter |or|
+%   match labels that contain hard \textbf{or} red, and filter |and| match
+%   labels that contain hard \textbf{and} red.
 %
-% \begin{verbatim}
-%   \dbNewConditional {cond1}{clist-attr}{a, b, c}  % {a, b, d} -> true
-%   \dbNewConditional*{cond2}{clist-attr}{a, b, c} % {a, b, d} -> false
-% \end{verbatim}
+% \iffalse
+%<*verb>
+% \fi
+\begin{example*}(filter-clist){Filter Lists}
+  \dbNewDatabase{filter-db}{label=clist}
+  \begin{dbFilters}*{filter-db}
+    \dbNewCond  {or}{label}{hard, red}
+    \dbNewCond*{and}{label}{hard, red}
+  \end{dbFilters}
+  \def\emph#1{\textit{\textbf{#1}}}
+  \dbNewStyle{base-style}{filter-db}{
+    before-code = {
+      \begin{minipage}[t]{.3\textwidth}
+        All items
+    },
+    after-code  = {\end{minipage}},
+    item-code   = \par\dbarabic.~\dbuse{label},
+  }
+  \dbNewStyle[base-style] {or-style}{filter-db}{
+    before-code = {
+      \begin{minipage}[t]{.3\textwidth}
+        Match \emph{any} of hard \emph{or} red
+    },
+    filter      = or,
+  }
+  \dbNewStyle[base-style]{and-style}{filter-db}{
+    before-code = {
+      \begin{minipage}[t]{.3\textwidth}
+        Match \emph{all} of hard \emph{and} red
+    },
+    filter      = and,
+  }
+  \dbitemkv{filter-db}{label={hard, red}}
+  \dbitemkv{filter-db}{label={hard, blue}}
+  \dbitemkv{filter-db}{label={easy, blue}}
+  \dbitemkv{filter-db}{label={easy, red}}
+  \dbitemkv{filter-db}{label={hard, red, flat}}
+  \dbshow {base-style}{filter-db}
+  \dbshow   {or-style}{filter-db}
+  \dbshow  {and-style}{filter-db}
+\end{example*}
+% \iffalse
+%</verb>
+% \fi
 %
 %   \changes{1.3}{2022-01-08}{Update logic}{swap definition of starred and
 %   unstarred conditionals of date}
@@ -2425,7 +2520,7 @@ Copyright and License
 %   integer representing for the days between \meta{date} and
 %   \textit{1971/01/01}, and the result is passed to \cs{int_compare:nTF}.
 %   Starred form defines the conditional with review points defined by
-%   \cs{dbNewRdbNewReviewPoints} and \meta{date} is the date to be compared.
+%   \cs{dbNewReviewPoints} and \meta{date} is the date to be compared.
 %
 % \begin{function}[added=2022-01-05]{\dbCombineConditionals}
 %   \begin{syntax}
@@ -3608,7 +3703,10 @@ Copyright and License
   \cs_gset:cn { g_@@_filter_hook_#1_#2:n } {
     \@@_filter:nnn {#1} {#2} {##1}
   }
-  \seq_gput_right:cn { g_@@_cond_seq_#1 } {#2}
+  \bool_if_exist:cF { g_@@_cond_exist_bool_#1_#2 }
+    { \bool_set_false:c { g_@@_cond_exist_bool_#1_#2 } }
+  \bool_if:cF { g_@@_cond_exist_bool_#1_#2 }
+    { \seq_gput_right:cn { g_@@_cond_seq_#1 } {#2} }
 }
 %    \end{macrocode}
 % \end{macro}
@@ -3629,7 +3727,7 @@ Copyright and License
 \cs_new_protected:Nn \@@_combine_conditional:nnn {
   \tl_gset_eq:cN { g_@@_filter_bool_tl_#1_#2 } \c_true_bool
   \seq_gclear_new:c { g_@@_filter_run_seq_#1_#2 }
-  \regex_extract_all:nnN { \w+ } {#3} \l_@@_cond_seq
+  \regex_extract_all:nnN { [^!=&<>()\ ]+ } {#3} \l_@@_cond_seq
 %    \end{macrocode}
 % \begin{arguments}[2]
 %   \item \meta{conditional}
@@ -3665,7 +3763,8 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \NewDocumentEnvironment { dbFilters } { s m } {
-  \seq_gclear_new:c { g_@@_cond_seq_#2 }
+  \seq_if_exist:cF { g_@@_cond_seq_#2 }
+    { \seq_new:c { g_@@_cond_seq_#2 } }
 %    \end{macrocode}
 % \begin{arguments}[2]
 %   \item \meta{star}
@@ -3681,14 +3780,6 @@ Copyright and License
       \dbCombCond{##2}{##2}[##5]
     }
   }
-%    \end{macrocode}
-% \begin{arguments}[2]
-%   \item \meta{star}
-%   \item \meta{conditional}
-%   \item \meta{attr}
-%   \item \meta{expr}
-% \end{arguments}
-%    \begin{macrocode}
 %    \end{macrocode}
 % \begin{arguments}[2]
 %   \item \meta{filter}
@@ -3718,9 +3809,11 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \DeclareDocumentCommand { \dbNewRawFilter } { s m m m m O{} } {
+  \seq_if_exist:cF { g_@@_cond_seq_#3 }
+    { \seq_new:c { g_@@_cond_seq_#3 } }
   \@@_new_conditional:nnnnn {#3} {#2} {#4} {#5} {#1}
   \tl_gset:cn { g_@@_filter_info_tl_#3_#2 } {#6}
-  \@@_combine_conditional:nnn {#3} {#2} {#5}
+  \@@_combine_conditional:nnn {#3} {#2} {#2}
 }
 %    \end{macrocode}
 % \end{macro}
@@ -4210,11 +4303,11 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \cs_new_protected:Nn \@@_show_set_counter:N {
-  \tl_set:Nx \dbalph   { \int_to_alph:n {#1} }
-  \tl_set:Nx \dbAlph   { \int_to_Alph:n {#1} }
+  \tl_set:Nx \dbalph   { \int_to_alph:n   {#1} }
+  \tl_set:Nx \dbAlph   { \int_to_Alph:n   {#1} }
   \tl_set:Nx \dbarabic { \int_to_arabic:n {#1} }
-  \tl_set:Nx \dbRoman  { \int_to_Roman:n {#1} }
-  \tl_set:Nx \dbroman  { \int_to_roman:n {#1} }
+  \tl_set:Nx \dbRoman  { \int_to_Roman:n  {#1} }
+  \tl_set:Nx \dbroman  { \int_to_roman:n  {#1} }
 }
 %    \end{macrocode}
 % \end{macro}
