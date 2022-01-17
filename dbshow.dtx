@@ -578,14 +578,10 @@ Copyright and License
 % \begin{documentation}
 %
 % \section{引言}
+%
 % 编写本宏包的动机来源于当前没有一个很好的错题本宏包，可以方便的根据各种条件对错
 % 题进行筛选、排序，然后以自定义的样式展示出来。\pkg{dbshow} 宏包实现了四个核心
 % 功能：数据存储和使用、数据筛选、数据排序、数据展示。
-%
-% 数据只需要存储一次，就可以通过预定义的筛选、排序条件和样式展示部分或全部的数据。
-% 如上所述，本宏包其实实现了一个非常简单的数据库，复习错题的功能只是其中一个应用，
-% 和其他数据库宏包比如 \pkg{datatool} 相比，\pkg{dbshow} 更专注于非图表类型的数
-% 据展示。
 %
 % \changes{1.4}{2022-01-10}{Add check}{version of \pkg{l3kernel}}
 % \pkg{dbshow} 依赖版本日期至少为 |2022-11-07| 的 \pkg{l3kernel}。
@@ -623,19 +619,8 @@ Copyright and License
 % 除了日期类型，所有类型都是 \pkg{expl3} 的内置类型。\pkg{dbshow} 构建了一个简单
 % 的 |date| 类型，支持转换成整数以及带样式的打印。
 %
-% \subsection{与 \pkg{datatool} 的区别}
-%
 % \changes{1.2}{2022-01-07}{Add doc}{add comparison to \pkg{datatool}}
-%
-% 从核心功能上看，\pkg{dbshow} 和 \pkg{datatool} 实现了相同的功能。区别在于
-% \pkg{dbshow} 基于 \pkg{expl3} 实现，支持字符串的正则匹配，还支持多级排序。使用
-% 方式上更倾向于样式与内容分离，所有的样式都可以通过选项提前定义好并且可以复用。
-% \pkg{dbshow} 并没有实现从外部文件读取数据以及将数据持久化的功能，我认为这些应
-% 该是更专业的外部程序的工作而不应该在 \LaTeX 中设计这些功能。因此，\pkg{dbshow}
-% 只提供了一个运行时的临时数据库，足够轻便且满足大部分正常需求。如果你想删除或修
-% 改数据库中某一条记录，请去对应的位置删除或修改掉对应的 \env{dbitem} 环境，而不
-% 是让宏包提供一个输出某一行记录的命令。某种意义上记录数据库的 \TeX 源文件本身就
-% 是数据的一种持久化。
+% \changes{1.3}{2022-01-07}{Remove doc}{remove comparison to \pkg{datatool}}
 %
 % \section{接口文档}
 %
@@ -680,18 +665,6 @@ Copyright and License
 %   \begin{note}
 %     每个数据库都有一个默认的属性 |id| 用来存储数据的索引。
 %   \end{note}
-%
-%   下面是定义一个错题数据库的示例，|question| 和 |answer| 属性用来存储问题和答
-%   案，|date| 属性存储日期，|info| 属性存储额外信息，|labels| 存储题目标签。
-% \begin{verbatim}
-%   \dbNewDatabase{ques}{
-%     question = tl,
-%     answer = tl,
-%     date = date,
-%     info = tl,
-%     labels = clist
-%   }
-% \end{verbatim}
 %
 % \begin{function}[added=2022-01-05]{\dbshow}
 %   \begin{syntax}
@@ -876,7 +849,7 @@ Copyright and License
 %
 % \begin{option}[added=2022-01-05, rEXP]{item-code}
 %   \begin{syntax}
-%     \opt{item-code} = <item code> \inidef(\#1)
+%     \opt{item-code} = <item code> \inidef
 %   \end{syntax}
 %
 %   该选项用来设置展示数据库中每条记录的代码。你可以使用 \cs{dbuse}\marg{attr}
@@ -900,6 +873,41 @@ Copyright and License
   \dbitemkv{item-db}{acronym=DL,  desc={Deep Learning}}
   \dbshow{item-style}{item-db}
 \end{example}
+% \iffalse
+%</verb>
+% \fi
+%
+% \changes{1.5}{2022-01-17}{Add option}{\opt{item-code*}}
+% \begin{option}[added=2022-01-17, rEXP]{item-code*}
+%   \begin{syntax}
+%     \opt{item-code*} = <item code> \inidef
+%   \end{syntax}
+%
+%   使用该选项设置的代码在被插入到最终执行代码序列之前会先完全展开。示例
+%   \ref{cn-item-exp} 展示了如何通过该选项使用表格来展示数据。
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\MakePercentComment
+\begin{example}(item-exp){用表格展示数据}
+  \dbNewDatabase{tab-db}{name=str, count=int}
+  \dbNewStyle{tab-style}{tab-db}{
+    before-code = {%
+      \begin{tabular}{ll}
+        name & count \\
+    },
+    after-code  = \end{tabular},
+    item-code*  = {%
+      \noexpand\textcolor{red}{\dbuse{name}} & \dbuse{count} \\
+    },
+  }
+  \dbitemkv{tab-db}{name=bag, count=100}
+  \dbitemkv{tab-db}{name=pig, count=20}
+  \dbshow{tab-style}{tab-db}
+\end{example}
+\MakePercentIgnore
 % \iffalse
 %</verb>
 % \fi
@@ -1574,6 +1582,7 @@ Copyright and License
 % \iffalse
 %<*verb>
 % \fi
+\MakePercentComment
 \begin{example}(dbitem){存储数据}
   \dbNewDatabase{ques-db}{date=date, ques=tl, ans=tl}
   \dbNewStyle{ques-style}{ques-db}{
@@ -1595,6 +1604,7 @@ Copyright and License
   \end{dbitem}
   \dbshow{ques-style}{ques-db}
 \end{example}
+\MakePercentIgnore
 % \iffalse
 %</verb>
 % \fi
@@ -1660,6 +1670,39 @@ Copyright and License
   \dbitemkv{test-db}{text={I have 2 pens.}}
   \dbshow {base-style}{test-db}
   \dbshow{empty-style}{test-db}
+\end{example}
+% \iffalse
+%</verb>
+% \fi
+%
+% \changes{1.5}{2022-01-17}{Add macros}{\cs{dbIfLastT}, \cs{dbIfLastF},
+% \cs{dbIfLastTF}}
+% \begin{function}[added=2022-01-17, EXP]{\dbIfLastT, \dbIfLastF, \dbIfLastTF}
+%   \begin{syntax}
+%     \cs{dbIfLastTF} \marg{true code} \marg{false code}
+%     \cs{dbIfLastT}  \marg{true code}
+%     \cs{dbIfLastF} \marg{false code}
+%   \end{syntax}
+%
+%   该判别式用来判断当前是否为数据库要展示的最后一条数据。示例
+%   \ref{cn-last} 演示了如何设置条目之间的间隔。
+% \end{function}
+%
+% \iffalse
+%<*verb>
+% \fi
+\begin{example}(last){设置条目之间的间隔}
+  \dbNewDatabase{last-db}{text=tl}
+  \dbNewStyle{last-style}{last-db}{
+    item-code  = {%
+      \par\dbuse{text}\par%
+      \dbIfLastF{\textcolor{red}{\hrulefill separator\hrulefill}}%
+    },
+  }
+  \dbitemkv{last-db}{text=This is the first paragraph.}
+  \dbitemkv{last-db}{text=This is the second paragraph.}
+  \dbitemkv{last-db}{text=This is the last paragraph.}
+  \dbshow{last-style}{last-db}
 \end{example}
 % \iffalse
 %</verb>
@@ -1745,8 +1788,44 @@ Copyright and License
 %   \cs{dbroman}      & 用大写罗马字母表示的查询集数据计数 \\
 % \end{tblr}
 %
-%   \cs{dbtoday} 使用 \cs{dbdatesep} 确定的分隔符来展示日期。
+%   \cs{dbtoday} 使用 \cs{dbdatesep} 确定的分隔符来展示日期。见示例
+%   \ref{cn-spespecial-db}.
 % \end{function}
+%
+% \iffalse
+%<*verb>
+% \fi
+\MakePercentComment
+\begin{example}(special-cs){特殊命令}
+  \dbNewDatabase{special-db}{name=str}
+  \dbNewRawFilter*{number}{special-db}{name}{\d+}[name that is a number]
+  \dbNewStyle{special-style}{special-db}{
+    before-code = {
+      Date: \dbtoday \\
+      Database: \dbDatabase
+      Filter: \dbFilterName \\
+      Filter info: \dbFilterInfo \par
+      \begin{tabular}{@{}lllllll}
+        Index & arabic & alph & Alph & roman & Roman & value \\
+    },
+    after-code  = \end{tabular},
+    item-code*  = {%
+      \dbIndex & \dbarabic & \dbalph & \dbAlph &
+      \dbroman & \dbRoman & \dbuse{name} \\
+    },
+    sort        = name,
+    filter      = number,
+  }
+  \dbitemkv{special-db}{name=test}
+  \dbitemkv{special-db}{name=12}
+  \dbitemkv{special-db}{name=int2}
+  \dbitemkv{special-db}{name=99}
+  \dbshow{special-style}{special-db}
+\end{example}
+\MakePercentIgnore
+% \iffalse
+%</verb>
+% \fi
 %
 % \changes{1.1}{2022-01-07}{Update doc}{improve example}
 % \changes{1.5}{2022-01-17}{Remove doc}{Remove big example}
@@ -1774,7 +1853,7 @@ Copyright and License
 % certain times or questions having not been reviewed for certain days. So this
 % package provides a database to do such thing.
 %
-% The package provides four core functions: data storage and display, data
+% The package provides four core functions: data storage, data
 % filtering, data sorting and data display. All data is saved once and then you
 % can display these data with custom filters, orders and styles.
 %
@@ -1818,23 +1897,8 @@ Copyright and License
 % by \pkg{dbshow} itself and supports converting to integer and printing with
 % style.
 %
-% \subsection{Comparison to \pkg{datatool}}
-%
 % \changes{1.2}{2022-01-07}{Add doc}{add comparison to \pkg{datatool}}
-%
-% \pkg{dbshow} and \pkg{datatool} implement the same core functions. But
-% \pkg{dbshow} is based on \pkg{expl3} and it supports string regex and
-% multi-level sorting. \pkg{dbshow} tries to divide style from the contents
-% (data in database): all styles are predefined and can be reused conveniently
-% so that there can be only codes to save data and one-line code to show the
-% database inside the \env{document} environment. You can hide the details in
-% the preamble and focus on the data you want to display. \pkg{dbshow} provides
-% a simple temporary runtime database, which means it can not input and output
-% data from/to extern files (they should be responsible by some professional
-% programming languages). When you need to delete or revise a record, just go to
-% where it is recorded in the source code rather than use a macro to manipulate
-% data after they are saved. In a sense, \TeX~file is also a kind of data
-% persistence.
+% \changes{1.3}{2022-01-07}{Remove doc}{remove comparison to \pkg{datatool}}
 %
 % \section{Interfaces}
 %
@@ -1874,17 +1938,6 @@ Copyright and License
 % \begin{note}
 %   Every database has a default attribute |id| to store the index of the item.
 % \end{note}
-%
-% The example below define a database named |ques|.
-% \begin{verbatim}
-%   \dbNewDatabase{ques}{
-%     question = tl, % store question
-%     answer = tl,   % store corresponding answer
-%     date = date,   % store the date when you were wrong
-%     info = tl,     % store extra info
-%     labels = clist % store question labels
-%   }
-% \end{verbatim}
 %
 % \begin{function}[added=2022-01-05]{\dbshow}
 %   \begin{syntax}
@@ -2073,7 +2126,7 @@ Copyright and License
 %
 % \begin{option}[added=2022-01-05, rEXP]{item-code}
 %   \begin{syntax}
-%     \opt{item-code} = <item code> \inidef(\#1)
+%     \opt{item-code} = <item code> \inidef
 %   \end{syntax}
 %
 %   Set the code that display a record. You can use \cs{dbuse} to denote the
@@ -2097,6 +2150,41 @@ Copyright and License
   \dbitemkv{item-db}{acronym=DL,  desc={Deep Learning}}
   \dbshow{item-style}{item-db}
 \end{example*}
+% \iffalse
+%</verb>
+% \fi
+%
+% \changes{1.5}{2022-01-17}{Add option}{\opt{item-code*}}
+% \begin{option}[added=2022-01-17, rEXP]{item-code*}
+%   \begin{syntax}
+%     \opt{item-code*} = <item code> \inidef
+%   \end{syntax}
+%
+%   The \meta{item code} will be expanded before it is used. \ref{en-item-exp}
+%   shows how to display data with table using the expanded code.
+% \end{option}
+%
+% \iffalse
+%<*verb>
+% \fi
+\MakePercentComment
+\begin{example*}(item-exp){Display Data with Table}
+  \dbNewDatabase{tab-db}{name=str, count=int}
+  \dbNewStyle{tab-style}{tab-db}{
+    before-code = {%
+      \begin{tabular}{ll}
+        name & count \\
+    },
+    after-code  = \end{tabular},
+    item-code*  = {%
+      \noexpand\textcolor{red}{\dbuse{name}} & \dbuse{count} \\
+    },
+  }
+  \dbitemkv{tab-db}{name=bag, count=100}
+  \dbitemkv{tab-db}{name=pig, count=20}
+  \dbshow{tab-style}{tab-db}
+\end{example*}
+\MakePercentIgnore
 % \iffalse
 %</verb>
 % \fi
@@ -2787,6 +2875,7 @@ Copyright and License
 % \iffalse
 %<*verb>
 % \fi
+\MakePercentComment
 \begin{example*}(dbitem){Store Date}
   \dbNewDatabase{ques-db}{date=date, ques=tl, ans=tl}
   \dbNewStyle{ques-style}{ques-db}{
@@ -2807,6 +2896,7 @@ Copyright and License
   \end{dbitem}
   \dbshow{ques-style}{ques-db}
 \end{example*}
+\MakePercentIgnore
 % \iffalse
 %</verb>
 % \fi
@@ -2878,6 +2968,41 @@ Copyright and License
   \dbshow {base-style}{test-db}
   \dbshow{empty-style}{test-db}
 \end{example*}
+% \iffalse
+%</verb>
+% \fi
+%
+% \changes{1.5}{2022-01-17}{Add macros}{\cs{dbIfLastT}, \cs{dbIfLastF},
+% \cs{dbIfLastTF}}
+% \begin{function}[added=2022-01-17, EXP]{\dbIfLastT, \dbIfLastF, \dbIfLastTF}
+%   \begin{syntax}
+%     \cs{dbIfLastTF} \marg{true code} \marg{false code}
+%     \cs{dbIfLastT}  \marg{true code}
+%     \cs{dbIfLastF} \marg{false code}
+%   \end{syntax}
+%
+%   Test if the current item is the last item to display. Example \ref{en-last}
+%   shows how to set the separator between items.
+% \end{function}
+%
+% \iffalse
+%<*verb>
+% \fi
+\MakePercentComment
+\begin{example*}(last){Separator between Items}
+  \dbNewDatabase{last-db}{text=tl}
+  \dbNewStyle{last-style}{last-db}{
+    item-code  = {%
+      \par\dbuse{text}\par%
+      \dbIfLastF{\textcolor{red}{\hrulefill separator\hrulefill}}%
+    },
+  }
+  \dbitemkv{last-db}{text=This is the first paragraph.}
+  \dbitemkv{last-db}{text=This is the second paragraph.}
+  \dbitemkv{last-db}{text=This is the last paragraph.}
+  \dbshow{last-style}{last-db}
+\end{example*}
+\MakePercentIgnore
 % \iffalse
 %</verb>
 % \fi
@@ -2964,8 +3089,43 @@ Copyright and License
 % \end{tblr}
 %
 %   \cs{dbtoday} show the current date with the separator defined by
-%   \cs{dbdatesep}.
+%   \cs{dbdatesep}. See example \ref{en-special-cs}.
 % \end{function}
+%
+% \iffalse
+%<*verb>
+% \fi
+\MakePercentComment
+\begin{example*}(special-cs){Special Commands}
+  \dbNewDatabase{special-db}{name=str}
+  \dbNewRawFilter*{number}{special-db}{name}{\d+}[name that is a number]
+  \dbNewStyle{special-style}{special-db}{
+    before-code = {
+      Date: \dbtoday \\
+      Database: \dbDatabase
+      Filter: \dbFilterName \\
+      Filter info: \dbFilterInfo \par
+      \begin{tabular}{@{}lllllll}
+        Index & arabic & alph & Alph & roman & Roman & value \\
+    },
+    after-code  = \end{tabular},
+    item-code*  = {%
+      \dbIndex & \dbarabic & \dbalph & \dbAlph &
+      \dbroman & \dbRoman & \dbuse{name} \\
+    },
+    sort        = name,
+    filter      = number,
+  }
+  \dbitemkv{special-db}{name=test}
+  \dbitemkv{special-db}{name=12}
+  \dbitemkv{special-db}{name=int2}
+  \dbitemkv{special-db}{name=99}
+  \dbshow{special-style}{special-db}
+\end{example*}
+\MakePercentIgnore
+% \iffalse
+%</verb>
+% \fi
 %
 % \changes{1.1}{2022-01-07}{Update doc}{improve example}
 % \changes{1.5}{2022-01-17}{Remove doc}{Remove big example}
@@ -4486,12 +4646,11 @@ Copyright and License
       \tl_use:c { g_@@_style_attr_after_ tl_#1_#2_####1 }
     }
     \bool_if:cTF { g_@@_style_item_exp_bool_#1_#2 } {
-      \tl_put_right:Nx \l_@@_item_tl
-        { \tl_use:c { g_@@_style_item_before_tl_#1_#2 } }
-      \tl_put_right:Nx \l_@@_item_tl
-        { \tl_use:c { g_@@_style_item_       tl_#1_#2 } }
-      \tl_put_right:Nx \l_@@_item_tl
-        { \tl_use:c { g_@@_style_item_after_ tl_#1_#2 } }
+      \protected@edef\@dbshow@tmp{\tl_use:c { g_@@_style_item_before_tl_#1_#2 }}
+      \tl_put_right:No \l_@@_item_tl { \@dbshow@tmp }
+      \protected@edef\@dbshow@tmp{\tl_use:c { g_@@_style_item_       tl_#1_#2 }}
+      \tl_put_right:No \l_@@_item_tl { \@dbshow@tmp }
+      \protected@edef\@dbshow@tmp{\tl_use:c { g_@@_style_item_after_ tl_#1_#2 }}
     } {
       \tl_use:c { g_@@_style_item_before_tl_#1_#2 }
       \tl_use:c { g_@@_style_item_       tl_#1_#2 }
