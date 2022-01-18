@@ -878,7 +878,7 @@ Copyright and License
 % \fi
 %
 % \changes{1.5}{2022-01-17}{Add option}{\opt{item-code*}}
-% \begin{option}[added=2022-01-17, rEXP]{item-code*}
+% \begin{option}[added=2022-01-17]{item-code*}
 %   \begin{syntax}
 %     \opt{item-code*} = <item code> \inidef
 %   \end{syntax}
@@ -886,6 +886,9 @@ Copyright and License
 %   使用该选项设置的代码在被插入到最终执行代码序列之前会先通过
 %   \cs{protected@edef} 完全展开。示例 \ref{cn-item-exp} 展示了如何通过该选项
 %   使用表格来展示数据。
+%   \begin{note}
+%     此选项不可与 \opt{<attr>/item-code*} 同时使用！
+%   \end{note}
 % \end{option}
 %
 % \iffalse
@@ -1084,13 +1087,16 @@ Copyright and License
 %</verb>
 % \fi
 %
-% \begin{option}[added=2022-01-16, rEXP]{<attr>/item-code*}
+% \begin{option}[added=2022-01-16, updated=2022-01-18]{<attr>/item-code*}
 %   \begin{syntax}
 %     \nopt{<attr>/item-code*} = <item code> \inidef
 %   \end{syntax}
 %
 %   设置列表元素的样式代码。在 \meta{item code} 中用 |#1| 指代\textbf{展开}的列
 %   表元素的值。
+%   \begin{note}
+%     此选项不可与 \opt{item-code*} 同时使用！
+%   \end{note}
 % \end{option}
 %
 % \begin{option}[added=2022-01-05, rEXP]{<attr>/item-before-code}
@@ -1637,7 +1643,8 @@ Copyright and License
 %   \end{syntax}
 %
 %   \cs{dbuse} 用来展示数据，只能在 \opt{item-code}, \opt{item-before-code},
-%   \opt{item-after-code} 选项中使用。\cs{dbuse} 是可展开的。
+%   \opt{item-after-code} 选项中使用。\cs{dbuse} 是可展开的，除非你使用了
+%   \opt{<attr>/item-code*} 选项。
 % \end{function}
 %
 % \subsection{条件判别式}
@@ -2156,7 +2163,7 @@ Copyright and License
 % \fi
 %
 % \changes{1.5}{2022-01-17}{Add option}{\opt{item-code*}}
-% \begin{option}[added=2022-01-17, rEXP]{item-code*}
+% \begin{option}[added=2022-01-17]{item-code*}
 %   \begin{syntax}
 %     \opt{item-code*} = <item code> \inidef
 %   \end{syntax}
@@ -2164,6 +2171,9 @@ Copyright and License
 %   The \meta{item code} will be expanded through \cs{protected@edef} before
 %   it is used. \ref{en-item-exp} shows how to display data with table using
 %   the expanded code.
+%   \begin{note}
+%     This option cannot be used with option \opt{<attr>/item-code*}!
+%   \end{note}
 % \end{option}
 %
 % \iffalse
@@ -2367,13 +2377,16 @@ Copyright and License
 %</verb>
 % \fi
 %
-% \begin{option}[added=2022-01-16, rEXP]{<attr>/item-code*}
+% \begin{option}[added=2022-01-16, updated=2022-01-18]{<attr>/item-code*}
 %   \begin{syntax}
 %     \nopt{<attr>/item-code*} = <item code> \inidef
 %   \end{syntax}
 %
 %   Set the style code of \meta{attr}. In \meta{item code}, |#1| is replaced
 %   with the \textbf{expanded} item of the comma list.
+%   \begin{note}
+%     This option cannot be used with option \opt{item-code*}!
+%   \end{note}
 % \end{option}
 %
 % \begin{option}[added=2022-01-05, rEXP]{<attr>/item-before-code}
@@ -2934,8 +2947,9 @@ Copyright and License
 %   \end{syntax}
 %
 %   Display the value of \meta{attr} of current record. \cs{dbuse} is
-%   \textbf{expandable} and can be only used inside the option \opt{item-code},
-%   \opt{item-before-code}, \opt{item-after-code}.
+%   \textbf{expandable} unless option \opt{<attr>/item-code*} is set and can
+%   be only used inside the option \opt{item-code}, \opt{item-before-code},
+%   \opt{item-after-code}.
 % \end{function}
 %
 % \subsection{Conditionals}
@@ -3149,6 +3163,7 @@ Copyright and License
 %
 % \changes{1.4}{2022-01-13}{Update code}{merge code and doc into
 % \pkg{dbshow.dtx}}
+% \changes{1.6}{2022-01-18}{Update code}{change most clist type to seq type}
 %
 %    \begin{macrocode}
 %<*package>
@@ -4495,9 +4510,14 @@ Copyright and License
 %    \begin{macrocode}
 \cs_new:Nn \@@_use_data:nnnn {
   \bool_if:cTF { g_@@_style_attr_exp_bool_#4_#1_#2 } {
-    \protected@edef\@dbshow@tmp{\@@_use_data_raw:nnnn {#1} {#2} {#3} {#4}}
-    \exp_args:Nno
-    \use:c { @@_style_attr_code_#4_#1_#2:n } { \@dbshow@tmp }
+    % in case option item-code* is used
+    \exp_not:n {
+      \protected@edef\@dbshow@tmp{
+        \@@_use_data_raw:nnnn {#1} {#2} {#3} {#4}
+      }
+      \exp_args:Nno
+      \use:c { @@_style_attr_code_#4_#1_#2:n } { \@dbshow@tmp }
+    }
   } {
     \use:c { @@_style_attr_code_#4_#1_#2:n }
     { \@@_use_data_raw:nnnn {#1} {#2} {#3} {#4} }
