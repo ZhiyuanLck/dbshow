@@ -599,7 +599,7 @@ Copyright and License
 % \subsection{数据类型}
 %
 % 宏包基于 \pkg{expl3} 的基础类型构建了6种类型：
-% \begin{Description}[\texttt{clist}]
+% \begin{Description}[\texttt{date}]
 %   \item[\texttt{date}]
 %     日期类型，以 |yyyy/mm/dd| 形式存储，支持大小比较，排序（转
 %     换成字符串）。默认值为 \cs{dbtoday}。
@@ -611,7 +611,7 @@ Copyright and License
 %     整数类型，支持大小比较，排序。默认值为0。
 %   \item[\texttt{fp}]
 %     浮点数类型，支持大小比较，排序。默认值为0。
-%   \item[\texttt{clist}]
+%   \item[\texttt{seq}]
 %     逗号分隔的列表类型。默认值为空列表。
 % \end{Description}
 %
@@ -1064,21 +1064,21 @@ Copyright and License
 %   \end{syntax}
 %
 %   设置列表元素的样式代码。在 \meta{item code} 中用 |#1| 指代列表元素的值。示例
-%   \ref{cn-clist-code} 演示了如何为列表元素设置额外的样式。
+%   \ref{cn-seq-code} 演示了如何为列表元素设置额外的样式。
 % \end{option}
 %
 % \iffalse
 %<*verb>
 % \fi
-\begin{example}(clist-code){设置列表元素样式代码}
-  \dbNewDatabase{clist-db}{name=str, label=clist}
-  \dbNewStyle{clist-style}{clist-db}{
+\begin{example}(seq-code){设置列表元素样式代码}
+  \dbNewDatabase{seq-db}{name=str, label=seq}
+  \dbNewStyle{seq-style}{seq-db}{
     item-code       = \par\dbuse{name}:~\dbuse{label},
     label/item-code = (\textcolor{red}{\textit{#1}}),
   }
-  \dbitemkv{clist-db}{name=pig,  label={animal, meat}}
-  \dbitemkv{clist-db}{name=Alex, label={person, male}}
-  \dbshow{clist-style}{clist-db}
+  \dbitemkv{seq-db}{name=pig,  label={animal, meat}}
+  \dbitemkv{seq-db}{name=Alex, label={person, male}}
+  \dbshow{seq-style}{seq-db}
 \end{example}
 % \iffalse
 %</verb>
@@ -1098,7 +1098,7 @@ Copyright and License
 %     \nopt{<attr>/item-before-code} = <code> \inidef*
 %   \end{syntax}
 %
-%   该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素\zhbefore 需要
+%   该选项只适用于类型为 |seq| 的属性，用来设置展示列表每个元素\zhbefore 需要
 %   执行的代码。
 % \end{option}
 %
@@ -1107,7 +1107,7 @@ Copyright and License
 %     \nopt{<attr>/item-after-code} = <code> \inidef*
 %   \end{syntax}
 %
-%   该选项只适用于类型为 |clist| 的属性，用来设置展示列表每个元素\zhafter 需要执
+%   该选项只适用于类型为 |seq| 的属性，用来设置展示列表每个元素\zhafter 需要执
 %   行的代码。
 % \end{option}
 %
@@ -1121,7 +1121,7 @@ Copyright and License
 % \def\sepini{%
 %   \begingroup\normalfont%
 %   \hfill%
-%   (initially \texttt{\{,\char`~\}} for \texttt{clist}%
+%   (initially \texttt{\{,\char`~\}} for \texttt{seq}%
 %   and \texttt{/} for \texttt{date}, no default)%
 %   \endgroup%
 % }
@@ -1142,7 +1142,7 @@ Copyright and License
 %     \} \\
 %   \end{syntax}
 %
-%   该选项只适用于类型为 |clist| 或 |date| 的属性，用来设置列表间元素的间隔。参
+%   该选项只适用于类型为 |seq| 或 |date| 的属性，用来设置列表间元素的间隔。参
 %   数为一个 \meta{separator} 时，所有元素间的分隔符被设置为 \meta{separator}。
 %   \meta{separator before year} 和 \meta{separator after day} 被设置为空。
 % \end{option}
@@ -1150,30 +1150,30 @@ Copyright and License
 %   参数为3个元素的逗号分隔的列表时，此选项用来设置列表元素的分隔符，分别用来设
 %   置只有两个元素时的分隔符 \meta{separator between two}，超过两个元素时的分隔
 %   符 \meta{separator between more than two}，和最后两个元素之间的分隔符
-%   \meta{separator between final two}。对于类型为 |clist| 的属性，设置此选项时
-%   如果参数列表数量不是1或者3会触发报错。示例 \ref{cn-clist-sep} 展示了如何设
+%   \meta{separator between final two}。对于类型为 |seq| 的属性，设置此选项时
+%   如果参数列表数量不是1或者3会触发报错。示例 \ref{cn-seq-sep} 展示了如何设
 %   置列表元素间隔。
 %
 % \iffalse
 %<*verb>
 % \fi
-\begin{example}(clist-sep){设置列表元素间隔}
-  \dbNewDatabase{clist-db}{label=clist}
-  \dbNewStyle{clist-base}{clist-db}{
+\begin{example}(seq-sep){设置列表元素间隔}
+  \dbNewDatabase{seq-db}{label=seq}
+  \dbNewStyle{seq-base}{seq-db}{
     before-code = {\dbIfEmptyF{\begin{enumerate}}},
     after-code  = {\dbIfEmptyF{\end{enumerate}}},
     item-code   = \item \dbuse{label},
   }
-  \dbNewStyle[clist-base]{clist-style1}{clist-db}{
+  \dbNewStyle[seq-base]{seq-style1}{seq-db}{
     label/sep = {{,~}}
   }
-  \dbNewStyle[clist-base]{clist-style2}{clist-db}{
+  \dbNewStyle[seq-base]{seq-style2}{seq-db}{
     label/sep = {{,~}, {,~}, ~and~}
   }
-  \dbitemkv{clist-db}{label={a, b, c}}
-  \dbitemkv{clist-db}{label={1, 2, 3}}
-  \dbshow{clist-style1}{clist-db}
-  \dbshow{clist-style2}{clist-db}
+  \dbitemkv{seq-db}{label={a, b, c}}
+  \dbitemkv{seq-db}{label={1, 2, 3}}
+  \dbshow{seq-style1}{seq-db}
+  \dbshow{seq-style2}{seq-db}
 \end{example}
 % \iffalse
 %</verb>
@@ -1380,8 +1380,8 @@ Copyright and License
 %     \cs{dbNewConditional}* \marg{name} \marg{int/fp attr} \marg{expr}       \oarg{filter info}
 %     \cs{dbNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \oarg{filter info}
 %     \cs{dbNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \oarg{filter info}
-%     \cs{dbNewConditional}  \marg{name}  \marg{clist attr} \marg{val list}   \oarg{filter info}
-%     \cs{dbNewConditional}* \marg{name}  \marg{clist attr} \marg{val list}   \oarg{filter info}
+%     \cs{dbNewConditional}  \marg{name}  \marg{seq attr}   \marg{val list}   \oarg{filter info}
+%     \cs{dbNewConditional}* \marg{name}  \marg{seq attr}   \marg{val list}   \oarg{filter info}
 %     \cs{dbNewConditional}  \marg{name}   \marg{date attr} \marg{date expr}  \oarg{filter info}
 %     \cs{dbNewConditional}* \marg{name}   \marg{date attr} \{\meta{review points}\orbar\meta{date}\} \oarg{filter info}
 %   \end{syntax}
@@ -1433,18 +1433,18 @@ Copyright and License
 %</verb>
 % \fi
 %
-%   对于类型为 |clist| 的属性，使用 \cs{dbNewConditional} 定义的条件只要
+%   对于类型为 |seq| 的属性，使用 \cs{dbNewConditional} 定义的条件只要
 %   \meta{val list} 中的任意一个元素在属性值（列表）中则条件成立；使用
 %   \cs{dbNewConditional*} 定义的条件只有 \meta{val list} 中每一个值都在属性值
-%   （列表）中条件才成立。示例 \ref{cn-filter-clist} 中过滤器 |or| 匹配含有
+%   （列表）中条件才成立。示例 \ref{cn-filter-seq} 中过滤器 |or| 匹配含有
 %   hard \textbf{或者} red 的标签，而过滤器 |and| 匹配含有 hard \textbf{并且}
 %   含有 red 的标签。
 %
 % \iffalse
 %<*verb>
 % \fi
-\begin{example}(filter-clist){筛选列表}
-  \dbNewDatabase{filter-db}{label=clist}
+\begin{example}(filter-seq){筛选列表}
+  \dbNewDatabase{filter-db}{label=seq}
   \begin{dbFilters}*{filter-db}
     \dbNewCond  {or}{label}{hard, red}
     \dbNewCond*{and}{label}{hard, red}
@@ -1877,7 +1877,7 @@ Copyright and License
 % \subsection{Data Types}
 %
 % The package constructs 6 types based on the internal typed of \pkg{expl3}:
-% \begin{Description}[\texttt{clist}]
+% \begin{Description}[\texttt{seq}]
 %   \item[\texttt{date}]
 %     date saved in |yyyy/mm/dd| format, supports comparison, sorting
 %     (converting to string), default \cs{dbtoday}.
@@ -1889,7 +1889,7 @@ Copyright and License
 %     integer, supports comparison and sorting, default 0.
 %   \item[\texttt{fp}]
 %     floating point, supports comparison and sorting, default 0.
-%   \item[\texttt{clist}]
+%   \item[\texttt{seq}]
 %     comma list, default empty.
 % \end{Description}
 %
@@ -2346,22 +2346,22 @@ Copyright and License
 %   \end{syntax}
 %
 %   Set the style code of \meta{attr}. In \meta{item code}, |#1| is replaced
-%   with the item of the comma list. Example \ref{en-clist-code} shows how to
+%   with the item of the comma list. Example \ref{en-seq-code} shows how to
 %   set the style code of the item of the comma list.
 % \end{option}
 %
 % \iffalse
 %<*verb>
 % \fi
-\begin{example*}(clist-code){Set the Style Code of Clist Item}
-  \dbNewDatabase{clist-db}{name=str, label=clist}
-  \dbNewStyle{clist-style}{clist-db}{
+\begin{example*}(seq-code){Set the Style Code of Sequence Item}
+  \dbNewDatabase{seq-db}{name=str, label=seq}
+  \dbNewStyle{seq-style}{seq-db}{
     item-code       = \par\dbuse{name}:~\dbuse{label},
     label/item-code = (\textcolor{red}{\textit{#1}}),
   }
-  \dbitemkv{clist-db}{name=pig,  label={animal, meat}}
-  \dbitemkv{clist-db}{name=Alex, label={person, male}}
-  \dbshow{clist-style}{clist-db}
+  \dbitemkv{seq-db}{name=pig,  label={animal, meat}}
+  \dbitemkv{seq-db}{name=Alex, label={person, male}}
+  \dbshow{seq-style}{seq-db}
 \end{example*}
 % \iffalse
 %</verb>
@@ -2381,7 +2381,7 @@ Copyright and License
 %     \nopt{<attr>/item-before-code} = <before code> \inidef*
 %   \end{syntax}
 %
-%   Only for attributes of type |clist|. Set the \meta{code} that is excuted
+%   Only for attributes of type |seq|. Set the \meta{code} that is excuted
 %   \enbefore displaying the item of the comma list.
 % \end{option}
 %
@@ -2390,7 +2390,7 @@ Copyright and License
 %     \nopt{<attr>/item-after-code} = <after code> \inidef*
 %   \end{syntax}
 %
-%   Only for attributes of type |clist|. Set the \meta{code} that is excuted
+%   Only for attributes of type |seq|. Set the \meta{code} that is excuted
 %   \enafter displaying the item of the comma list.
 % \end{option}
 %
@@ -2418,7 +2418,7 @@ Copyright and License
 %     \} \\
 %   \end{syntax}
 %
-%   Only for attributes of type |clist| or |date|. Set the separator between
+%   Only for attributes of type |seq| or |date|. Set the separator between
 %   items. If the argument is an one-item comma list, all separators are set to
 %   \meta{separator} but \meta{separator before year} and \meta{separator after
 %   day} is set empty.
@@ -2436,31 +2436,31 @@ Copyright and License
 %     it is placed in the input stream, and a comma list with no items produces
 %     no output.
 %   \end{quote}
-%   For attributes of type |clist|, incorrect number (numbers exclude 1 and 3)
-%   of items of the argument will raise an error. Example \ref{en-clist-sep}
+%   For attributes of type |seq|, incorrect number (numbers exclude 1 and 3)
+%   of items of the argument will raise an error. Example \ref{en-seq-sep}
 %   shows how to use this option to customize the separators between comma
 %   list items.
 %
 % \iffalse
 %<*verb>
 % \fi
-\begin{example*}(clist-sep){Set Separator Between Items of Comma List}
-  \dbNewDatabase{clist-db}{label=clist}
-  \dbNewStyle{clist-base}{clist-db}{
+\begin{example*}(seq-sep){Set Separator Between Items of Comma List}
+  \dbNewDatabase{seq-db}{label=seq}
+  \dbNewStyle{seq-base}{seq-db}{
     before-code = {\dbIfEmptyF{\begin{enumerate}}},
     after-code  = {\dbIfEmptyF{\end{enumerate}}},
     item-code   = \item \dbuse{label},
   }
-  \dbNewStyle[clist-base]{clist-style1}{clist-db}{
+  \dbNewStyle[seq-base]{seq-style1}{seq-db}{
     label/sep = {{,~}}
   }
-  \dbNewStyle[clist-base]{clist-style2}{clist-db}{
+  \dbNewStyle[seq-base]{seq-style2}{seq-db}{
     label/sep = {{,~}, {,~}, ~and~}
   }
-  \dbitemkv{clist-db}{label={a, b, c}}
-  \dbitemkv{clist-db}{label={1, 2, 3}}
-  \dbshow{clist-style1}{clist-db}
-  \dbshow{clist-style2}{clist-db}
+  \dbitemkv{seq-db}{label={a, b, c}}
+  \dbitemkv{seq-db}{label={1, 2, 3}}
+  \dbshow{seq-style1}{seq-db}
+  \dbshow{seq-style2}{seq-db}
 \end{example*}
 % \iffalse
 %</verb>
@@ -2674,8 +2674,8 @@ Copyright and License
 %     \cs{dbNewConditional}* \marg{name} \marg{int/fp attr} \marg{expr}       \oarg{filter info}
 %     \cs{dbNewConditional}  \marg{name} \marg{str/tl attr} \marg{regex expr} \oarg{filter info}
 %     \cs{dbNewConditional}* \marg{name} \marg{str/tl attr} \marg{regex expr} \oarg{filter info}
-%     \cs{dbNewConditional}  \marg{name}  \marg{clist attr} \marg{val list}   \oarg{filter info}
-%     \cs{dbNewConditional}* \marg{name}  \marg{clist attr} \marg{val list}   \oarg{filter info}
+%     \cs{dbNewConditional}  \marg{name}  \marg{seq attr}   \marg{val list}   \oarg{filter info}
+%     \cs{dbNewConditional}* \marg{name}  \marg{seq attr}   \marg{val list}   \oarg{filter info}
 %     \cs{dbNewConditional}  \marg{name}   \marg{date attr} \marg{date expr}  \oarg{filter info}
 %     \cs{dbNewConditional}* \marg{name}   \marg{date attr} \{\meta{review points}\orbar\meta{date}\} \oarg{filter info}
 %   \end{syntax}
@@ -2726,18 +2726,18 @@ Copyright and License
 %</verb>
 % \fi
 %
-%   For attributes of type |clist|, the conditional defined by unstarred form is
+%   For attributes of type |seq|, the conditional defined by unstarred form is
 %   true if any item of \meta{val list} is in the comma list. While the
 %   conditional defined by starred form is true only if every item of \meta{val
-%   list} is in the comma list. In example \ref{en-filter-clist}, filter |or|
+%   list} is in the comma list. In example \ref{en-filter-seq}, filter |or|
 %   match labels that contain hard \textbf{or} red, and filter |and| match
 %   labels that contain hard \textbf{and} red.
 %
 % \iffalse
 %<*verb>
 % \fi
-\begin{example*}(filter-clist){Filter Lists}
-  \dbNewDatabase{filter-db}{label=clist}
+\begin{example*}(filter-seq){Filter Lists}
+  \dbNewDatabase{filter-db}{label=seq}
   \begin{dbFilters}*{filter-db}
     \dbNewCond  {or}{label}{hard, red}
     \dbNewCond*{and}{label}{hard, red}
@@ -3188,12 +3188,12 @@ Copyright and License
 % Default default value of different types.
 %    \begin{macrocode}
 \prop_const_from_keyval:Nn \c_@@_default_value_prop {
-  date  = \dbtoday,
-  str   = ,
-  tl    = ,
-  clist = ,
-  int   = 0,
-  fp    = 0
+  date = \dbtoday,
+  str  = ,
+  tl   = ,
+  seq  = ,
+  int  = 0,
+  fp   = 0
 }
 %    \end{macrocode}
 % \end{variable}
@@ -3201,7 +3201,7 @@ Copyright and License
 % \begin{variable}{\c_@@_type_seq}
 % Supported types by \pkg{dbshow}.
 %    \begin{macrocode}
-\seq_const_from_clist:Nn \c_@@_type_seq { date, str, tl, clist, int, fp }
+\seq_const_from_clist:Nn \c_@@_type_seq { date, str, tl, seq, int, fp }
 %    \end{macrocode}
 % \end{variable}
 %
@@ -3346,7 +3346,7 @@ Copyright and License
 %    \begin{macrocode}
 \msg_new:nnn { dbshow } { non-existent-type } {
   Type~'#1'~does~not~exist,~the~type~of~attribute~should~be~one~of~
-  \{date,~str,~tl,~clist,~int,~fp\}~\msg_line_context:.
+  \{date,~str,~tl,~seq,~int,~fp\}~\msg_line_context:.
 }
 %    \end{macrocode}
 %
@@ -3644,7 +3644,7 @@ Copyright and License
   \str_case_e:nn { \@@_get_type:nn {#1} {#2} } {
     { str }   { \str_clear_new:c }
     { tl }    { \tl_gclear_new:c }
-    { clist } { \seq_gclear_new:c }
+    { seq }   { \seq_gclear_new:c }
     { int }   { \int_gzero_new:c }
     { fp }    { \fp_gzero_new:c }
     { date }  { \__dbdate_gclear_new:x }
@@ -3652,7 +3652,7 @@ Copyright and License
   \str_case_e:nn { \@@_get_type:nn {#1} {#2} } {
     { str }   { \str_gset:cn }
     { tl }    { \tl_gset:cn }
-    { clist } { \seq_gset_from_clist:cn }
+    { seq }   { \seq_gset_from_clist:cn }
     { int }   { \int_gset:cn }
     { fp }    { \fp_gset:cn }
     { date }  { \__dbdate_gset:xx }
@@ -4154,7 +4154,7 @@ Copyright and License
 % For comma list and date.
 %    \begin{macrocode}
     sep              .code:n       = {
-      \seq_gset_from_clist:cn { g_@@_style_attr_sep_#1_#2_#3 } {##1}
+      \seq_gset_from_clist:cn { g_@@_style_attr_sep_seq_#1_#2_#3 } {##1}
     },
 %    \end{macrocode}
 % Only for comma list.
@@ -4191,7 +4191,7 @@ Copyright and License
     },
   }
   \str_case_e:nn { \@@_get_type:nn {#2} {#3} } {
-    { clist }
+    { seq }
     { \keys_set:nn { dbshow/style/#1/#3 } { sep = { { ,~ } } } }
     { date }
     { \keys_set:nn { dbshow/style/#1/#3 } { sep = { { /  } } } }
@@ -4510,9 +4510,9 @@ Copyright and License
     { tl }    { \tl_use:c  { g_@@_data_#1_#2_#3 } }
     { int }   { \int_use:c { g_@@_data_#1_#2_#3 } }
     { fp }    { \fp_use:c  { g_@@_data_#1_#2_#3 } }
-    { clist } {
+    { seq }   {
       \@@_seq_use:cccccc { g_@@_data_#1_#2_#3 }
-        { g_@@_style_attr_sep_#4_#1_#2 }
+        { g_@@_style_attr_sep_       seq_#4_#1_#2 }
         { g_@@_style_attr_item_before_tl_#4_#1_#2 }
         { g_@@_style_attr_item_after_ tl_#4_#1_#2 }
         {   @@_style_seq_item_code_      #4_#1_#2:n }
@@ -4525,7 +4525,7 @@ Copyright and License
         { \__dbdate_get_day:n   { g_@@_data_#1_#2_#3 } }
       } {
         \@@_date_use:ncc { g_@@_data_#1_#2_#3 }
-          { g_@@_style_attr_sep_#4_#1_#2 }
+          { g_@@_style_attr_sep   _seq_#4_#1_#2 }
           { g_@@_style_date_zfill_bool_#4_#1_#2 }
       }
     }
