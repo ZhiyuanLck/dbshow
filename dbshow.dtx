@@ -4011,6 +4011,8 @@ Copyright and License
 %    \end{macrocode}
 % \end{macro}
 %
+% \changes{1.6}{2022-01-21}{Fix bug}{wrong conditional patten when
+% \orbar\orbar is used.}
 % \begin{macro}{\@@_combine_conditional:nnn, \@@_combine_conditional:nVn}
 % First extract all the \meta{conditional} in \meta{conditional expr} and for
 % every \meta{conditional} in the record sequence, if it is in
@@ -4027,7 +4029,7 @@ Copyright and License
 \cs_new_protected:Nn \@@_combine_conditional:nnn {
   \tl_gset_eq:cN { g_@@_filter_bool_tl_#1_#2 } \c_true_bool
   \seq_gclear_new:c { g_@@_filter_run_seq_#1_#2 }
-  \regex_extract_all:nnN { [^!=&<>()\ ]+ } {#3} \l_@@_cond_seq
+  \regex_extract_all:nnN { [^&()|]+ } {#3} \l_@@_cond_seq
 %    \end{macrocode}
 % \begin{arguments}[2]
 %   \item \meta{conditional}
@@ -4076,7 +4078,7 @@ Copyright and License
 %    \begin{macrocode}
   \DeclareDocumentCommand { \dbNewConditional } { s m m m O{} } {
     \@@_new_conditional:nnnnn {#2} {##2} {##3} {##4} {##1}
-    \IfValueT {#1} {
+    \IfBooleanT {#1} {
       \dbCombCond{##2}{##2}[##5]
     }
   }
@@ -4525,8 +4527,7 @@ Copyright and License
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}[pTF]{\@@_group_if_first:nnnN, \@@_group_if_first:nVnN,
-% \@@_group_if_last:nnnN, \@@_group_if_last:nVnN, }
+% \begin{macro}[pTF]{\@@_group_if_first:nnnN, \@@_group_if_last:nnnN}
 % Test if current item is the first or last item of current group.
 % \begin{arguments}
 %   \item \meta{database}
@@ -4546,8 +4547,6 @@ Copyright and License
       { \prg_return_true: }
   }
 }
-\prg_generate_conditional_variant:Nnn
-  \@@_group_if_first:nnnN { nVnN } { p, T, F, TF }
 \prg_new_conditional:Nnn \@@_group_if_last:nnnN { p, T, F, TF } {
   \int_compare:nNnTF {#3} = { \seq_count:N #4 } {
     \prg_return_true:
@@ -4559,8 +4558,35 @@ Copyright and License
       { \prg_return_true: }
   }
 }
-\prg_generate_conditional_variant:Nnn
-  \@@_group_if_last:nnnN { nVnN } { p, T, F, TF }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_show_group_set_cond:nnnN, \@@_show_group_set_cond:nVnN,
+% \dbIfGroupFirstT, \dbIfGroupFirstF, \dbIfGroupFirstTF, \dbIfGroupLastT,
+% \dbIfGroupLastF, \dbIfGroupLastTF}
+% 
+% \begin{arguments}
+%   \item \meta{database}
+%   \item \meta{attr}
+%   \item \meta{idx of index seq}
+%   \item \meta{index seq}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_show_group_set_cond:nnnN {
+  \cs_set:Npn \dbIfGroupFirstT  ##1
+    { \@@_group_if_first:nnnNT  {#1} {#2} {#3} {#4} {##1} }
+  \cs_set:Npn \dbIfGroupFirstF  ##1
+    { \@@_group_if_first:nnnNF  {#1} {#2} {#3} {#4} {##1} }
+  \cs_set:Npn \dbIfGroupFirstTF ##1##2
+    { \@@_group_if_first:nnnNTF {#1} {#2} {#3} {#4} {##1} {##2} }
+  \cs_set:Npn \dbIfGroupLastT   ##1
+    { \@@_group_if_last:nnnNT   {#1} {#2} {#3} {#4} {##1} }
+  \cs_set:Npn \dbIfGroupLastF   ##1
+    { \@@_group_if_last:nnnNF   {#1} {#2} {#3} {#4} {##1} }
+  \cs_set:Npn \dbIfGroupLastTF  ##1##2
+    { \@@_group_if_last:nnnNTF  {#1} {#2} {#3} {#4} {##1} {##2} }
+}
+\cs_generate_variant:Nn \@@_show_group_set_cond:nnnN { nVnN }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -4584,19 +4610,22 @@ Copyright and License
   \@@_show_group_item_aux:nnnNn {#1} {#2} {#3} #4 { 1 }
 }
 \cs_new_protected:Nn \@@_show_group_item_aux:nnnNn {
+  \group_begin:
   \tl_set:Nx \l_@@_group_tl
     { \seq_item:cn { g_@@_group_attr_seq_#1_#2 } {#5} }
+  \@@_show_group_set_cond:nVnN {#2} \l_@@_group_tl {#3} {#4}
   \int_compare:nNnF {#5} >
   { \seq_count:c { g_@@_group_attr_seq_#1_#2 } } {
-    \@@_group_if_first:nVnNT {#2} \l_@@_group_tl {#3} #4
+    \dbIfGroupFirstT
       { \tl_use:c { g_@@_style_group_before_tl_#1_#2_\l_@@_group_tl } }
     \use:c { @@_style_group_item_code_#1_#2_\l_@@_group_tl :n } {
       \@@_show_group_item_aux:nnnNn {#1} {#2} {#3} #4
         { \int_eval:n { #5 + 1 } }
     }
-    \@@_group_if_last:nVnNT  {#2} \l_@@_group_tl {#3} #4
+    \dbIfGroupLastT
       { \tl_use:c { g_@@_style_group_after _tl_#1_#2_\l_@@_group_tl } }
   }
+  \group_end:
 }
 %    \end{macrocode}
 % \end{macro}
