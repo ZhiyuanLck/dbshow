@@ -3186,8 +3186,6 @@ Copyright and License
 \cs_generate_variant:Nn \msg_warning:nnnn      { nnnx }
 \cs_generate_variant:Nn \keys_set:nn           { nv }
 \cs_generate_variant:Nn \tl_put_right:Nn       { Nv }
-\cs_generate_variant:Nn \clist_use:nn          { xx }
-\cs_generate_variant:Nn \clist_use:nnnn        { xxxx }
 \cs_generate_variant:Nn \clist_map_inline:nn   { Vn }
 \cs_generate_variant:Nn \prop_get:NnN          { cVN }
 \cs_generate_variant:Nn \regex_extract_all:nnN { nVN }
@@ -4029,7 +4027,7 @@ Copyright and License
 \cs_new_protected:Nn \@@_combine_conditional:nnn {
   \tl_gset_eq:cN { g_@@_filter_bool_tl_#1_#2 } \c_true_bool
   \seq_gclear_new:c { g_@@_filter_run_seq_#1_#2 }
-  \regex_extract_all:nnN { [^&()|]+ } {#3} \l_@@_cond_seq
+  \regex_extract_all:nnN { [^!&()|\ ]+ } {#3} \l_@@_cond_seq
 %    \end{macrocode}
 % \begin{arguments}[2]
 %   \item \meta{conditional}
@@ -4659,7 +4657,7 @@ Copyright and License
 %    \begin{macrocode}
 \cs_new:Nn \@@_seq_wrapper:NNNNn {
   \bool_if:NTF #4
-    { \exp_not:n { { #1\exp_args:Nx#3{#5}#2 }, } }
+    { \exp_not:n { { #1\exp_args:Ne#3{#5}#2 }, } }
     { \exp_not:n { { #1#3{#5}#2 }, } }
 }
 %    \end{macrocode}
@@ -4679,12 +4677,12 @@ Copyright and License
 \cs_new:Nn \@@_seq_use:NNNNNN {
   \int_case:nnF { \seq_count:N #2 } {
     { 1 } {
-      \clist_use:xx
+      \exp_args:Ne \clist_use:nn
         { \seq_map_tokens:Nn #1 { \@@_seq_wrapper:NNNNn #3#4#5#6 } }
         { \seq_item:Nn #2 { 1 } }
     }
     { 3 } {
-      \clist_use:xxxx
+      \exp_args:Ne \clist_use:nnnn
         { \seq_map_tokens:Nn #1 { \@@_seq_wrapper:NNNNn #3#4#5#6 } }
         { \seq_item:Nn #2 { 1 } }
         { \seq_item:Nn #2 { 2 } }
