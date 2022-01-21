@@ -1298,6 +1298,23 @@ Copyright and License
 % \iffalse
 %</verb>
 % \fi
+%
+% \subsection{分组选项}
+%
+% \changes{1.6}{2022-01-20}{Add option}{\opt{group-by}}
+% \begin{option}[added=2022-01-20]{group-by}
+%   \begin{syntax}
+%     \opt{group-by} = \{
+%     ~~\meta{attr spec1} = \meta{group opt1}
+%     ~~\meta{attr spec2} = \meta{group opt2}
+%     ~~\ldots
+%     \}
+%     \meta{attr spec} = \meta{attr \orbar attr*}
+%   \end{syntax}
+%
+%   该选项用于设置分组，类似 |SQL| 中的 |group by| 操作。设置该选项
+% \end{option}
+%
 % \subsection{过滤器}
 %
 % 过滤器是一些条件的组合，只有满足过滤器指定条件的数据才会被展现出来。
@@ -3403,11 +3420,17 @@ Copyright and License
 % \begin{arguments}
 %   \item \meta{style}
 %   \item \meta{database}
+%   \item \meta{attr spec}
 % \end{arguments}
 %    \begin{macrocode}
 \msg_new:nnn { dbshow } { ignore-sort } {
-  sorting~rule~has~been~defined~by~'group-by'~option~\msg_line_context:,
-  ~so~'sort'~option~of~style~'#1'~of~database~'#2'~will~be~ignored.
+  sorting~rule~of~attribute~'#3'~of~style~'#1'~of~database~'#2'~has~been~
+  defined~and~will~be~ignored.
+}
+\msg_new:nnn { dbshow } { wrong-sort } {
+  sorting~rule~of~attribute~'#3'~of~style~'#1'~of~database~'#2'~has~been~
+  defined.~You~can~not~define~the~sorting~rule~of~the~same~attribute~twice~
+  in~group-by~option!
 }
 %    \end{macrocode}
 %
@@ -3998,6 +4021,7 @@ Copyright and License
 %
 % \changes{1.6}{2022-01-21}{Fix bug}{wrong conditional patten when
 % \orbar\orbar is used.}
+% \changes{1.6}{2022-01-21}{Add check}{check if conditional/filter is valid}
 % \begin{macro}{\@@_combine_conditional:nnn, \@@_combine_conditional:nVn}
 % First extract all the \meta{conditional} in \meta{conditional expr} and for
 % every \meta{conditional} in the record sequence, if it is in
@@ -4225,8 +4249,10 @@ Copyright and License
 \cs_new_protected:Nn \@@_new_database_style:nn {
   \@@_check_database:n {#2}
   \bool_gset_false:c { g_@@_style_group_bool_#1_#2 }
+  \seq_gclear_new:c { g_@@_sort_seq_#1_#2 }
+  \seq_gclear_new:c { g_@@_sort_append_seq_#1_#2 }
   \keys_define:nn { dbshow/style/#1/#2 } {
-    raw-filter         .code:n       = {
+    raw-filter       .code:n       = {
       \int_gincr:N  \g_@@_raw_filter_int
       \str_set:Nx \l_@@_raw_filter_str
         { -raw\int_use:N \g_@@_raw_filter_int - }
@@ -4236,9 +4262,7 @@ Copyright and License
     filter           .tl_gset:c    = { g_@@_filter_#1_#2 },
     filter           .initial:n    = -none-,
     sort             .code:n       = {
-      \bool_if:cTF { g_@@_style_group_bool_#1_#2 }
-        { \msg_warning:nnnn { dbshow } { ignore-sort } {#1} {#2} }
-        { \seq_gset_from_clist:cn { g_@@_sort_seq_#1_#2 } {##1} }
+      \@@_sort_option:nnnc {#1} {#2} {##1} { g_@@_sort_append_seq_#1_#2 }
     },
     sort             .initial:n    = ,
     before-code      .tl_gset:c    = { g_@@_style_before_tl_#1_#2 },
@@ -4310,6 +4334,84 @@ Copyright and License
 % \end{macro}
 %
 % \subsection{Sort}
+% \changes{1.6}{2022-01-22}{Fix bug}{make \opt{group-by} compatible with
+% \opt{sort}}
+%
+% \begin{macro}{\@@_sort_get_attr:nN, \@@_sort_get_attr:VN}
+% Extract \meta{attr} from \meta{attr spec}.
+% \begin{arguments}
+%   \item \meta{attr spec}
+%   \item \meta{attr var}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_sort_get_attr:nN {
+  \str_if_in:nnTF {#1} {*} {
+    \tl_set:Nx #2 { \@@_parse_attr:w #1 }
+  } { \tl_set:Nn #2 {#1} }
+}
+\cs_generate_variant:Nn \@@_sort_get_attr:nN { VN }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[pTF]{\@@_sort_if_in:Nn, \@@_sort_if_in:cx, \@@_sort_if_in:Nx}
+% Check if the sorting rule has been defined.
+% \begin{arguments}
+%   \item \meta{sort seq}
+%   \item \meta{attr spec}
+% \end{arguments}
+%    \begin{macrocode}
+\prg_new_protected_conditional:Nnn \@@_sort_if_in:Nn { T, F, TF } {
+  \seq_map_inline:Nn #1 {
+    \@@_sort_get_attr:nN {#2}  \@@_sort_attra_tl
+    \@@_sort_get_attr:nN {##1} \@@_sort_attrb_tl
+    \tl_if_eq:NNT \@@_sort_attra_tl \@@_sort_attrb_tl {
+      \bool_set_true:N \@@_sort_in_bool
+      \seq_map_break:n { \prg_return_true: }
+    }
+  }
+  \prg_return_false:
+}
+\prg_generate_conditional_variant:Nnn
+\@@_sort_if_in:Nn { cn } { T, F, TF }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_sort_option:nnnN, \@@_sort_option:nnnc}
+% Set \meta{sort seq} with \meta{sort spec} and ignore the dumplicates.
+% \begin{arguments}
+%   \item \meta{style}
+%   \item \meta{database}
+%   \item \meta{sort spec}
+%   \item \meta{sort seq}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_sort_option:nnnN {
+  \clist_map_inline:nn {#3} {
+    \@@_sort_if_in:NnTF #4 {##1} {
+      \msg_warning:nnnnn { dbshow } { ignore-sort } {#1} {#2} {##1}
+    } { \seq_gput_right:Nn #4 {##1} }
+  }
+}
+\cs_generate_variant:Nn \@@_sort_option:nnnN { nnnc }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_sort_concat:nn}
+% Concat sort sequence.
+% \begin{arguments}
+%   \item \meta{style}
+%   \item \meta{database}
+% \end{arguments}
+%    \begin{macrocode}
+\cs_new_protected:Nn \@@_sort_concat:nn {
+  \seq_map_inline:cn { g_@@_sort_append_seq_#1_#2 } {
+    \@@_sort_if_in:cnTF { g_@@_sort_seq_#1_#2 } {##1} {
+      \msg_warning:nnnnn { dbshow } { ignore-sort } {#1} {#2} {##1}
+    } { \seq_gput_right:cn { g_@@_sort_seq_#1_#2 } {##1} }
+  }
+}
+%    \end{macrocode}
+% \end{macro}
 %
 % \begin{macro}{\@@_sort_parse_star:NNNw}
 % Parse descending sorting rule.
@@ -4338,6 +4440,7 @@ Copyright and License
 \cs_new_protected:Nn \@@_sort:nnN {
   \int_zero_new:N \l_@@_sort_len_int
   \int_zero_new:N \l_@@_sort_tmp_int
+  \@@_sort_concat:nn {#1} {#2}
   \int_set:Nn \l_@@_sort_len_int
     { \seq_count:c { g_@@_sort_seq_#1_#2 } }
 %    \end{macrocode}
@@ -4355,6 +4458,8 @@ Copyright and License
           { g_@@_sort_seq_#1_#2 }
           { \l_@@_sort_tmp_int }
       }
+      \@@_sort_get_attr:VN \l_@@_sort_attr_str \l_@@_sort_attr_tl
+      \@@_check_attr:nV {#2} \l_@@_sort_attr_tl
 %    \end{macrocode}
 % Parse \meta{attr} and corresponding \meta{type} and set compare operators.
 %    \begin{macrocode}
@@ -4461,19 +4566,21 @@ Copyright and License
   \seq_gclear_new:c { g_@@_sort_seq_#1_#2 }
   \seq_gclear_new:c { g_@@_group_attr_seq_#1_#2 }
   \prop_map_inline:Nn \l_@@_group_prop {
-    \seq_gput_right:cn { g_@@_sort_seq_#1_#2 } {##1}
+    \@@_sort_if_in:cnTF { g_@@_sort_seq_#1_#2 } {##1} {
+      \msg_fatal:nnnnn { dbshow } { wrong-sort } {#1} {#2} {##1}
+    } { \seq_gput_right:cn { g_@@_sort_seq_#1_#2 } {##1} }
     \str_if_in:nnTF {##1} {*} {
       \@@_group_keys:nnxn {#1} {#2}
-        { \@@_group_parse_attr:w ##1 } {##2}
+        { \@@_parse_attr:w ##1 } {##2}
       \seq_gput_right:cx { g_@@_group_attr_seq_#1_#2 }
-        { \@@_group_parse_attr:w ##1 }
+        { \@@_parse_attr:w ##1 }
     } {
       \@@_group_keys:nnnn {#1} {#2} {##1} {##2}
       \seq_gput_right:cn { g_@@_group_attr_seq_#1_#2 } {##1}
     }
   }
 }
-\cs_new:Npn \@@_group_parse_attr:w #1* {#1}
+\cs_new:Npn \@@_parse_attr:w #1* {#1}
 %    \end{macrocode}
 % \end{macro}
 %
