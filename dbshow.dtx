@@ -3306,23 +3306,10 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
 \msg_new:nnn { dbshow } { non-existent-cond } {
-  Conditional~'#2'~of~database~'#1'~does~not~exist~\msg_line_context:.
+  Conditional~'#2'~of~database~'#1'~does~not~exist~\msg_line_context:.~
+  It~may~be~caused~by~an~invalid~filter~specification:~'#3'.
 }
 %    \end{macrocode}
-%
-% \begin{macro}{\@@_check_cond:nnn}
-% Check if the conditional is valid.
-% \begin{arguments}
-%   \item \meta{database}
-%   \item \meta{cond}
-% \end{arguments}
-%    \begin{macrocode}
-\cs_new:Nn \@@_check_cond:nnn {
-  \tl_if_exist:cF { g_@@_filter_attr_\tl_to_str:n {#1}_\tl_to_str:n {#2} }
-    { \msg_fatal:nnnn { dbshow } { non-existent-cond } {#1} {#2} }
-}
-%    \end{macrocode}
-% \end{macro}
 %
 % \begin{arguments}
 %   \item \meta{database}
@@ -4034,13 +4021,15 @@ Copyright and License
 % \end{arguments}
 %    \begin{macrocode}
   \seq_map_inline:Nn \l_@@_cond_seq {
-    \seq_if_in:cnT { g_@@_cond_seq_#1 } {##1} {
+    \seq_if_in:cnTF { g_@@_cond_seq_#1 } {##1} {
       \seq_if_in:cnF { g_@@_filter_run_seq_#1_#2 }
-        { g_@@_filter_hook_#1_##1:n }
-      {
+      { g_@@_filter_hook_#1_##1:n } {
         \seq_gput_right:cn { g_@@_filter_run_seq_#1_#2 }
           { g_@@_filter_hook_#1_##1:n }
       }
+    } {
+      \msg_fatal:nnnnn { dbshow } { non-existent-cond }
+        {#1} {##1} {#3}
     }
   }
   \tl_set:Nn \l_@@_cond_expr_tl {#3}
