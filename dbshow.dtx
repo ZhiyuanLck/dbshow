@@ -4020,7 +4020,7 @@ Copyright and License
 % \end{macro}
 %
 % \changes{1.6}{2022-01-21}{Fix bug}{wrong conditional patten when
-% \orbar\orbar is used.}
+% \orbar\orbar~is used.}
 % \changes{1.6}{2022-01-21}{Add check}{check if conditional/filter is valid}
 % \begin{macro}{\@@_combine_conditional:nnn, \@@_combine_conditional:nVn}
 % First extract all the \meta{conditional} in \meta{conditional expr} and for
@@ -4429,6 +4429,7 @@ Copyright and License
 %    \end{macrocode}
 % \end{macro}
 %
+% \changes{1.6}{2022-06-11}{Fix bug}{error when sort sequence is empty}
 % \begin{macro}{\@@_sort:nNn}
 % Sort the records.
 % \begin{arguments}
@@ -4440,7 +4441,6 @@ Copyright and License
 \cs_new_protected:Nn \@@_sort:nnN {
   \int_zero_new:N \l_@@_sort_len_int
   \int_zero_new:N \l_@@_sort_tmp_int
-  \@@_sort_concat:nn {#1} {#2}
   \int_set:Nn \l_@@_sort_len_int
     { \seq_count:c { g_@@_sort_seq_#1_#2 } }
 %    \end{macrocode}
@@ -5047,6 +5047,7 @@ Copyright and License
 % \end{macro}
 %
 % \changes{1.5}{2022-01-15}{Fix bug}{\cs{dbIfEmptyF} undefined}
+% \changes{1.6}{2022-06-11}{Fix bug}{error when sort sequence is empty}
 % \begin{macro}{\@@_show:nnn, \@@_show:nnv}
 % First filter records and sort them if needed and display at last.
 % \begin{arguments}
@@ -5059,6 +5060,7 @@ Copyright and License
   \@@_show_set_macro:nn {#2} {#3}
   \seq_clear_new:N \l_@@_show_index_seq
   \@@_show_filter:nnN {#2} {#3} \l_@@_show_index_seq
+  \@@_sort_concat:nn {#1} {#2}
   \seq_if_empty:cF { g_@@_sort_seq_#1_#2 }
     { \@@_sort:nnN {#1} {#2} \l_@@_show_index_seq }
   \@@_show_set_cond:N \l_@@_show_index_seq
